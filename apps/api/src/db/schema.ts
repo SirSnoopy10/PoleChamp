@@ -398,6 +398,8 @@ export const processedMutation = pgTable('processed_mutation', {
 export const domainEvent = pgTable('domain_event', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   tournamentId: uuid('tournament_id'),
+  /** Adresat zdarzeń pokoju `device:{id}` (migracja 0007). */
+  deviceId: uuid('device_id'),
   type: varchar('type', { length: 40 }).notNull(),
   payload: jsonb('payload').notNull(),
   createdAt: ts('created_at').notNull().defaultNow(),

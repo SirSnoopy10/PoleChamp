@@ -403,7 +403,9 @@ export class AuthService {
         )
         .returning({ id: device.id, tournamentId: device.tournamentId });
       for (const d of revoked) {
-        await this.events.emit(tx, 'session.revoked', { reason: 'DEVICE_REVOKED' }, d.tournamentId);
+        await this.events.emit(tx, 'session.revoked', { reason: 'DEVICE_REVOKED' }, d.tournamentId, {
+          deviceId: d.id,
+        });
       }
       await this.audit.record(tx, {
         action: 'ACCOUNT_DELETION_REQUESTED',

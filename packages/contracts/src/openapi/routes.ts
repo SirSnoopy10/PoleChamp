@@ -556,7 +556,7 @@ export const routes: readonly RouteDef[] = [
     path: '/v1/devices/me/heartbeat',
     operationId: 'deviceHeartbeat',
     summary: 'Heartbeat tabletu',
-    permission: 'DEV',
+    permission: 'DEV|JDG',
     body: jdg.Heartbeat,
     success: { status: 204, schema: NONE },
     errors: ['DEVICE_REVOKED'],

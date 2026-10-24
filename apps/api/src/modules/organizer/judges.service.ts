@@ -100,8 +100,10 @@ export class JudgesService {
       .update(judgeSession)
       .set({ endedAt: new Date(), endedReason: 'REVOKED' })
       .where(and(eq(judgeSession.judgeId, judgeId), isNull(judgeSession.endedAt)))
-      .returning({ id: judgeSession.id });
-    if (ended.length) await this.events.emit(tx, 'session.revoked', { judgeId, reason }, t.id);
+      .returning({ deviceId: judgeSession.deviceId });
+    for (const s of ended) {
+      await this.events.emit(tx, 'session.revoked', { judgeId, reason }, t.id, { deviceId: s.deviceId });
+    }
   }
 
   async create(ownerId: string, tournamentId: string, fullName: string) {

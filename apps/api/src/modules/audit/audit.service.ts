@@ -101,8 +101,11 @@ export class DomainEventService {
     type: E,
     payload: ServerEventPayload<E>,
     tournamentId: string | null,
+    target: { deviceId?: string } = {},
   ): Promise<void> {
     const parsed = serverEvents[type].parse(payload);
-    await tx.insert(domainEvent).values({ type, payload: parsed, tournamentId });
+    await tx
+      .insert(domainEvent)
+      .values({ type, payload: parsed, tournamentId, deviceId: target.deviceId ?? null });
   }
 }

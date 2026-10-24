@@ -2,7 +2,7 @@ import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@ne
 import { Reflector } from '@nestjs/core';
 import { eq } from 'drizzle-orm';
 import { DB, type Db } from '../../db/client.js';
-import { device } from '../../db/schema.js';
+import { device, judgeSession } from '../../db/schema.js';
 import { InvalidTokenError, JwtService } from '../../modules/auth/jwt.service.js';
 import { DomainError } from '../errors/domain-error.js';
 import { requestContext } from '../request-context.js';
@@ -48,6 +48,16 @@ export class AuthGuard implements CanActivate {
         .from(device)
         .where(eq(device.id, deviceId));
       if (!row || row.revokedAt) throw new DomainError('DEVICE_REVOKED');
+      if (claims.typ === 'judge') {
+        // Token sędziego jest ważny tylko w otwartej sesji (wylogowanie, REPLACED, reset PIN-u).
+        const [session] = await this.db
+          .select({ endedAt: judgeSession.endedAt })
+          .from(judgeSession)
+          .where(eq(judgeSession.id, claims.sid));
+        if (!session || session.endedAt) throw new DomainError('UNAUTHENTICATED');
+      }
+      // Każde żądanie tabletu to kontakt (stan online – IMP-142).
+      await this.db.update(device).set({ lastSeenAt: new Date() }).where(eq(device.id, deviceId));
     }
     // Trasa bez deklaracji – domyślna odmowa (błąd programisty wykrywany testem zgodności tras).
     if (!requirement || !requirement.types.includes(claims.typ)) throw new DomainError('FORBIDDEN');

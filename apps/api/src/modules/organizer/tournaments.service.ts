@@ -16,6 +16,7 @@ import {
   appUser,
   athlete,
   category,
+  device,
   entry,
   judge,
   judgeSession,
@@ -206,6 +207,11 @@ export class TournamentsService {
         .where(eq(category.tournamentId, t.id));
       if ((sheets?.n ?? 0) > 0) throw new DomainError('HAS_SCORES');
       await tx.update(tournament).set({ deletedAt: new Date() }).where(eq(tournament.id, t.id));
+      // Tablety usuniętego turnieju są unieważniane (IMP-141 krok 6).
+      await tx
+        .update(device)
+        .set({ revokedAt: new Date() })
+        .where(and(eq(device.tournamentId, t.id), isNull(device.revokedAt)));
       await this.audit.record(tx, {
         action: 'TOURNAMENT_DELETED',
         tournamentId: t.id,
@@ -270,13 +276,14 @@ export class TournamentsService {
             sql`${judgeSession.judgeId} IN (SELECT id FROM judge WHERE tournament_id = ${t.id})`,
           ),
         )
-        .returning({ judgeId: judgeSession.judgeId });
+        .returning({ judgeId: judgeSession.judgeId, deviceId: judgeSession.deviceId });
       for (const s of sessions) {
         await this.events.emit(
           tx,
           'session.revoked',
           { judgeId: s.judgeId, reason: 'TOURNAMENT_FINISHED' },
           t.id,
+          { deviceId: s.deviceId },
         );
       }
 
