@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/nocturne-ad5449b5-c133-4699-b786-a1d4f5d6c213/styles.css">
+  <script src="_ds/nocturne-ad5449b5-c133-4699-b786-a1d4f5d6c213/_ds_bundle.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent); }
+    a:hover { color: var(--color-accent-300); }
+    input[type="range"] { -webkit-appearance: none; appearance: none; height: 8px; border-radius: 4px; margin: 0; cursor: pointer; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 8px; background: transparent; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; box-sizing: border-box; width: 28px; height: 28px; border-radius: 50%; background: var(--color-accent-100); border: 7px solid var(--color-accent); margin-top: -10px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    input[type="range"]::-moz-range-track { height: 8px; background: transparent; }
+    input[type="range"]::-moz-range-thumb { box-sizing: border-box; width: 28px; height: 28px; border-radius: 50%; background: var(--color-accent-100); border: 7px solid var(--color-accent); }
+    [data-scroll] { scrollbar-width: none; }
+    [data-scroll]::-webkit-scrollbar { display: none; }
+    @keyframes pcToast { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    @keyframes pcSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes pcFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pcProgress { from { width: 0%; } to { width: 100%; } }
+    @keyframes pcRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+  <script src="pole-spinner.js"></script>
+</helmet>
+
+<div style="min-height: 100vh; background: radial-gradient(1100px 520px at 50% -10%, var(--color-accent-900), transparent 70%), var(--color-bg); color: var(--color-text); font-family: var(--font-body); display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 28px 20px 72px;">
+
+  <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 20px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="width: 32px; height: 32px; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 18px;"><i class="ph ph-trophy"></i></div>
+      <div style="font-family: var(--font-heading); font-weight: 500; font-size: 18px; letter-spacing: -0.01em;">PoleChamp</div>
+      <span class="tag tag-neutral">prototyp</span>
+    </div>
+    <div style="display: flex; gap: 4px; padding: 4px; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+      <div onClick="{{ goAdminView }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; white-space: nowrap; background: {{ adminTab.bg }}; color: {{ adminTab.color }}; box-shadow: {{ adminTab.ring }};" style-hover="filter: brightness(1.15);"><i class="ph ph-device-mobile" style="font-size: 16px;"></i>Organizator</div>
+      <div onClick="{{ goJudgeView }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; white-space: nowrap; background: {{ judgeTab.bg }}; color: {{ judgeTab.color }}; box-shadow: {{ judgeTab.ring }};" style-hover="filter: brightness(1.15);"><i class="ph ph-device-tablet" style="font-size: 16px;"></i>Sędzia</div>
+    </div>
+    <div onClick="{{ replaySplash }}" title="Pokaż ekran startowy" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-lg); font-size: 13px; cursor: pointer; white-space: nowrap; color: var(--color-neutral-300); box-shadow: inset 0 0 0 1px var(--color-divider);" style-hover="color: var(--color-accent-200); box-shadow: inset 0 0 0 1px var(--color-accent-700);"><i class="ph ph-play-circle" style="font-size: 16px;"></i>Ekran startowy</div>
+  </div>
+
+  <div style="display: flex; justify-content: center; width: 100%;">
+
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px" style="flex-shrink: 0;">
+        <div data-screen-label="Admin" style="height: 100%; position: relative; overflow: hidden; background: var(--color-bg);">
+          <div data-scroll="" ref="{{ adminScrollRef }}" style="position: absolute; inset: 0; overflow-y: auto; background: radial-gradient(500px 300px at 0% 0%, color-mix(in srgb, var(--color-accent-900) 70%, transparent), transparent 70%);">
+
+            <sc-if value="{{ onTournamentsList }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 60px 16px 48px;">
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 10px 0 22px;">
+                  <div>
+                    <div style="font-size: 12.5px; color: var(--color-neutral-400); margin-bottom: 4px;">Panel organizatora</div>
+                    <h1 style="font-size: 32px; margin: 0;">Turnieje</h1>
+                  </div>
+                  <div onClick="{{ openNewTournamentDialog }}" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent); font-size: 20px; cursor: pointer; flex-shrink: 0;" style-hover="background: color-mix(in srgb, var(--color-accent) 12%, transparent);"><i class="ph ph-plus"></i></div>
+                </div>
+
+                <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400); margin: 0 4px 8px;">Aktywne</div>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px;">
+                  <sc-for list="{{ activeTournaments }}" as="t" hint-placeholder-count="1">
+                    <div onClick="{{ t.openHandler }}" style="padding: 16px; border-radius: var(--radius-lg); background: linear-gradient(160deg, color-mix(in srgb, var(--color-accent) 9%, var(--color-surface)), var(--color-surface) 60%); box-shadow: var(--shadow-sm); cursor: pointer; display: flex; flex-direction: column; gap: 12px;" style-hover="filter: brightness(1.1);">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 11.5px; white-space: nowrap; background: {{ t.pillBg }}; color: {{ t.pillColor }}; box-shadow: {{ t.pillRing }};"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ t.pillDot }};"></span>{{ t.statusLabel }}</span>
+                        <i class="ph ph-caret-right" style="color: var(--color-neutral-500); font-size: 16px;"></i>
+                      </div>
+                      <div style="font-family: var(--font-heading); font-weight: 500; font-size: 18px; line-height: 1.25; text-wrap: pretty;">{{ t.name }}</div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--color-neutral-400);">
+                        <span style="display: inline-flex; align-items: center; gap: 5px;"><i class="ph ph-calendar-blank"></i>{{ t.date }}</span>
+                        <span style="display: inline-flex; align-items: center; gap: 5px;"><i class="ph ph-map-pin"></i>{{ t.place }}</span>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--color-neutral-400);">
+                        <div style="flex: 1; height: 4px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden;"><div style="height: 100%; border-radius: 2px; background: var(--color-accent); width: {{ t.progressPct }}%;"></div></div>
+                        <span style="white-space: nowrap; font-variant-numeric: tabular-nums;">{{ t.summary }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <sc-if value="{{ hasArchived }}" hint-placeholder-val="{{ true }}">
+                  <div>
+                    <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400); margin: 0 4px 8px;">Zakończone</div>
+                    <div style="display: flex; flex-direction: column; gap: 1px; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-divider); box-shadow: var(--shadow-sm);">
+                      <sc-for list="{{ archivedTournaments }}" as="t" hint-placeholder-count="1">
+                        <div onClick="{{ t.openHandler }}" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--color-surface); cursor: pointer;" style-hover="filter: brightness(1.12);">
+                          <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--color-neutral-900); color: var(--color-neutral-400); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;"><i class="ph ph-archive"></i></div>
+                          <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ t.name }}</div>
+                            <div style="font-size: 12px; color: var(--color-neutral-400); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ t.date }} · {{ t.place }}</div>
+                          </div>
+                          <i class="ph ph-caret-right" style="color: var(--color-neutral-600);"></i>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ onDashboard }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 54px 16px 48px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; margin-bottom: 10px;">
+                  <div onClick="{{ goTournamentsList }}" style="display: inline-flex; align-items: center; gap: 2px; margin-left: -6px; padding: 6px; border-radius: var(--radius-md); color: var(--color-accent); font-size: 15px; cursor: pointer;" style-hover="background: color-mix(in srgb, var(--color-accent) 10%, transparent);"><i class="ph ph-caret-left" style="font-size: 20px;"></i>Turnieje</div>
+                  <div onClick="{{ exportAllHandler }}" style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer;" style-hover="filter: brightness(1.2);"><i class="ph ph-file-pdf"></i></div>
+                </div>
+
+                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 11.5px; white-space: nowrap; background: {{ tournamentPill.pillBg }}; color: {{ tournamentPill.pillColor }}; box-shadow: {{ tournamentPill.pillRing }};"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ tournamentPill.pillDot }};"></span>{{ tournamentPill.statusLabel }}</span>
+                <h1 style="font-size: 26px; line-height: 1.2; margin: 10px 0 8px; text-wrap: pretty;">{{ tournamentName }}</h1>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--color-neutral-400);">
+                  <span style="display: inline-flex; align-items: center; gap: 5px;"><i class="ph ph-calendar-blank"></i>{{ tournamentDate }}</span>
+                  <span style="display: inline-flex; align-items: center; gap: 5px;"><i class="ph ph-map-pin"></i>{{ tournamentPlace }}</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin: 20px 0 12px; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-divider); box-shadow: var(--shadow-sm);">
+                  <div style="padding: 12px 14px; background: var(--color-surface);">
+                    <div style="font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums;">{{ statCategories }}</div>
+                    <div style="font-size: 11.5px; color: var(--color-neutral-400);">Kategorie</div>
+                  </div>
+                  <div style="padding: 12px 14px; background: var(--color-surface);">
+                    <div style="font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums;">{{ statParticipants }}</div>
+                    <div style="font-size: 11.5px; color: var(--color-neutral-400);">Zawodniczki</div>
+                  </div>
+                  <div style="padding: 12px 14px; background: var(--color-surface);">
+                    <div style="font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums;">{{ statJudges }}</div>
+                    <div style="font-size: 11.5px; color: var(--color-neutral-400);">Sędziowie</div>
+                  </div>
+                </div>
+
+                <div style="padding: 14px; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px;">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+                    <div style="font-size: 14px;">Postęp oceniania</div>
+                    <div style="font-size: 14px; font-weight: 500; color: var(--color-accent-300); font-variant-numeric: tabular-nums;">{{ tProgressPct }}%</div>
+                  </div>
+                  <div style="height: 6px; border-radius: 3px; background: var(--color-neutral-800); overflow: hidden;"><div style="height: 100%; border-radius: 3px; background: var(--color-accent); width: {{ tProgressPct }}%;"></div></div>
+                  <div style="font-size: 12px; color: var(--color-neutral-400);">{{ tProgressText }}</div>
+                  <sc-if value="{{ tournamentCanAct }}" hint-placeholder-val="{{ true }}">
+                    <div class="btn {{ tournamentActionVariant }}" onClick="{{ tournamentStatusActionHandler }}" style="height: 44px; font-size: 14px; margin-top: 4px;"><i class="{{ tournamentActionIcon }}" style="font-size: 17px;"></i>{{ tournamentActionLabel }}</div>
+                  </sc-if>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin: 0 4px 8px;">
+                  <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400);">Kategorie</div>
+                  <div class="btn btn-ghost" onClick="{{ openNewCategoryDialog }}" style="font-size: 13px;"><i class="ph ph-plus"></i>Dodaj</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <sc-for list="{{ categoriesList }}" as="cat" hint-placeholder-count="3">
+                    <div onClick="{{ cat.openHandler }}" style="padding: 14px; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); cursor: pointer; display: flex; flex-direction: column; gap: 12px;" style-hover="filter: brightness(1.12);">
+                      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                        <div style="min-width: 0;">
+                          <div style="font-family: var(--font-heading); font-weight: 500; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ cat.name }}</div>
+                          <div style="font-size: 12px; color: var(--color-neutral-400); margin-top: 3px;">{{ cat.style }} · {{ cat.level }} · {{ cat.participantLabel }}</div>
+                        </div>
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 11.5px; white-space: nowrap; flex-shrink: 0; background: {{ cat.pillBg }}; color: {{ cat.pillColor }}; box-shadow: {{ cat.pillRing }};"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ cat.pillDot }};"></span>{{ cat.statusLabel }}</span>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--color-neutral-400);">
+                        <div style="flex: 1; height: 4px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden;"><div style="height: 100%; border-radius: 2px; background: var(--color-accent); width: {{ cat.progressPct }}%;"></div></div>
+                        <span style="white-space: nowrap; font-variant-numeric: tabular-nums;">{{ cat.progressText }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ hasNoCategories }}" hint-placeholder-val="{{ false }}">
+                    <div onClick="{{ openNewCategoryDialog }}" style="padding: 28px 16px; border-radius: var(--radius-lg); box-shadow: inset 0 0 0 1px var(--color-divider); display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; cursor: pointer; color: var(--color-neutral-400); font-size: 13px;" style-hover="background: color-mix(in srgb, var(--color-text) 4%, transparent);">
+                      <i class="ph ph-squares-four" style="font-size: 26px; color: var(--color-accent);"></i>
+                      <div>Brak kategorii. Dodaj pierwszą, aby zacząć.</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ onCategoryDetail }}" hint-placeholder-val="{{ false }}">
+              <div style="min-height: 100%; display: flex; flex-direction: column; padding: 54px 16px 0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; margin-bottom: 10px;">
+                  <div onClick="{{ goDashboard }}" style="display: inline-flex; align-items: center; gap: 2px; margin-left: -6px; padding: 6px; border-radius: var(--radius-md); color: var(--color-accent); font-size: 15px; cursor: pointer;" style-hover="background: color-mix(in srgb, var(--color-accent) 10%, transparent);"><i class="ph ph-caret-left" style="font-size: 20px;"></i>Turniej</div>
+                  <div onClick="{{ openEditCategoryDialog }}" style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer;" style-hover="filter: brightness(1.2);"><i class="ph ph-pencil-simple"></i></div>
+                </div>
+                <div style="font-size: 12.5px; color: var(--color-neutral-400);">{{ currentCategory.style }} · {{ currentCategory.level }} · {{ currentCategory.ageGroup }}</div>
+                <h1 style="font-size: 26px; line-height: 1.2; margin: 4px 0 10px; text-wrap: pretty;">{{ currentCategory.name }}</h1>
+                <div>
+                  <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 11.5px; white-space: nowrap; background: {{ currentCategory.pillBg }}; color: {{ currentCategory.pillColor }}; box-shadow: {{ currentCategory.pillRing }};"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ currentCategory.pillDot }};"></span>{{ currentCategory.statusLabel }}</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; margin: 18px 0 18px; border-radius: 11px; background: var(--color-surface); box-shadow: var(--shadow-sm);">
+                  <div onClick="{{ goTabCriteria }}" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 4px; border-radius: var(--radius-md); font-size: 13px; cursor: pointer; white-space: nowrap; background: {{ tabK.bg }}; color: {{ tabK.color }}; box-shadow: {{ tabK.ring }};">Kryteria <span style="font-size: 11px; opacity: 0.7; font-variant-numeric: tabular-nums;">{{ criteriaCount }}</span></div>
+                  <div onClick="{{ goTabParticipants }}" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 4px; border-radius: var(--radius-md); font-size: 13px; cursor: pointer; white-space: nowrap; background: {{ tabU.bg }}; color: {{ tabU.color }}; box-shadow: {{ tabU.ring }};">Zawodniczki <span style="font-size: 11px; opacity: 0.7; font-variant-numeric: tabular-nums;">{{ participantCount }}</span></div>
+                  <div onClick="{{ goTabRanking }}" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 4px; border-radius: var(--radius-md); font-size: 13px; cursor: pointer; white-space: nowrap; background: {{ tabW.bg }}; color: {{ tabW.color }}; box-shadow: {{ tabW.ring }};">Wyniki</div>
+                </div>
+
+                <div style="flex: 1; padding-bottom: 16px;">
+                  <sc-if value="{{ tabKryteria }}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                      <div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin: 0 4px 8px;">
+                          <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400);">Kryteria oceny</div>
+                          <div class="btn btn-ghost" onClick="{{ openAddCriterion }}" style="font-size: 13px;"><i class="ph ph-plus"></i>Dodaj</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1px; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-divider); box-shadow: var(--shadow-sm);">
+                          <sc-for list="{{ criteriaList }}" as="k" hint-placeholder-count="5">
+                            <div onClick="{{ k.openHandler }}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; background: var(--color-surface); cursor: pointer;" style-hover="filter: brightness(1.12);">
+                              <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ k.name }}</div>
+                                <div style="font-size: 12px; color: var(--color-neutral-400); margin-top: 2px;">Skala 0–{{ k.scale }}</div>
+                              </div>
+                              <span style="padding: 3px 8px; border-radius: 6px; font-size: 12px; background: var(--color-accent-900); color: var(--color-accent-300); font-variant-numeric: tabular-nums;">×{{ k.weightText }}</span>
+                              <i class="ph ph-caret-right" style="color: var(--color-neutral-600);"></i>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-neutral-400); margin: 8px 4px 0;"><i class="ph ph-info"></i>Maksymalny wynik sędziego: {{ maxScoreText }} pkt</div>
+                      </div>
+                      <div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin: 0 4px 8px;">
+                          <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400);">Kary punktowe</div>
+                          <div class="btn btn-ghost" onClick="{{ openAddPenalty }}" style="font-size: 13px;"><i class="ph ph-plus"></i>Dodaj</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1px; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-divider); box-shadow: var(--shadow-sm);">
+                          <sc-for list="{{ penaltiesList }}" as="p" hint-placeholder-count="2">
+                            <div onClick="{{ p.openHandler }}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; background: var(--color-surface); cursor: pointer;" style-hover="filter: brightness(1.12);">
+                              <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.name }}</div>
+                                <div style="font-size: 12px; color: var(--color-neutral-400); margin-top: 2px;">maks. {{ p.max }}× na występ</div>
+                              </div>
+                              <span style="padding: 3px 8px; border-radius: 6px; font-size: 12px; background: var(--color-neutral-900); color: var(--color-neutral-200); font-variant-numeric: tabular-nums; white-space: nowrap;">−{{ p.valueText }} pkt</span>
+                              <i class="ph ph-caret-right" style="color: var(--color-neutral-600);"></i>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ tabUczestniczki }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin: 0 4px 8px;">
+                        <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400);">Lista startowa</div>
+                        <div class="btn btn-ghost" onClick="{{ openAddParticipant }}" style="font-size: 13px;"><i class="ph ph-plus"></i>Dodaj</div>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 1px; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-divider); box-shadow: var(--shadow-sm);">
+                        <sc-for list="{{ participantsList }}" as="p" hint-placeholder-count="4">
+                          <div style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; background: var(--color-surface);">
+                            <div style="width: 38px; height: 38px; border-radius: 11px; background: var(--color-accent-900); color: var(--color-accent-200); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0;">{{ p.number }}</div>
+                            <div style="flex: 1; min-width: 0;">
+                              <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.name }}</div>
+                              <div style="font-size: 12px; color: var(--color-neutral-400); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.club }}</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; color: {{ p.iconColor }};"><i class="{{ p.iconClass }}" style="font-size: 16px;"></i>{{ p.judgedLabel }}</div>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <sc-if value="{{ hasNoParticipants }}" hint-placeholder-val="{{ false }}">
+                        <div style="padding: 24px 16px; text-align: center; font-size: 13px; color: var(--color-neutral-400);">Lista startowa jest pusta.</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ tabWyniki }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400); margin: 0 4px 8px;">Ranking na żywo</div>
+                      <div style="display: flex; flex-direction: column; gap: 1px; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-divider); box-shadow: var(--shadow-sm);">
+                        <sc-for list="{{ rankingRows }}" as="row" hint-placeholder-count="4">
+                          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--color-surface);">
+                            <div style="width: 26px; text-align: center; font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0; color: {{ row.rankColor }};">{{ row.rank }}</div>
+                            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+                              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+                                <div style="font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ row.name }}</div>
+                                <div style="font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ row.total }}</div>
+                              </div>
+                              <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--color-neutral-400);">
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">#{{ row.number }} · {{ row.club }}</span>
+                                <span style="white-space: nowrap;">{{ row.judgesLabel }}</span>
+                              </div>
+                              <div style="height: 3px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden;"><div style="height: 100%; border-radius: 2px; width: {{ row.barPct }}%; background: {{ row.barColor }};"></div></div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div style="display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.45; color: var(--color-neutral-400); margin: 10px 4px 0; text-wrap: pretty;"><i class="ph ph-info" style="margin-top: 2px;"></i>Wynik = średnia sędziów z (kryterium × waga − kary). Remis rozstrzyga wyższa ocena za Technikę.</div>
+                    </div>
+                  </sc-if>
+                </div>
+
+                <div style="position: sticky; bottom: 0; margin: 0 -16px; padding: 18px 16px 34px; background: linear-gradient(to top, var(--color-bg) 72%, transparent);">
+                  <sc-if value="{{ categoryNotStarted }}" hint-placeholder-val="{{ false }}">
+                    <div class="btn btn-primary" onClick="{{ startCategoryHandler }}" style="width: 100%; height: 48px; font-size: 15px; background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg));"><i class="ph ph-play" style="font-size: 17px;"></i>Rozpocznij kategorię</div>
+                  </sc-if>
+                  <sc-if value="{{ categoryStarted }}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; gap: 8px;">
+                      <div class="btn btn-secondary" onClick="{{ toggleLockHandler }}" style="flex: 1; height: 48px; font-size: 14px; background: var(--color-bg);"><i class="{{ lockIconClass }}" style="font-size: 17px;"></i>{{ lockButtonLabel }}</div>
+                      <div class="btn btn-primary" onClick="{{ exportCategoryHandler }}" style="flex: 1; height: 48px; font-size: 14px; background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg));"><i class="ph ph-file-pdf" style="font-size: 17px;"></i>Eksport PDF</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+          </div>
+
+          <sc-if value="{{ splashAdminVisible }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 48px 24px; background: radial-gradient(420px 420px at 50% 38%, color-mix(in srgb, var(--color-accent-900) 85%, transparent), transparent 70%), var(--color-bg); opacity: {{ splashAdminOpacity }}; transition: opacity 0.5s ease;">
+              {{ splashArtPhone }}
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; animation: pcRise 0.6s 0.2s ease both;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 20px;"><i class="ph ph-trophy"></i></div>
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 30px; letter-spacing: -0.02em;">PoleChamp</div>
+                </div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-400);">System oceniania zawodów pole dance</div>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; animation: pcRise 0.6s 0.35s ease both;">
+                <div style="width: 160px; height: 3px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden;">{{ splashBar }}</div>
+                <div style="height: 16px; font-size: 12px; color: var(--color-neutral-400);">{{ splashStatus }}</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showEndTournamentConfirm }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 60; display: flex; flex-direction: column; justify-content: flex-end; background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); animation: pcFade 0.18s ease;">
+              <div onClick="{{ cancelEndTournament }}" style="flex: 1;"></div>
+              <div style="padding: 8px 18px 34px; border-radius: 22px 22px 0 0; background: var(--color-surface); box-shadow: var(--shadow-md); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; animation: pcSheet 0.26s cubic-bezier(.2,.8,.2,1);">
+                <div style="width: 36px; height: 5px; border-radius: 3px; background: var(--color-neutral-700);"></div>
+                <div style="width: 52px; height: 52px; border-radius: 50%; margin-top: 8px; background: var(--color-accent-900); color: var(--color-accent-300); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="ph ph-flag-checkered"></i></div>
+                <div style="font-family: var(--font-heading); font-weight: 500; font-size: 20px;">Zakończyć turniej?</div>
+                <div style="font-size: 14px; line-height: 1.5; color: var(--color-neutral-300); text-wrap: pretty;">„{{ tournamentName }}” zostanie zamknięty, a wyniki zapisane jako ostateczne.</div>
+                <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px;">
+                  <div class="btn btn-primary" onClick="{{ confirmEndTournament }}" style="height: 48px; font-size: 15px;">Zakończ turniej</div>
+                  <div class="btn btn-secondary" onClick="{{ cancelEndTournament }}" style="height: 48px; font-size: 15px;">Anuluj</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showNewTournamentDialog }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); animation: pcFade 0.18s ease;">
+              <div onClick="{{ closeNewTournamentDialog }}" style="flex: 1;"></div>
+              <div data-scroll="" style="max-height: 88%; overflow-y: auto; padding: 8px 18px 34px; border-radius: 22px 22px 0 0; background: var(--color-surface); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 14px; animation: pcSheet 0.26s cubic-bezier(.2,.8,.2,1);">
+                <div style="width: 36px; height: 5px; border-radius: 3px; background: var(--color-neutral-700); align-self: center;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 20px;">Nowy turniej</div>
+                  <div onClick="{{ closeNewTournamentDialog }}" style="width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-800); color: var(--color-neutral-300); display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="ph ph-x"></i></div>
+                </div>
+                <div class="field"><label>Nazwa turnieju</label><input class="input" value="{{ newTournamentForm.name }}" onChange="{{ onTourNameChange }}" placeholder="np. Wiosenny Puchar PoleChamp" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px;">
+                  <div class="field"><label>Data</label><input class="input" value="{{ newTournamentForm.date }}" onChange="{{ onTourDateChange }}" placeholder="12 kwietnia 2027" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                  <div class="field"><label>Miejsce</label><input class="input" value="{{ newTournamentForm.place }}" onChange="{{ onTourPlaceChange }}" placeholder="Poznań, Arena" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                </div>
+                <div class="btn btn-primary" onClick="{{ submitNewTournament }}" style="height: 48px; font-size: 15px; margin-top: 4px;">Utwórz turniej</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ catSheetOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); animation: pcFade 0.18s ease;">
+              <div onClick="{{ closeCatSheet }}" style="flex: 1;"></div>
+              <div data-scroll="" style="max-height: 88%; overflow-y: auto; padding: 8px 18px 34px; border-radius: 22px 22px 0 0; background: var(--color-surface); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 14px; animation: pcSheet 0.26s cubic-bezier(.2,.8,.2,1);">
+                <div style="width: 36px; height: 5px; border-radius: 3px; background: var(--color-neutral-700); align-self: center;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 20px;">{{ catSheetTitle }}</div>
+                  <div onClick="{{ closeCatSheet }}" style="width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-800); color: var(--color-neutral-300); display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="ph ph-x"></i></div>
+                </div>
+                <div class="field"><label>Nazwa</label><input class="input" value="{{ catForm.name }}" onChange="{{ onCatNameChange }}" placeholder="np. Pole Sport Beginner" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                <div class="field"><label>Styl</label>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <sc-for list="{{ catStyleChips }}" as="c" hint-placeholder-count="4">
+                      <div onClick="{{ c.onClick }}" style="padding: 8px 13px; border-radius: 999px; font-size: 13px; cursor: pointer; background: {{ c.bg }}; color: {{ c.color }}; box-shadow: {{ c.ring }};">{{ c.label }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div class="field"><label>Poziom</label>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <sc-for list="{{ catLevelChips }}" as="c" hint-placeholder-count="5">
+                      <div onClick="{{ c.onClick }}" style="padding: 8px 13px; border-radius: 999px; font-size: 13px; cursor: pointer; background: {{ c.bg }}; color: {{ c.color }}; box-shadow: {{ c.ring }};">{{ c.label }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div class="field"><label>Grupa wiekowa</label><input class="input" value="{{ catForm.ageGroup }}" onChange="{{ onCatAgeChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                <div class="btn btn-primary" onClick="{{ submitCatSheet }}" style="height: 48px; font-size: 15px; margin-top: 4px;">{{ catSheetSubmitLabel }}</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showAddCriterion }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); animation: pcFade 0.18s ease;">
+              <div onClick="{{ closeAddCriterion }}" style="flex: 1;"></div>
+              <div data-scroll="" style="max-height: 88%; overflow-y: auto; padding: 8px 18px 34px; border-radius: 22px 22px 0 0; background: var(--color-surface); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 14px; animation: pcSheet 0.26s cubic-bezier(.2,.8,.2,1);">
+                <div style="width: 36px; height: 5px; border-radius: 3px; background: var(--color-neutral-700); align-self: center;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 20px;">{{ criterionDialogTitle }}</div>
+                  <div onClick="{{ closeAddCriterion }}" style="width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-800); color: var(--color-neutral-300); display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="ph ph-x"></i></div>
+                </div>
+                <div class="field"><label>Nazwa kryterium</label><input class="input" value="{{ newCriterionForm.name }}" onChange="{{ onCritNameChange }}" placeholder="np. Technika" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px;">
+                  <div class="field"><label>Skala (0–max)</label><input class="input" type="number" min="1" max="20" value="{{ newCriterionForm.scale }}" onChange="{{ onCritScaleChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                  <div class="field"><label>Waga</label><input class="input" type="number" step="0.5" min="0.5" max="5" value="{{ newCriterionForm.weight }}" onChange="{{ onCritWeightChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                </div>
+                <div class="field"><label>Opis dla sędziów</label><input class="input" value="{{ newCriterionForm.desc }}" onChange="{{ onCritDescChange }}" placeholder="Opcjonalnie" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                <div class="btn btn-primary" onClick="{{ submitNewCriterion }}" style="height: 48px; font-size: 15px; margin-top: 4px;">Zapisz</div>
+                <sc-if value="{{ isEditingCriterion }}" hint-placeholder-val="{{ false }}">
+                  <div class="btn btn-secondary" onClick="{{ deleteEditingCriterion }}" style="height: 48px; font-size: 15px; width: 100%; color: var(--color-neutral-300);"><i class="ph ph-trash"></i>Usuń kryterium</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showAddPenalty }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); animation: pcFade 0.18s ease;">
+              <div onClick="{{ closeAddPenalty }}" style="flex: 1;"></div>
+              <div data-scroll="" style="max-height: 88%; overflow-y: auto; padding: 8px 18px 34px; border-radius: 22px 22px 0 0; background: var(--color-surface); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 14px; animation: pcSheet 0.26s cubic-bezier(.2,.8,.2,1);">
+                <div style="width: 36px; height: 5px; border-radius: 3px; background: var(--color-neutral-700); align-self: center;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 20px;">{{ penaltyDialogTitle }}</div>
+                  <div onClick="{{ closeAddPenalty }}" style="width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-800); color: var(--color-neutral-300); display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="ph ph-x"></i></div>
+                </div>
+                <div class="field"><label>Nazwa kary</label><input class="input" value="{{ newPenaltyForm.name }}" onChange="{{ onPenNameChange }}" placeholder="np. Upadek" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px;">
+                  <div class="field"><label>Punkty za 1 raz</label><input class="input" type="number" step="0.5" min="0.5" value="{{ newPenaltyForm.value }}" onChange="{{ onPenValueChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                  <div class="field"><label>Maks. wystąpień</label><input class="input" type="number" min="1" max="10" value="{{ newPenaltyForm.max }}" onChange="{{ onPenMaxChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                </div>
+                <div class="btn btn-primary" onClick="{{ submitNewPenalty }}" style="height: 48px; font-size: 15px; margin-top: 4px;">Zapisz</div>
+                <sc-if value="{{ isEditingPenalty }}" hint-placeholder-val="{{ false }}">
+                  <div class="btn btn-secondary" onClick="{{ deleteEditingPenalty }}" style="height: 48px; font-size: 15px; width: 100%; color: var(--color-neutral-300);"><i class="ph ph-trash"></i>Usuń karę</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showAddParticipant }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); animation: pcFade 0.18s ease;">
+              <div onClick="{{ closeAddParticipant }}" style="flex: 1;"></div>
+              <div data-scroll="" style="max-height: 88%; overflow-y: auto; padding: 8px 18px 34px; border-radius: 22px 22px 0 0; background: var(--color-surface); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 14px; animation: pcSheet 0.26s cubic-bezier(.2,.8,.2,1);">
+                <div style="width: 36px; height: 5px; border-radius: 3px; background: var(--color-neutral-700); align-self: center;"></div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 20px;">Nowa zawodniczka</div>
+                  <div onClick="{{ closeAddParticipant }}" style="width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-800); color: var(--color-neutral-300); display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="ph ph-x"></i></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px;">
+                  <div class="field"><label>Nr startowy</label><input class="input" type="number" value="{{ newParticipantForm.number }}" onChange="{{ onPartNumberChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                  <div class="field"><label>Imię i nazwisko</label><input class="input" value="{{ newParticipantForm.name }}" onChange="{{ onPartNameChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                </div>
+                <div class="field"><label>Klub / szkoła</label><input class="input" value="{{ newParticipantForm.club }}" onChange="{{ onPartClubChange }}" style="min-height: 44px; font-size: 15px; background: var(--color-bg);" /></div>
+                <div class="btn btn-primary" onClick="{{ submitNewParticipant }}" style="height: 48px; font-size: 15px; margin-top: 4px;">Dodaj do listy</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showExportDialog }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent); animation: pcFade 0.18s ease;">
+              <div onClick="{{ closeExportDialog }}" style="flex: 1; min-height: 60px;"></div>
+              <div style="max-height: 86%; display: flex; flex-direction: column; border-radius: 22px 22px 0 0; background: var(--color-surface); box-shadow: var(--shadow-md); animation: pcSheet 0.26s cubic-bezier(.2,.8,.2,1);">
+                <div style="padding: 8px 18px 12px; display: flex; flex-direction: column; gap: 12px;">
+                  <div style="width: 36px; height: 5px; border-radius: 3px; background: var(--color-neutral-700); align-self: center;"></div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="font-family: var(--font-heading); font-weight: 500; font-size: 20px;">Podgląd PDF</div>
+                    <div onClick="{{ closeExportDialog }}" style="width: 30px; height: 30px; border-radius: 50%; background: var(--color-neutral-800); color: var(--color-neutral-300); display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="ph ph-x"></i></div>
+                  </div>
+                </div>
+                <div data-scroll="" style="flex: 1; overflow-y: auto; margin: 0 14px; padding: 16px; border-radius: var(--radius-lg); background: var(--color-bg); box-shadow: var(--shadow-sm);">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                    <div style="width: 32px; height: 32px; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;"><i class="ph ph-trophy"></i></div>
+                    <div style="min-width: 0;">
+                      <div style="font-size: 14px; font-weight: 500; line-height: 1.3;">{{ tournamentName }}</div>
+                      <div style="font-size: 11.5px; color: var(--color-neutral-400);">{{ tournamentDate }} · {{ tournamentPlace }}</div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ exportIsAll }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                      <sc-for list="{{ exportAllCats }}" as="ec" hint-placeholder-count="3">
+                        <div>
+                          <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">{{ ec.name }}</div>
+                          <table class="table" style="font-size: 12px;">
+                            <tbody>
+                              <sc-for list="{{ ec.rows }}" as="row" hint-placeholder-count="3">
+                                <tr><td style="width: 22px; color: var(--color-neutral-400);">{{ row.rank }}.</td><td>{{ row.name }}</td><td style="text-align: right; font-variant-numeric: tabular-nums; color: var(--color-accent-300);">{{ row.total }}</td></tr>
+                              </sc-for>
+                            </tbody>
+                          </table>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ exportIsCategory }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">{{ exportTitle }} · {{ exportSubtitle }}</div>
+                      <table class="table" style="font-size: 12px;">
+                        <thead><tr><th>#</th><th>Zawodniczka</th><th style="text-align: right;">Wynik</th></tr></thead>
+                        <tbody>
+                          <sc-for list="{{ exportRows }}" as="row" hint-placeholder-count="4">
+                            <tr><td style="width: 22px; color: var(--color-neutral-400);">{{ row.rank }}.</td><td>{{ row.name }}<div style="font-size: 11px; color: var(--color-neutral-400);">{{ row.club }}</div></td><td style="text-align: right; font-variant-numeric: tabular-nums; color: var(--color-accent-300);">{{ row.total }}</td></tr>
+                          </sc-for>
+                        </tbody>
+                      </table>
+                    </div>
+                  </sc-if>
+                </div>
+                <div style="padding: 14px 18px 34px;">
+                  <div class="btn btn-primary" onClick="{{ downloadExportPdf }}" style="width: 100%; height: 48px; font-size: 15px;"><i class="ph ph-download-simple" style="font-size: 17px;"></i>Pobierz PDF</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </x-import>
+    </sc-if>
+
+    <sc-if value="{{ isJudge }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 1100px; max-width: 100%; padding: 16px; border-radius: 40px; background: var(--color-neutral-900); box-shadow: 0 0 0 1px var(--color-neutral-800), 0 30px 80px rgba(0,0,0,0.6); position: relative;">
+        <div style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; border-radius: 50%; background: var(--color-neutral-800);"></div>
+        <div data-screen-label="Judge" style="height: 720px; border-radius: 24px; overflow: hidden; position: relative; display: flex; flex-direction: column; background: var(--color-bg);">
+
+          <sc-if value="{{ splashJudgeVisible }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 48px 24px; background: radial-gradient(420px 420px at 50% 38%, color-mix(in srgb, var(--color-accent-900) 85%, transparent), transparent 70%), var(--color-bg); opacity: {{ splashJudgeOpacity }}; transition: opacity 0.5s ease;">
+              {{ splashArtTablet }}
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; animation: pcRise 0.6s 0.2s ease both;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 20px;"><i class="ph ph-trophy"></i></div>
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 30px; letter-spacing: -0.02em;">PoleChamp</div>
+                </div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-400);">Panel sędziego</div>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; animation: pcRise 0.6s 0.35s ease both;">
+                <div style="width: 160px; height: 3px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden;">{{ splashBar }}</div>
+                <div style="height: 16px; font-size: 12px; color: var(--color-neutral-400);">{{ splashStatus }}</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showJudgeLogin }}" hint-placeholder-val="{{ true }}">
+            <div data-scroll="" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; background: radial-gradient(700px 420px at 50% -5%, var(--color-accent-900), transparent 70%);">
+              <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; align-items: center; gap: 28px;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+                  <div style="width: 48px; height: 48px; border-radius: 14px; box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 24px;"><i class="ph ph-gavel"></i></div>
+                  <h1 style="font-size: 28px; margin: 4px 0 0;">Panel sędziego</h1>
+                  <div style="font-size: 14px; color: var(--color-neutral-400);">{{ tournamentName }}</div>
+                </div>
+
+                <sc-if value="{{ judgeLoginStepSelect }}" hint-placeholder-val="{{ true }}">
+                  <div style="width: 100%; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400); text-align: center;">Wybierz swój profil</div>
+                    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+                      <sc-for list="{{ judgeList }}" as="j" hint-placeholder-count="3">
+                        <div onClick="{{ j.openHandler }}" style="padding: 22px 14px; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; cursor: pointer;" style-hover="box-shadow: 0 0 0 1px var(--color-accent);">
+                          <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-accent-900); color: var(--color-accent-200); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 500;">{{ j.initials }}</div>
+                          <div style="font-size: 15px; font-weight: 500;">{{ j.name }}</div>
+                          <div style="font-size: 12px; color: var(--color-neutral-400);">Sędzia</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ judgeLoginStepPin }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 18px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--color-accent-900); color: var(--color-accent-200); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500;">{{ judgeSelectedInitials }}</div>
+                      <div>
+                        <div style="font-size: 15px; font-weight: 500;">{{ judgeSelectedName }}</div>
+                        <div style="font-size: 12.5px; color: var(--color-neutral-400);">Wpisz 4-cyfrowy PIN</div>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 16px; height: 14px;">
+                      <sc-for list="{{ pinDots }}" as="d" hint-placeholder-count="4">
+                        <div style="width: 14px; height: 14px; border-radius: 50%; background: {{ d.bg }}; box-shadow: {{ d.ring }};"></div>
+                      </sc-for>
+                    </div>
+                    <div style="height: 18px; font-size: 13px; color: var(--color-accent-300); display: flex; align-items: center; gap: 6px;">
+                      <sc-if value="{{ pinError }}" hint-placeholder-val="{{ false }}">
+                        <span style="display: inline-flex; align-items: center; gap: 6px;"><i class="ph ph-warning-circle"></i>Nieprawidłowy PIN — spróbuj ponownie</span>
+                      </sc-if>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 76px); gap: 14px 22px;">
+                      <sc-for list="{{ keypadKeys }}" as="key" hint-placeholder-count="12">
+                        <div onClick="{{ key.handler }}" style="width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 500; cursor: pointer; user-select: none; background: {{ key.bg }}; box-shadow: {{ key.ring }}; visibility: {{ key.visibility }};" style-hover="filter: brightness(1.2);" style-active="filter: brightness(1.5);"><i class="{{ key.iconClass }}"></i>{{ key.label }}</div>
+                      </sc-for>
+                    </div>
+                    <div class="btn btn-ghost" onClick="{{ backToJudgeSelect }}" style="font-size: 14px;"><i class="ph ph-caret-left"></i>Zmień sędziego</div>
+                    <sc-if value="{{ showPinHint }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-size: 12px; color: var(--color-neutral-500);">{{ pinHintText }}</div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ judgeLoggedIn }}" hint-placeholder-val="{{ false }}">
+            <div style="height: 60px; flex-shrink: 0; display: flex; align-items: center; gap: 14px; padding: 0 20px; background: linear-gradient(to right, transparent, var(--color-divider) 48px, var(--color-divider) calc(100% - 48px), transparent) no-repeat bottom / 100% 1px;">
+              <div style="width: 30px; height: 30px; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;"><i class="ph ph-gavel"></i></div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 11.5px; color: var(--color-neutral-400);">Panel sędziego</div>
+                <div style="font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ tournamentName }}</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--color-surface); box-shadow: var(--shadow-sm);">
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-accent-900); color: var(--color-accent-200); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500;">{{ currentJudgeInitials }}</div>
+                <div style="font-size: 13px; white-space: nowrap;">{{ currentJudgeName }}</div>
+              </div>
+              <div onClick="{{ judgeLogout }}" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--color-neutral-300); cursor: pointer;" style-hover="background: color-mix(in srgb, var(--color-text) 8%, transparent);"><i class="ph ph-sign-out"></i></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ judgeScreenCategories }}" hint-placeholder-val="{{ false }}">
+            <div data-scroll="" style="flex: 1; overflow-y: auto; padding: 28px 28px 40px;">
+              <h1 style="font-size: 28px; margin: 0 0 4px;">Dzień dobry, {{ currentJudgeFirstName }}</h1>
+              <div style="font-size: 14px; color: var(--color-neutral-400); margin-bottom: 24px;">Wybierz kategorię, aby rozpocząć ocenianie.</div>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+                <sc-for list="{{ judgeCategoriesList }}" as="cat" hint-placeholder-count="3">
+                  <div onClick="{{ cat.openHandler }}" style="padding: 18px; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 14px; cursor: pointer; opacity: {{ cat.opacity }};" style-hover="filter: brightness(1.12);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                      <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 11.5px; white-space: nowrap; background: {{ cat.pillBg }}; color: {{ cat.pillColor }}; box-shadow: {{ cat.pillRing }};"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ cat.pillDot }};"></span>{{ cat.statusLabel }}</span>
+                      <i class="{{ cat.lockIcon }}" style="font-size: 16px; color: var(--color-neutral-400);"></i>
+                    </div>
+                    <div>
+                      <div style="font-family: var(--font-heading); font-weight: 500; font-size: 18px; line-height: 1.25;">{{ cat.name }}</div>
+                      <div style="font-size: 12.5px; color: var(--color-neutral-400); margin-top: 4px;">{{ cat.style }} · {{ cat.level }}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--color-neutral-400);">
+                      <div style="flex: 1; height: 4px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden;"><div style="height: 100%; border-radius: 2px; background: var(--color-accent); width: {{ cat.progressPct }}%;"></div></div>
+                      <span style="white-space: nowrap; font-variant-numeric: tabular-nums;">{{ cat.progressText }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ judgeNoCategories }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 48px; text-align: center; font-size: 14px; color: var(--color-neutral-400);">Organizator nie dodał jeszcze kategorii do tego turnieju.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ judgeInCategory }}" hint-placeholder-val="{{ false }}">
+            <div style="flex: 1; min-height: 0; display: flex;">
+              <div style="width: 300px; flex-shrink: 0; display: flex; flex-direction: column; background: color-mix(in srgb, var(--color-surface) 45%, var(--color-bg)); box-shadow: inset -1px 0 0 var(--color-divider);">
+                <div style="padding: 14px 16px 14px; display: flex; flex-direction: column; gap: 8px;">
+                  <div onClick="{{ backToJudgeCategories }}" style="display: inline-flex; align-self: flex-start; align-items: center; gap: 2px; margin-left: -6px; padding: 4px 6px; border-radius: var(--radius-md); color: var(--color-accent); font-size: 13.5px; cursor: pointer;" style-hover="background: color-mix(in srgb, var(--color-accent) 10%, transparent);"><i class="ph ph-caret-left" style="font-size: 16px;"></i>Kategorie</div>
+                  <div style="font-family: var(--font-heading); font-weight: 500; font-size: 18px; line-height: 1.25;">{{ judgeCategoryName }}</div>
+                  <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--color-neutral-400);">
+                    <div style="flex: 1; height: 4px; border-radius: 2px; background: var(--color-neutral-800); overflow: hidden;"><div style="height: 100%; border-radius: 2px; background: var(--color-accent); width: {{ judgeProgressPct }}%;"></div></div>
+                    <span style="white-space: nowrap; font-variant-numeric: tabular-nums;">{{ judgeProgressText }}</span>
+                  </div>
+                  <sc-if value="{{ judgeCategoryLocked }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-md); font-size: 12px; background: var(--color-accent-900); color: var(--color-accent-200);"><i class="ph ph-lock-simple" style="font-size: 15px;"></i>Kategoria zablokowana — tylko podgląd</div>
+                  </sc-if>
+                </div>
+                <div data-scroll="" style="flex: 1; overflow-y: auto; padding: 0 10px 16px; display: flex; flex-direction: column; gap: 4px;">
+                  <sc-for list="{{ judgeQueueList }}" as="p" hint-placeholder-count="4">
+                    <div onClick="{{ p.openHandler }}" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px; border-radius: 12px; cursor: pointer; background: {{ p.bg }}; box-shadow: {{ p.ring }};" style-hover="filter: brightness(1.15);">
+                      <div style="width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0; background: {{ p.badgeBg }}; color: {{ p.badgeColor }};">{{ p.number }}</div>
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.name }}</div>
+                        <div style="font-size: 12px; color: var(--color-neutral-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.club }}</div>
+                      </div>
+                      <i class="{{ p.iconClass }}" style="font-size: 18px; color: {{ p.iconColor }};"></i>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+                <sc-if value="{{ judgeNoParticipant }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; color: var(--color-neutral-400); font-size: 14px;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--color-surface); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--color-accent);"><i class="ph ph-hand-pointing"></i></div>
+                    <div>Wybierz zawodniczkę z listy, aby ją ocenić.</div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ judgeScreenScoring }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                    <div data-scroll="" ref="{{ judgeScrollRef }}" style="flex: 1; overflow-y: auto; padding: 22px 26px 24px;">
+                      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 22px;">
+                        <div style="width: 56px; height: 56px; border-radius: 16px; background: var(--color-accent-900); color: var(--color-accent-200); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0;">{{ scoringParticipant.number }}</div>
+                        <div style="flex: 1; min-width: 0;">
+                          <h2 style="font-size: 24px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ scoringParticipant.name }}</h2>
+                          <div style="font-size: 13px; color: var(--color-neutral-400); margin-top: 2px;">{{ scoringParticipant.club }}</div>
+                        </div>
+                        <sc-if value="{{ scoringAlreadyScored }}" hint-placeholder-val="{{ false }}">
+                          <span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 12px; white-space: nowrap; background: var(--color-accent-900); color: var(--color-accent-300);"><i class="ph-fill ph-check-circle"></i>Oceniono</span>
+                        </sc-if>
+                      </div>
+
+                      <div style="display: flex; flex-direction: column; gap: 20px; pointer-events: {{ scoringPointerEvents }}; opacity: {{ scoringOpacity }};">
+                        <div>
+                          <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400); margin-bottom: 10px;">Kryteria</div>
+                          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px;">
+                            <sc-for list="{{ scoringCriteria }}" as="k" hint-placeholder-count="5">
+                              <div style="padding: 16px; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 16px;">
+                                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                                  <div style="min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                                      <span style="font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;">{{ k.name }}</span>
+                                      <span style="padding: 1px 6px; border-radius: 5px; font-size: 11px; white-space: nowrap; flex-shrink: 0; background: var(--color-accent-900); color: var(--color-accent-300); font-variant-numeric: tabular-nums;">×{{ k.weightText }}</span>
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--color-neutral-400); margin-top: 3px;">{{ k.desc }}</div>
+                                  </div>
+                                  <div style="font-size: 30px; font-weight: 500; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--color-accent-200);">{{ k.valueText }}<span style="font-size: 13px; font-weight: 400; color: var(--color-neutral-500);"> /{{ k.scale }}</span></div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                  <div onClick="{{ k.decHandler }}" style="width: 44px; height: 44px; border-radius: 50%; background: var(--color-bg); box-shadow: inset 0 0 0 1px var(--color-divider); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; flex-shrink: 0; user-select: none;" style-hover="filter: brightness(1.4);"><i class="ph ph-minus"></i></div>
+                                  <input type="range" min="0" max="{{ k.scale }}" step="0.5" value="{{ k.value }}" onChange="{{ k.sliderHandler }}" style="flex: 1; min-width: 0; background: linear-gradient(to right, var(--color-accent) {{ k.pct }}%, var(--color-neutral-800) {{ k.pct }}%);" />
+                                  <div onClick="{{ k.incHandler }}" style="width: 44px; height: 44px; border-radius: 50%; background: var(--color-bg); box-shadow: inset 0 0 0 1px var(--color-divider); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; flex-shrink: 0; user-select: none;" style-hover="filter: brightness(1.4);"><i class="ph ph-plus"></i></div>
+                                </div>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div style="font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-neutral-400); margin-bottom: 10px;">Kary</div>
+                          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px;">
+                            <sc-for list="{{ scoringPenalties }}" as="p" hint-placeholder-count="2">
+                              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 16px; border-radius: var(--radius-lg); background: {{ p.bg }}; box-shadow: {{ p.ring }};">
+                                <div style="flex: 1; min-width: 0;">
+                                  <div style="font-size: 15px; font-weight: 500;">{{ p.name }}</div>
+                                  <div style="font-size: 12px; color: var(--color-neutral-400); margin-top: 2px;">−{{ p.valueText }} pkt za każde · maks. {{ p.max }}×</div>
+                                </div>
+                                <div onClick="{{ p.decHandler }}" style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-bg); box-shadow: inset 0 0 0 1px var(--color-divider); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; flex-shrink: 0; user-select: none;" style-hover="filter: brightness(1.4);"><i class="ph ph-minus"></i></div>
+                                <div style="width: 26px; text-align: center; font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums;">{{ p.count }}</div>
+                                <div onClick="{{ p.incHandler }}" style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-bg); box-shadow: inset 0 0 0 1px var(--color-divider); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; user-select: none; cursor: {{ p.incCursor }}; opacity: {{ p.incOpacity }};" style-hover="filter: brightness(1.4);"><i class="ph ph-plus"></i></div>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <label>Komentarz (opcjonalnie)</label>
+                          <textarea class="input" value="{{ comment }}" onChange="{{ onCommentChange }}" placeholder="Krótka notatka do występu…" style="min-height: 76px; font-size: 14px;"></textarea>
+                        </div>
+                      </div>
+                    </div>
+
+                    <sc-if value="{{ judgeCategoryNotLocked }}" hint-placeholder-val="{{ true }}">
+                      <div style="flex-shrink: 0; display: flex; align-items: center; gap: 18px; padding: 14px 26px; background: linear-gradient(to right, transparent, var(--color-divider) 48px, var(--color-divider) calc(100% - 48px), transparent) no-repeat top / 100% 1px, color-mix(in srgb, var(--color-surface) 45%, var(--color-bg));">
+                        <div>
+                          <div style="font-size: 11.5px; color: var(--color-neutral-400);">Twój wynik</div>
+                          <div style="display: flex; align-items: baseline; gap: 6px;">
+                            <span style="font-size: 30px; font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums;">{{ scoringTotal }}</span>
+                            <span style="font-size: 13px; color: var(--color-neutral-500);">/ {{ scoringMax }}</span>
+                          </div>
+                        </div>
+                        <sc-if value="{{ hasScoringPenalties }}" hint-placeholder-val="{{ false }}">
+                          <span style="padding: 4px 10px; border-radius: 999px; font-size: 12px; background: var(--color-neutral-900); color: var(--color-neutral-200); font-variant-numeric: tabular-nums;">kary {{ scoringPenaltyText }}</span>
+                        </sc-if>
+                        <div style="flex: 1;"></div>
+                        <div class="btn btn-primary" onClick="{{ submitScore }}" style="height: 52px; padding: 0 26px; font-size: 16px; background: color-mix(in srgb, var(--color-accent) 10%, transparent);">{{ submitLabel }}<i class="ph ph-arrow-right" style="font-size: 18px;"></i></div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; align-items: center; gap: 8px; padding: 11px 18px 11px 14px; border-radius: 999px; background: var(--color-surface); box-shadow: var(--shadow-md); font-size: 13.5px; white-space: nowrap; animation: pcToast 0.22s ease;"><i class="ph-fill ph-check-circle" style="font-size: 18px; color: var(--color-accent);"></i>{{ toast }}</div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;admin&quot;,&quot;judge&quot;],&quot;default&quot;:&quot;admin&quot;,&quot;tsType&quot;:&quot;'admin' | 'judge'&quot;},&quot;showSplash&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;autoAdvance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;showPinHint&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  adminScrollRef = React.createRef();
+  judgeScrollRef = React.createRef();
+
+  state = {
+    ...this.buildSeed(),
+    view: null,
+    toast: null,
+    splashView: null, splashPhase: null, splashStep: 0, splashKey: 0, splashSeen: {},
+    showNewTournamentDialog: false,
+    newTournamentForm: { name: '', date: '', place: '' },
+    showEndTournamentConfirm: false,
+    adminScreen: 'tournaments',
+    selectedCategoryId: null,
+    categoryTab: 'kryteria',
+    catSheet: null,
+    catForm: { name: '', style: 'Pole Sport', level: 'Beginner', ageGroup: 'Open' },
+    showAddCriterion: false,
+    newCriterionForm: { name: '', scale: 10, weight: 1, desc: '' },
+    editingCriterionId: null,
+    showAddPenalty: false,
+    newPenaltyForm: { name: '', value: 1, max: 3 },
+    editingPenaltyId: null,
+    showAddParticipant: false,
+    newParticipantForm: { number: '', name: '', club: '' },
+    showExportDialog: false,
+    exportScope: null,
+    judgeLoginStep: 'select',
+    judgeSelectedId: null,
+    pinInput: '',
+    pinError: false,
+    judgeLoggedInId: null,
+    judgeScreen: 'categories',
+    judgeCategoryId: null,
+    judgeParticipantId: null,
+    scoreDraft: null,
+  };
+
+  buildSeed() {
+    let seed = 20260914;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+    const half = (v) => Math.round(v * 2) / 2;
+    const first = ['Julia','Zofia','Maja','Hanna','Lena','Alicja','Oliwia','Amelia','Wiktoria','Natalia','Emilia','Aleksandra','Zuzanna','Laura','Pola','Nikola','Gabriela','Antonina','Marta','Karolina','Weronika','Magdalena','Agnieszka','Paulina','Klaudia','Sara','Iga','Kinga','Ewa','Monika','Dominika','Patrycja','Joanna','Barbara','Ida'];
+    const last = ['Kamińska','Zielińska','Wójcik','Lewandowska','Kowalczyk','Szymańska','Dąbrowska','Kaczmarek','Piotrowska','Mazur','Krawczyk','Grabowska','Pawlak','Michalska','Nowicka','Adamczyk','Dudek','Wieczorek','Jabłońska','Król','Majewska','Olszewska','Stępień','Malinowska','Jaworska','Witkowska','Walczak','Rutkowska','Sikora','Baran','Szewczyk','Ostrowska','Tomaszewska','Pietrzak','Marciniak'];
+    const clubs = ['Aerial Dreams Warszawa','PoleFit Kraków','Studio Vertical Wrocław','Pole Passion Gdańsk','Spin City Poznań','Up&Down Łódź','Pole Art Studio Katowice','Fly High Lublin','Gravity Szczecin','Pole Dance Academy Rzeszów','Vertigo Bydgoszcz','Twist Studio Toruń'];
+    const comments = ['Bardzo pewny występ.','Świetna muzykalność.','Czyste przejścia.','Brakowało energii w końcówce.','Mocne elementy siłowe.','Ciekawa choreografia.','Drobne niedociągnięcia w spinach.','Piękna linia nóg.','Do poprawy praca na podłodze.','Znakomity kontakt z publicznością.'];
+    const judges = [
+      { id: 'jA', name: 'Katarzyna Nowak', pin: '1234' },
+      { id: 'jB', name: 'Michał Woźniak', pin: '2345' },
+      { id: 'jC', name: 'Aleksandra Kot', pin: '3456' },
+      { id: 'jD', name: 'Tomasz Zając', pin: '4567' },
+      { id: 'jE', name: 'Joanna Wrona', pin: '5678' },
+    ];
+    const tournaments = [
+      { id: 't1', name: 'Mistrzostwa Polski Pole Sport 2026', date: '3–4 października 2026', place: 'Warszawa, Hala Torwar', status: 'trwa' },
+      { id: 't2', name: 'Puchar Wiosny PoleChamp', date: '18 kwietnia 2027', place: 'Poznań, Arena', status: 'przygotowanie' },
+      { id: 't3', name: 'Zimowy Puchar PoleChamp', date: '8 lutego 2026', place: 'Kraków, Tauron Arena', status: 'zakończona' },
+      { id: 't4', name: 'Otwarte Mistrzostwa Śląska', date: '22 listopada 2025', place: 'Katowice, Spodek', status: 'zakończona' },
+    ];
+    const defs = [
+      ['t1', 'Pole Sport Beginner', 'Pole Sport', 'Beginner', 'Senior 18+', 'zakończona', 9],
+      ['t1', 'Pole Sport Intermediate', 'Pole Sport', 'Intermediate', 'Senior 18+', 'zakończona', 10],
+      ['t1', 'Pole Sport Advanced', 'Pole Sport', 'Advanced', 'Senior 18+', 'trwa', 9],
+      ['t1', 'Pole Sport Junior', 'Pole Sport', 'Intermediate', 'Junior 12–15', 'trwa', 7],
+      ['t1', 'Pole Art Intermediate', 'Pole Art', 'Intermediate', 'Open', 'trwa', 8],
+      ['t1', 'Pole Art Masters', 'Pole Art', 'Advanced', 'Masters 40+', 'przygotowanie', 5],
+      ['t1', 'Exotic Pro', 'Exotic', 'Pro', 'Open', 'przygotowanie', 7],
+      ['t1', 'Exotic Elite', 'Exotic', 'Elite', 'Open', 'przygotowanie', 6],
+      ['t2', 'Pole Sport Beginner', 'Pole Sport', 'Beginner', 'Senior 18+', 'przygotowanie', 8],
+      ['t2', 'Pole Art Advanced', 'Pole Art', 'Advanced', 'Open', 'przygotowanie', 6],
+      ['t2', 'Exotic Intermediate', 'Exotic', 'Intermediate', 'Open', 'przygotowanie', 6],
+      ['t3', 'Pole Sport Beginner', 'Pole Sport', 'Beginner', 'Senior 18+', 'zakończona', 10],
+      ['t3', 'Pole Sport Advanced', 'Pole Sport', 'Advanced', 'Senior 18+', 'zakończona', 8],
+      ['t3', 'Pole Art Open', 'Pole Art', 'Intermediate', 'Open', 'zakończona', 9],
+      ['t3', 'Exotic Pro', 'Exotic', 'Pro', 'Open', 'zakończona', 6],
+      ['t4', 'Pole Sport Intermediate', 'Pole Sport', 'Intermediate', 'Senior 18+', 'zakończona', 8],
+      ['t4', 'Pole Art Advanced', 'Pole Art', 'Advanced', 'Open', 'zakończona', 7],
+      ['t4', 'Exotic Elite', 'Exotic', 'Elite', 'Open', 'zakończona', 5],
+    ];
+    const levelBase = { Beginner: 6.2, Intermediate: 7, Advanced: 7.7, Pro: 8.1, Elite: 8.5 };
+    const used = new Set();
+    const participants = {}, categories = [], scores = {};
+    let uid = 1;
+    const newParticipant = () => {
+      let name;
+      do { name = pick(first) + ' ' + pick(last); } while (used.has(name));
+      used.add(name);
+      const id = 'u' + uid++;
+      participants[id] = { id, number: 0, name, club: pick(clubs) };
+      return id;
+    };
+    defs.forEach(([tid, name, style, level, ageGroup, status, count], ci) => {
+      const id = 'c' + (ci + 1);
+      const criteria = this.defaultCriteria(id);
+      if (style === 'Exotic') criteria.splice(3, 0, { id: id + '_k6', name: 'Praca na podłodze', scale: 10, weight: 1, desc: 'Floorwork i przejścia parterowe' });
+      const pids = [];
+      for (let i = 0; i < count; i++) pids.push(newParticipant());
+      const startNo = 1 + ci * 20;
+      pids.forEach((pid, i) => { participants[pid].number = startNo + i; });
+      categories.push({ id, tournamentId: tid, name, style, level, ageGroup, status, locked: status === 'zakończona', participantIds: pids, criteria, penalties: this.defaultPenalties(id) });
+      scores[id] = {};
+      if (status === 'przygotowanie') return;
+      pids.forEach((pid, i) => {
+        let judgeSet;
+        if (status === 'zakończona' || i < Math.ceil(count * 0.5)) judgeSet = judges;
+        else if (i < Math.ceil(count * 0.75)) judgeSet = judges.slice(1, 1 + 1 + Math.floor(rnd() * (judges.length - 2)));
+        else judgeSet = [];
+        if (!judgeSet.length) return;
+        const skill = levelBase[level] + (rnd() - 0.5) * 2.4;
+        const fell = rnd() < 0.14 ? (rnd() < 0.25 ? 2 : 1) : 0;
+        const overtime = rnd() < 0.08 ? 1 : 0;
+        scores[id][pid] = {};
+        judgeSet.forEach(j => {
+          const bias = (rnd() - 0.5) * 0.6;
+          const vals = {};
+          criteria.forEach(k => { vals[k.id] = Math.min(k.scale, Math.max(0, half(skill + bias + (rnd() - 0.5) * 1.4))); });
+          scores[id][pid][j.id] = { vals, pens: { [id + '_p1']: fell, [id + '_p2']: overtime }, comment: rnd() < 0.3 ? pick(comments) : '' };
+        });
+      });
+    });
+    return { tournaments, currentTournamentId: 't1', judges, participants, categories, scores, idSeq: 1000 };
+  }
+
+  defaultCriteria(p) {
+    return [
+      { id: p + '_k1', name: 'Technika', scale: 10, weight: 2, desc: 'Siła, elementy na rurze' },
+      { id: p + '_k2', name: 'Artyzm / interpretacja muzyki', scale: 10, weight: 1.5, desc: 'Muzykalność i wyraz' },
+      { id: p + '_k3', name: 'Choreografia', scale: 10, weight: 1, desc: 'Struktura i pomysłowość układu' },
+      { id: p + '_k4', name: 'Płynność i przejścia', scale: 10, weight: 1, desc: 'Płynność ruchu i transferów' },
+      { id: p + '_k5', name: 'Wrażenie ogólne', scale: 10, weight: 1, desc: 'Ogólne wrażenie sceniczne' },
+    ];
+  }
+  defaultPenalties(p) {
+    return [ { id: p + '_p1', name: 'Upadek', value: 2, max: 3 }, { id: p + '_p2', name: 'Przekroczenie czasu', value: 1, max: 2 } ];
+  }
+
+  componentDidUpdate() {
+    const s = this.state;
+    const adminKey = s.adminScreen + '|' + s.selectedCategoryId;
+    if (this._lastAdminKey !== undefined && this._lastAdminKey !== adminKey && this.adminScrollRef.current) this.adminScrollRef.current.scrollTop = 0;
+    this._lastAdminKey = adminKey;
+    if (this._lastJudgeP !== undefined && this._lastJudgeP !== s.judgeParticipantId && this.judgeScrollRef.current) this.judgeScrollRef.current.scrollTop = 0;
+    this._lastJudgeP = s.judgeParticipantId;
+  }
+
+  fmt(n) { return (Math.round(n * 10) / 10).toFixed(1).replace('.', ','); }
+  fmtShort(n) { return String(Number(n)).replace('.', ','); }
+  plural(n, one, few, many) {
+    if (n === 1) return one;
+    const m10 = n % 10, m100 = n % 100;
+    return (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) ? few : many;
+  }
+  getCategory(id) { return this.state.categories.find(c => c.id === id); }
+  maxScore(cat) { return cat.criteria.reduce((a, k) => a + k.scale * k.weight, 0); }
+  judgedCount(cat, pid) { const e = (this.state.scores[cat.id] || {})[pid] || {}; return this.state.judges.filter(j => e[j.id]).length; }
+  catProgress(cat) {
+    const exp = cat.participantIds.length * this.state.judges.length;
+    const done = cat.participantIds.reduce((a, pid) => a + this.judgedCount(cat, pid), 0);
+    return { done, exp, pct: exp ? Math.round(done / exp * 100) : 0 };
+  }
+
+  showToast = (msg) => {
+    this.setState({ toast: msg });
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toast: null }), 2200);
+  };
+
+  goAdminView = () => { this.setState({ view: 'admin' }); this.maybeSplash('admin'); };
+  goJudgeView = () => { this.setState({ view: 'judge' }); this.maybeSplash('judge'); };
+
+  currentView() { return this.state.view || (this.props.startView ?? 'admin'); }
+  maybeSplash(view) { if ((this.props.showSplash ?? true) && !this.state.splashSeen[view]) this.startSplash(view); }
+  startSplash = (view) => {
+    (this._splashTimers || []).forEach(clearTimeout);
+    const dur = 4300;
+    this.setState(s => ({ splashView: view, splashPhase: 'show', splashStep: 0, splashKey: (s.splashKey || 0) + 1, splashSeen: { ...s.splashSeen, [view]: true } }));
+    this._splashTimers = [
+      setTimeout(() => this.setState({ splashStep: 1 }), dur * 0.35),
+      setTimeout(() => this.setState({ splashStep: 2 }), dur * 0.75),
+      setTimeout(() => this.setState({ splashPhase: 'leaving' }), dur),
+      setTimeout(() => this.setState({ splashPhase: null, splashView: null }), dur + 520),
+    ];
+  };
+  replaySplash = () => this.startSplash(this.currentView());
+
+  componentDidMount() { this.maybeSplash(this.currentView()); }
+  componentWillUnmount() { (this._splashTimers || []).forEach(clearTimeout); clearTimeout(this._toastTimer); Object.values(this._spInst || {}).forEach(i => i.stop()); }
+
+  spinnerRef(key) {
+    this._spRefs = this._spRefs || {};
+    this._spInst = this._spInst || {};
+    if (!this._spRefs[key]) this._spRefs[key] = (el) => {
+      if (el) {
+        const boot = () => { if (!el.isConnected || this._spInst[key]) return; if (window.PoleSpinner) this._spInst[key] = new window.PoleSpinner(el); else setTimeout(boot, 60); };
+        boot();
+      } else if (this._spInst[key]) { this._spInst[key].stop(); delete this._spInst[key]; }
+    };
+    return this._spRefs[key];
+  }
+  makeSplashArt(w, h, key) {
+    return React.createElement('canvas', { key, ref: this.spinnerRef(key), style: { width: w, height: h, display: 'block', flexShrink: 0, animation: 'pcFade 0.9s ease both' } });
+  }
+
+  goTournamentsList = () => this.setState({ adminScreen: 'tournaments', selectedCategoryId: null });
+  openTournament = (id) => this.setState({ currentTournamentId: id, adminScreen: 'dashboard', selectedCategoryId: null });
+  openNewTournamentDialog = () => this.setState({ showNewTournamentDialog: true, newTournamentForm: { name: '', date: '', place: '' } });
+  closeNewTournamentDialog = () => this.setState({ showNewTournamentDialog: false });
+  updateNewTournamentField = (field, val) => this.setState(s => ({ newTournamentForm: { ...s.newTournamentForm, [field]: val } }));
+  submitNewTournament = () => {
+    const f = this.state.newTournamentForm;
+    if (!f.name.trim()) return;
+    const id = 'tour' + this.state.idSeq;
+    const t = { id, name: f.name.trim(), date: f.date || 'Data do ustalenia', place: f.place || 'Miejsce do ustalenia', status: 'przygotowanie' };
+    this.setState(s => ({ tournaments: [...s.tournaments, t], idSeq: s.idSeq + 1, currentTournamentId: id, adminScreen: 'dashboard', showNewTournamentDialog: false }));
+    this.showToast('Utworzono turniej');
+  };
+
+  goDashboard = () => this.setState({ adminScreen: 'dashboard', selectedCategoryId: null });
+  openCategory = (id) => this.setState({ adminScreen: 'category', selectedCategoryId: id, categoryTab: 'kryteria' });
+  goTabCriteria = () => this.setState({ categoryTab: 'kryteria' });
+  goTabParticipants = () => this.setState({ categoryTab: 'uczestniczki' });
+  goTabRanking = () => this.setState({ categoryTab: 'wyniki' });
+
+  openNewCategoryDialog = () => this.setState({ catSheet: 'new', catForm: { name: '', style: 'Pole Sport', level: 'Beginner', ageGroup: 'Open' } });
+  openEditCategoryDialog = () => {
+    const c = this.getCategory(this.state.selectedCategoryId);
+    this.setState({ catSheet: 'edit', catForm: { name: c.name, style: c.style, level: c.level, ageGroup: c.ageGroup } });
+  };
+  closeCatSheet = () => this.setState({ catSheet: null });
+  updateCatField = (field, val) => this.setState(s => ({ catForm: { ...s.catForm, [field]: val } }));
+  submitCatSheet = () => {
+    const f = this.state.catForm;
+    if (!f.name.trim()) return;
+    if (this.state.catSheet === 'edit') {
+      const catId = this.state.selectedCategoryId;
+      this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, name: f.name.trim(), style: f.style, level: f.level, ageGroup: f.ageGroup || 'Open' } : c), catSheet: null }));
+      this.showToast('Zapisano zmiany');
+      return;
+    }
+    const id = 'cat' + this.state.idSeq;
+    const cat = { id, tournamentId: this.state.currentTournamentId, name: f.name.trim(), style: f.style, level: f.level, ageGroup: f.ageGroup || 'Open', status: 'przygotowanie', locked: false, participantIds: [], criteria: this.defaultCriteria(id), penalties: this.defaultPenalties(id) };
+    this.setState(s => ({ categories: [...s.categories, cat], scores: { ...s.scores, [id]: {} }, idSeq: s.idSeq + 1, catSheet: null }));
+    this.showToast('Dodano kategorię');
+  };
+
+  openAddCriterion = () => this.setState({ showAddCriterion: true, editingCriterionId: null, newCriterionForm: { name: '', scale: 10, weight: 1, desc: '' } });
+  openEditCriterion = (k) => this.setState({ showAddCriterion: true, editingCriterionId: k.id, newCriterionForm: { name: k.name, scale: k.scale, weight: k.weight, desc: k.desc } });
+  closeAddCriterion = () => this.setState({ showAddCriterion: false, editingCriterionId: null });
+  updateNewCriterionField = (field, val) => this.setState(s => ({ newCriterionForm: { ...s.newCriterionForm, [field]: val } }));
+  submitNewCriterion = () => {
+    const f = this.state.newCriterionForm;
+    if (!f.name.trim()) return;
+    const catId = this.state.selectedCategoryId, editingId = this.state.editingCriterionId;
+    const data = { name: f.name.trim(), scale: Number(f.scale) || 10, weight: Number(f.weight) || 1, desc: f.desc || '' };
+    if (editingId) {
+      this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, criteria: c.criteria.map(k => k.id === editingId ? { ...k, ...data } : k) } : c), showAddCriterion: false, editingCriterionId: null }));
+      this.showToast('Zapisano kryterium');
+      return;
+    }
+    const critId = catId + '_k' + this.state.idSeq;
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, criteria: [...c.criteria, { id: critId, ...data }] } : c), idSeq: s.idSeq + 1, showAddCriterion: false }));
+    this.showToast('Dodano kryterium');
+  };
+  deleteEditingCriterion = () => {
+    const catId = this.state.selectedCategoryId, id = this.state.editingCriterionId;
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, criteria: c.criteria.filter(k => k.id !== id) } : c), showAddCriterion: false, editingCriterionId: null }));
+    this.showToast('Usunięto kryterium');
+  };
+
+  openAddPenalty = () => this.setState({ showAddPenalty: true, editingPenaltyId: null, newPenaltyForm: { name: '', value: 1, max: 3 } });
+  openEditPenalty = (p) => this.setState({ showAddPenalty: true, editingPenaltyId: p.id, newPenaltyForm: { name: p.name, value: p.value, max: p.max || 1 } });
+  closeAddPenalty = () => this.setState({ showAddPenalty: false, editingPenaltyId: null });
+  updateNewPenaltyField = (field, val) => this.setState(s => ({ newPenaltyForm: { ...s.newPenaltyForm, [field]: val } }));
+  submitNewPenalty = () => {
+    const f = this.state.newPenaltyForm;
+    if (!f.name.trim()) return;
+    const catId = this.state.selectedCategoryId, editingId = this.state.editingPenaltyId;
+    const data = { name: f.name.trim(), value: Number(f.value) || 1, max: Number(f.max) || 1 };
+    if (editingId) {
+      this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, penalties: c.penalties.map(p => p.id === editingId ? { ...p, ...data } : p) } : c), showAddPenalty: false, editingPenaltyId: null }));
+      this.showToast('Zapisano karę');
+      return;
+    }
+    const penId = catId + '_p' + this.state.idSeq;
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, penalties: [...c.penalties, { id: penId, ...data }] } : c), idSeq: s.idSeq + 1, showAddPenalty: false }));
+    this.showToast('Dodano karę');
+  };
+  deleteEditingPenalty = () => {
+    const catId = this.state.selectedCategoryId, id = this.state.editingPenaltyId;
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, penalties: c.penalties.filter(p => p.id !== id) } : c), showAddPenalty: false, editingPenaltyId: null }));
+    this.showToast('Usunięto karę');
+  };
+
+  openAddParticipant = () => this.setState({ showAddParticipant: true, newParticipantForm: { number: '', name: '', club: '' } });
+  closeAddParticipant = () => this.setState({ showAddParticipant: false });
+  updateNewParticipantField = (field, val) => this.setState(s => ({ newParticipantForm: { ...s.newParticipantForm, [field]: val } }));
+  submitNewParticipant = () => {
+    const f = this.state.newParticipantForm;
+    if (!f.name.trim()) return;
+    const catId = this.state.selectedCategoryId, pid = 'p' + this.state.idSeq;
+    const participant = { id: pid, number: Number(f.number) || 0, name: f.name.trim(), club: f.club || '—' };
+    this.setState(s => ({ participants: { ...s.participants, [pid]: participant }, categories: s.categories.map(c => c.id === catId ? { ...c, participantIds: [...c.participantIds, pid] } : c), idSeq: s.idSeq + 1, showAddParticipant: false }));
+    this.showToast('Dodano zawodniczkę');
+  };
+
+  startCategory = (catId) => {
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, status: 'trwa' } : c) }));
+    this.showToast('Kategoria rozpoczęta');
+  };
+  toggleLockCategory = (catId) => {
+    const cat = this.getCategory(catId);
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, locked: !c.locked, status: !c.locked ? 'zakończona' : 'trwa' } : c) }));
+    this.showToast(cat.locked ? 'Kategoria odblokowana' : 'Kategoria zakończona');
+  };
+
+  requestEndTournament = () => this.setState({ showEndTournamentConfirm: true });
+  cancelEndTournament = () => this.setState({ showEndTournamentConfirm: false });
+  confirmEndTournament = () => { this.advanceTournamentStatus(); this.setState({ showEndTournamentConfirm: false }); };
+  advanceTournamentStatus = () => {
+    const cur = this.state.tournaments.find(t => t.id === this.state.currentTournamentId);
+    const next = cur.status === 'przygotowanie' ? 'trwa' : 'zakończona';
+    this.setState(s => ({ tournaments: s.tournaments.map(t => t.id === s.currentTournamentId ? { ...t, status: next } : t) }));
+    this.showToast(next === 'trwa' ? 'Turniej rozpoczęty' : 'Turniej zakończony');
+  };
+
+  openExportDialog = (scope) => this.setState({ showExportDialog: true, exportScope: scope });
+  closeExportDialog = () => this.setState({ showExportDialog: false });
+  downloadExportPdf = () => { this.setState({ showExportDialog: false }); this.showToast('PDF zapisany (demo)'); };
+
+  judgeTotalFor(cat, pid, jid) {
+    const entry = ((this.state.scores[cat.id] || {})[pid] || {})[jid];
+    if (!entry) return null;
+    let raw = 0; cat.criteria.forEach(k => { raw += (entry.vals[k.id] || 0) * k.weight; });
+    let pen = 0; cat.penalties.forEach(p => { pen += (entry.pens[p.id] || 0) * p.value; });
+    return raw - pen;
+  }
+  aggregateFor(cat, pid) {
+    const totals = []; let techSum = 0, techCount = 0;
+    const techId = cat.criteria[0] && cat.criteria[0].id;
+    this.state.judges.forEach(j => {
+      const t = this.judgeTotalFor(cat, pid, j.id);
+      if (t === null) return;
+      totals.push(t);
+      const entry = this.state.scores[cat.id][pid][j.id];
+      if (techId && entry.vals[techId] !== undefined) { techSum += entry.vals[techId]; techCount++; }
+    });
+    if (!totals.length) return null;
+    return { avg: totals.reduce((a, b) => a + b, 0) / totals.length, techAvg: techCount ? techSum / techCount : 0, judgeCount: totals.length };
+  }
+  computeRanking(cat) {
+    const rows = cat.participantIds.map(pid => ({ participant: this.state.participants[pid], agg: this.aggregateFor(cat, pid) }));
+    rows.sort((a, b) => {
+      const av = a.agg ? a.agg.avg : -Infinity, bv = b.agg ? b.agg.avg : -Infinity;
+      if (bv !== av) return bv - av;
+      return (b.agg ? b.agg.techAvg : 0) - (a.agg ? a.agg.techAvg : 0);
+    });
+    return rows;
+  }
+
+  selectJudge = (id) => this.setState({ judgeSelectedId: id, judgeLoginStep: 'pin', pinInput: '', pinError: false });
+  backToJudgeSelect = () => this.setState({ judgeLoginStep: 'select', judgeSelectedId: null, pinInput: '', pinError: false });
+  pinDigit = (d) => {
+    if (this.state.pinInput.length >= 4) return;
+    const next = this.state.pinInput + d;
+    this.setState({ pinInput: next, pinError: false });
+    if (next.length === 4) setTimeout(() => this.pinSubmit(next), 160);
+  };
+  pinBackspace = () => this.setState(s => ({ pinInput: s.pinInput.slice(0, -1), pinError: false }));
+  pinSubmit = (pin) => {
+    const judge = this.state.judges.find(j => j.id === this.state.judgeSelectedId);
+    if (judge && judge.pin === pin) this.setState({ judgeLoggedInId: judge.id, judgeScreen: 'categories', pinInput: '', judgeLoginStep: 'select', judgeSelectedId: null });
+    else this.setState({ pinError: true, pinInput: '' });
+  };
+  judgeLogout = () => this.setState({ judgeLoggedInId: null, judgeScreen: 'categories', judgeCategoryId: null, judgeParticipantId: null, scoreDraft: null, judgeLoginStep: 'select', judgeSelectedId: null, pinInput: '' });
+
+  openJudgeCategory = (catId) => {
+    const cat = this.getCategory(catId);
+    if (cat.status === 'przygotowanie') { this.showToast('Ta kategoria jeszcze się nie rozpoczęła'); return; }
+    this.setState({ judgeCategoryId: catId, judgeScreen: 'queue', judgeParticipantId: null, scoreDraft: null });
+  };
+  backToJudgeCategories = () => this.setState({ judgeScreen: 'categories', judgeCategoryId: null, judgeParticipantId: null, scoreDraft: null });
+
+  openParticipantScoring = (pid) => {
+    const catId = this.state.judgeCategoryId, cat = this.getCategory(catId), jid = this.state.judgeLoggedInId;
+    const existing = ((this.state.scores[catId] || {})[pid] || {})[jid];
+    const vals = {}, pens = {};
+    cat.criteria.forEach(k => { vals[k.id] = existing && existing.vals[k.id] !== undefined ? existing.vals[k.id] : Math.round(k.scale / 2 * 2) / 2; });
+    cat.penalties.forEach(p => { pens[p.id] = existing ? (existing.pens[p.id] || 0) : 0; });
+    this.setState({ judgeParticipantId: pid, judgeScreen: 'scoring', scoreDraft: { vals, pens, comment: existing ? existing.comment : '' } });
+  };
+  setCriterionVal = (id, val) => this.setState(s => ({ scoreDraft: { ...s.scoreDraft, vals: { ...s.scoreDraft.vals, [id]: Number(val) } } }));
+  adjustCriterionVal = (id, delta, scale) => this.setState(s => {
+    const next = Math.min(scale, Math.max(0, Math.round(((s.scoreDraft.vals[id] || 0) + delta) * 2) / 2));
+    return { scoreDraft: { ...s.scoreDraft, vals: { ...s.scoreDraft.vals, [id]: next } } };
+  });
+  adjustPenalty = (id, delta, max) => this.setState(s => {
+    const next = Math.min(max, Math.max(0, (s.scoreDraft.pens[id] || 0) + delta));
+    return { scoreDraft: { ...s.scoreDraft, pens: { ...s.scoreDraft.pens, [id]: next } } };
+  });
+  setComment = (val) => this.setState(s => ({ scoreDraft: { ...s.scoreDraft, comment: val } }));
+
+  submitScore = () => {
+    const catId = this.state.judgeCategoryId, pid = this.state.judgeParticipantId, jid = this.state.judgeLoggedInId;
+    const draft = this.state.scoreDraft, cat = this.getCategory(catId);
+    const name = this.state.participants[pid].name;
+    const remaining = cat.participantIds.filter(id => id !== pid && !(((this.state.scores[catId] || {})[id] || {})[jid]));
+    this.setState(s => {
+      const catScores = { ...(s.scores[catId] || {}) };
+      catScores[pid] = { ...(catScores[pid] || {}), [jid]: { vals: { ...draft.vals }, pens: { ...draft.pens }, comment: draft.comment } };
+      return { scores: { ...s.scores, [catId]: catScores } };
+    });
+    this.showToast('Zapisano ocenę: ' + name);
+    const auto = this.props.autoAdvance ?? true;
+    if (auto && remaining.length) this.openParticipantScoring(remaining[0]);
+    else if (!remaining.length) this.setState({ judgeScreen: 'queue', judgeParticipantId: null, scoreDraft: null });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const view = s.view || (this.props.startView ?? 'admin');
+    const isAdmin = view === 'admin', isJudge = view === 'judge';
+    const J = s.judges.length;
+    const statusLabel = (st) => st === 'przygotowanie' ? 'W przygotowaniu' : st === 'trwa' ? 'Trwa' : 'Zakończona';
+    const statusStyle = (st) => st === 'trwa'
+      ? { pillBg: 'var(--color-accent-900)', pillColor: 'var(--color-accent-300)', pillDot: 'var(--color-accent)', pillRing: 'inset 0 0 0 1px var(--color-accent-800)' }
+      : st === 'zakończona'
+        ? { pillBg: 'var(--color-neutral-900)', pillColor: 'var(--color-neutral-300)', pillDot: 'var(--color-neutral-500)', pillRing: 'none' }
+        : { pillBg: 'transparent', pillColor: 'var(--color-neutral-300)', pillDot: 'var(--color-neutral-600)', pillRing: 'inset 0 0 0 1px var(--color-divider)' };
+    const pill = (st) => ({ ...statusStyle(st), statusLabel: statusLabel(st) });
+    const segStyle = (on) => on
+      ? { bg: 'color-mix(in srgb, var(--color-accent) 14%, var(--color-bg))', color: 'var(--color-accent-200)', ring: 'inset 0 0 0 1px var(--color-accent-700)' }
+      : { bg: 'transparent', color: 'var(--color-neutral-300)', ring: 'none' };
+    const chipStyle = (on) => on
+      ? { bg: 'var(--color-accent-900)', color: 'var(--color-accent-200)', ring: 'inset 0 0 0 1px var(--color-accent)' }
+      : { bg: 'var(--color-bg)', color: 'var(--color-neutral-300)', ring: 'inset 0 0 0 1px var(--color-divider)' };
+    const initials = (name) => name.split(' ').map(w => w[0]).join('');
+
+    const tourCats = (tid) => s.categories.filter(c => c.tournamentId === tid);
+    const tourProgress = (tid) => {
+      const cats = tourCats(tid).filter(c => c.status !== 'przygotowanie');
+      const done = cats.reduce((a, c) => a + this.catProgress(c).done, 0);
+      const exp = cats.reduce((a, c) => a + this.catProgress(c).exp, 0);
+      return { done, exp, pct: exp ? Math.round(done / exp * 100) : 0 };
+    };
+    const tourItem = (t) => {
+      const n = tourCats(t.id).length, pr = tourProgress(t.id);
+      return { id: t.id, name: t.name, date: t.date, place: t.place, ...pill(t.status), progressPct: pr.pct, summary: n + ' ' + this.plural(n, 'kategoria', 'kategorie', 'kategorii') + ' · ' + pr.pct + '%', openHandler: () => this.openTournament(t.id) };
+    };
+    const activeTournaments = s.tournaments.filter(t => t.status !== 'zakończona').map(tourItem);
+    const archivedTournaments = s.tournaments.filter(t => t.status === 'zakończona').map(tourItem);
+
+    const currentTournament = s.tournaments.find(t => t.id === s.currentTournamentId) || s.tournaments[0];
+    const curCats = tourCats(currentTournament.id);
+    const tPr = tourProgress(currentTournament.id);
+    const tStatus = currentTournament.status;
+
+    const categoriesList = curCats.map(c => {
+      const pr = this.catProgress(c), n = c.participantIds.length;
+      return { id: c.id, name: c.name, style: c.style, level: c.level, ...pill(c.status), participantLabel: n + ' ' + this.plural(n, 'zawodniczka', 'zawodniczki', 'zawodniczek'), progressPct: pr.pct, progressText: pr.done + '/' + pr.exp + ' ocen', openHandler: () => this.openCategory(c.id) };
+    });
+
+    const sel = s.selectedCategoryId ? this.getCategory(s.selectedCategoryId) : null;
+    let currentCategory = {}, criteriaList = [], penaltiesList = [], participantsList = [], rankingRows = [], maxScoreText = '';
+    if (sel) {
+      currentCategory = { name: sel.name, style: sel.style, level: sel.level, ageGroup: sel.ageGroup, ...pill(sel.status) };
+      criteriaList = sel.criteria.map(k => ({ id: k.id, name: k.name, scale: k.scale, weightText: this.fmtShort(k.weight), openHandler: () => this.openEditCriterion(k) }));
+      penaltiesList = sel.penalties.map(p => ({ id: p.id, name: p.name, valueText: this.fmtShort(p.value), max: p.max || 1, openHandler: () => this.openEditPenalty(p) }));
+      participantsList = sel.participantIds.map(pid => {
+        const p = s.participants[pid], n = this.judgedCount(sel, pid), full = n === J;
+        return { ...p, judgedLabel: n + '/' + J, iconClass: full ? 'ph-fill ph-check-circle' : 'ph ph-circle-dashed', iconColor: full ? 'var(--color-accent-300)' : 'var(--color-neutral-500)' };
+      });
+      const max = this.maxScore(sel);
+      maxScoreText = this.fmtShort(max);
+      rankingRows = this.computeRanking(sel).map((r, idx) => ({
+        rank: idx + 1, number: r.participant.number, name: r.participant.name, club: r.participant.club,
+        total: r.agg ? this.fmt(r.agg.avg) : '—',
+        judgesLabel: r.agg ? r.agg.judgeCount + '/' + J + ' sędziów' : 'brak ocen',
+        barPct: r.agg ? Math.max(0, Math.round(r.agg.avg / max * 100)) : 0,
+        rankColor: r.agg && idx < 3 ? 'var(--color-accent-300)' : 'var(--color-neutral-500)',
+        barColor: idx === 0 ? 'var(--color-accent)' : 'var(--color-accent-700)',
+      }));
+    }
+
+    let exportTitle = '', exportSubtitle = '', exportRows = [], exportAllCats = [];
+    const exportIsAll = !!(s.showExportDialog && s.exportScope && s.exportScope.type === 'all');
+    const exportIsCategory = !!(s.showExportDialog && s.exportScope && s.exportScope.type === 'category');
+    const toRows = (cat) => this.computeRanking(cat).map((r, i) => ({ rank: i + 1, name: r.participant.name, club: r.participant.club, total: r.agg ? this.fmt(r.agg.avg) : '—' }));
+    if (exportIsAll) exportAllCats = curCats.map(c => ({ name: c.name, rows: toRows(c) }));
+    if (exportIsCategory) { const c = this.getCategory(s.exportScope.id); exportTitle = c.name; exportSubtitle = statusLabel(c.status); exportRows = toRows(c); }
+
+    const catSrc = s.catForm;
+    const catStyleChips = ['Pole Sport', 'Pole Art', 'Exotic', 'Doubles'].map(o => ({ label: o, onClick: () => this.updateCatField('style', o), ...chipStyle(catSrc.style === o) }));
+    const catLevelChips = ['Beginner', 'Intermediate', 'Advanced', 'Pro', 'Elite'].map(o => ({ label: o, onClick: () => this.updateCatField('level', o), ...chipStyle(catSrc.level === o) }));
+
+    const judgeLoggedIn = !!s.judgeLoggedInId;
+    const currentJudge = judgeLoggedIn ? s.judges.find(j => j.id === s.judgeLoggedInId) : null;
+    const judgeSelected = s.judgeSelectedId ? s.judges.find(j => j.id === s.judgeSelectedId) : null;
+    const judgeList = s.judges.map(j => ({ id: j.id, name: j.name, initials: initials(j.name), openHandler: () => this.selectJudge(j.id) }));
+    const myCount = (c) => c.participantIds.filter(pid => ((s.scores[c.id] || {})[pid] || {})[s.judgeLoggedInId]).length;
+
+    const judgeCategoriesList = curCats.map(c => {
+      const mine = judgeLoggedIn ? myCount(c) : 0, total = c.participantIds.length, notStarted = c.status === 'przygotowanie';
+      return { id: c.id, name: c.name, style: c.style, level: c.level, ...pill(c.status), opacity: notStarted ? 0.55 : 1, lockIcon: c.locked ? 'ph ph-lock-simple' : '', progressPct: total ? Math.round(mine / total * 100) : 0, progressText: notStarted ? 'jeszcze nie rozpoczęto' : mine + '/' + total + ' ocenione', openHandler: () => this.openJudgeCategory(c.id) };
+    });
+
+    const jc = s.judgeCategoryId ? this.getCategory(s.judgeCategoryId) : null;
+    let judgeQueueList = [], judgeProgressText = '', judgeProgressPct = 0;
+    if (jc && judgeLoggedIn) {
+      judgeQueueList = jc.participantIds.map(pid => {
+        const p = s.participants[pid], scored = !!((s.scores[jc.id] || {})[pid] || {})[s.judgeLoggedInId], active = pid === s.judgeParticipantId;
+        return {
+          id: pid, number: p.number, name: p.name, club: p.club,
+          bg: active ? 'color-mix(in srgb, var(--color-accent) 14%, var(--color-bg))' : 'transparent',
+          ring: active ? 'inset 0 0 0 1px var(--color-accent-700)' : 'none',
+          badgeBg: scored ? 'var(--color-accent-900)' : 'var(--color-neutral-900)', badgeColor: scored ? 'var(--color-accent-200)' : 'var(--color-neutral-200)',
+          iconClass: scored ? 'ph-fill ph-check-circle' : 'ph ph-circle', iconColor: scored ? 'var(--color-accent)' : 'var(--color-neutral-600)',
+          openHandler: () => this.openParticipantScoring(pid),
+        };
+      });
+      const mine = myCount(jc), total = jc.participantIds.length;
+      judgeProgressText = mine + '/' + total + ' ocenione';
+      judgeProgressPct = total ? Math.round(mine / total * 100) : 0;
+    }
+
+    let scoringParticipant = {}, scoringCriteria = [], scoringPenalties = [], scoringTotal = '0,0', scoringMax = '', scoringPenaltyText = '', hasScoringPenalties = false, scoringAlreadyScored = false, submitLabel = 'Zatwierdź ocenę';
+    if (jc && s.judgeParticipantId && s.scoreDraft) {
+      const p = s.participants[s.judgeParticipantId], d = s.scoreDraft;
+      scoringParticipant = { number: p.number, name: p.name, club: p.club };
+      scoringAlreadyScored = !!((s.scores[jc.id] || {})[s.judgeParticipantId] || {})[s.judgeLoggedInId];
+      scoringCriteria = jc.criteria.map(k => {
+        const v = d.vals[k.id] || 0;
+        return { id: k.id, name: k.name, desc: k.desc, scale: k.scale, weightText: this.fmtShort(k.weight), value: v, valueText: this.fmt(v), pct: Math.round(v / k.scale * 100),
+          decHandler: () => this.adjustCriterionVal(k.id, -0.5, k.scale), incHandler: () => this.adjustCriterionVal(k.id, 0.5, k.scale), sliderHandler: (e) => this.setCriterionVal(k.id, e.target.value) };
+      });
+      scoringPenalties = jc.penalties.map(p2 => {
+        const count = d.pens[p2.id] || 0, max = p2.max || 1, atMax = count >= max;
+        return { id: p2.id, name: p2.name, count, max, valueText: this.fmtShort(p2.value),
+          bg: count > 0 ? 'color-mix(in srgb, var(--color-accent) 10%, var(--color-surface))' : 'var(--color-surface)',
+          ring: count > 0 ? 'inset 0 0 0 1px var(--color-accent-700)' : 'var(--shadow-sm)',
+          decHandler: () => this.adjustPenalty(p2.id, -1, max), incHandler: () => this.adjustPenalty(p2.id, 1, max),
+          incOpacity: atMax ? 0.35 : 1, incCursor: atMax ? 'default' : 'pointer' };
+      });
+      let raw = 0; jc.criteria.forEach(k => { raw += (d.vals[k.id] || 0) * k.weight; });
+      let pen = 0; jc.penalties.forEach(p2 => { pen += (d.pens[p2.id] || 0) * p2.value; });
+      scoringTotal = this.fmt(raw - pen);
+      scoringMax = this.fmtShort(this.maxScore(jc));
+      hasScoringPenalties = pen > 0;
+      scoringPenaltyText = '−' + this.fmt(pen);
+      const remaining = jc.participantIds.filter(id => id !== s.judgeParticipantId && !(((s.scores[jc.id] || {})[id] || {})[s.judgeLoggedInId]));
+      submitLabel = scoringAlreadyScored ? 'Zaktualizuj ocenę' : (remaining.length && (this.props.autoAdvance ?? true)) ? 'Zatwierdź i dalej' : 'Zatwierdź ocenę';
+    }
+
+    const pinDots = [0, 1, 2, 3].map(i => i < s.pinInput.length ? { bg: 'var(--color-accent)', ring: 'none' } : { bg: 'transparent', ring: 'inset 0 0 0 1.5px var(--color-neutral-600)' });
+    const keypadKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'back'].map(k => ({
+      label: k === 'back' ? '' : k,
+      iconClass: k === 'back' ? 'ph ph-backspace' : '',
+      bg: k === 'back' || k === '' ? 'transparent' : 'var(--color-surface)',
+      ring: k === 'back' || k === '' ? 'none' : 'var(--shadow-sm)',
+      visibility: k === '' ? 'hidden' : 'visible',
+      handler: k === '' ? (() => {}) : k === 'back' ? this.pinBackspace : (() => this.pinDigit(k)),
+    }));
+
+    const nParts = curCats.reduce((a, c) => a + c.participantIds.length, 0);
+
+    return {
+      isAdmin, isJudge, goAdminView: this.goAdminView, goJudgeView: this.goJudgeView,
+      replaySplash: this.replaySplash,
+      splashAdminVisible: isAdmin && s.splashView === 'admin' && !!s.splashPhase, splashJudgeVisible: isJudge && s.splashView === 'judge' && !!s.splashPhase,
+      splashAdminOpacity: s.splashPhase === 'leaving' ? 0 : 1, splashJudgeOpacity: s.splashPhase === 'leaving' ? 0 : 1,
+      splashArtPhone: this.makeSplashArt(340, 300, 'p' + s.splashKey), splashArtTablet: this.makeSplashArt(470, 410, 't' + s.splashKey),
+      splashBar: React.createElement('div', { key: 'b' + s.splashKey, style: { height: '100%', borderRadius: 2, background: 'var(--color-accent)', boxShadow: '0 0 8px var(--color-accent)', animation: 'pcProgress 4.2s cubic-bezier(.4,.1,.3,1) forwards' } }),
+      splashStatus: (s.splashView === 'judge' ? ['Łączenie z turniejem…', 'Pobieranie list startowych…', 'Gotowe'] : ['Wczytywanie turniejów…', 'Synchronizacja wyników…', 'Gotowe'])[s.splashStep],
+      adminTab: segStyle(isAdmin), judgeTab: segStyle(isJudge),
+      adminScrollRef: this.adminScrollRef, judgeScrollRef: this.judgeScrollRef,
+      toast: s.toast,
+
+      onTournamentsList: s.adminScreen === 'tournaments', onDashboard: s.adminScreen === 'dashboard', onCategoryDetail: s.adminScreen === 'category',
+      activeTournaments, archivedTournaments, hasArchived: archivedTournaments.length > 0,
+      openNewTournamentDialog: this.openNewTournamentDialog, goTournamentsList: this.goTournamentsList, goDashboard: this.goDashboard,
+
+      tournamentName: currentTournament.name, tournamentDate: currentTournament.date, tournamentPlace: currentTournament.place,
+      tournamentPill: pill(tStatus),
+      statCategories: curCats.length, statParticipants: nParts, statJudges: J,
+      tProgressPct: tPr.pct, tProgressText: tPr.exp ? tPr.done + ' z ' + tPr.exp + ' ocen w rozpoczętych kategoriach' : 'Brak rozpoczętych kategorii',
+      tournamentCanAct: tStatus !== 'zakończona',
+      tournamentActionVariant: tStatus === 'przygotowanie' ? 'btn-primary' : 'btn-secondary',
+      tournamentActionIcon: tStatus === 'przygotowanie' ? 'ph ph-play' : 'ph ph-flag-checkered',
+      tournamentActionLabel: tStatus === 'przygotowanie' ? 'Rozpocznij turniej' : 'Zakończ turniej',
+      tournamentStatusActionHandler: tStatus === 'przygotowanie' ? this.advanceTournamentStatus : this.requestEndTournament,
+      showEndTournamentConfirm: s.showEndTournamentConfirm, cancelEndTournament: this.cancelEndTournament, confirmEndTournament: this.confirmEndTournament,
+      exportAllHandler: () => this.openExportDialog({ type: 'all' }),
+      categoriesList, hasNoCategories: curCats.length === 0, openNewCategoryDialog: this.openNewCategoryDialog,
+
+      currentCategory, openEditCategoryDialog: this.openEditCategoryDialog,
+      tabKryteria: s.categoryTab === 'kryteria', tabUczestniczki: s.categoryTab === 'uczestniczki', tabWyniki: s.categoryTab === 'wyniki',
+      tabK: segStyle(s.categoryTab === 'kryteria'), tabU: segStyle(s.categoryTab === 'uczestniczki'), tabW: segStyle(s.categoryTab === 'wyniki'),
+      goTabCriteria: this.goTabCriteria, goTabParticipants: this.goTabParticipants, goTabRanking: this.goTabRanking,
+      criteriaCount: sel ? sel.criteria.length : 0, participantCount: sel ? sel.participantIds.length : 0,
+      criteriaList, penaltiesList, participantsList, rankingRows, maxScoreText, hasNoParticipants: !!sel && sel.participantIds.length === 0,
+      openAddCriterion: this.openAddCriterion, openAddPenalty: this.openAddPenalty, openAddParticipant: this.openAddParticipant,
+      categoryNotStarted: !!sel && sel.status === 'przygotowanie', categoryStarted: !!sel && sel.status !== 'przygotowanie',
+      startCategoryHandler: () => sel && this.startCategory(sel.id),
+      toggleLockHandler: () => sel && this.toggleLockCategory(sel.id),
+      exportCategoryHandler: () => sel && this.openExportDialog({ type: 'category', id: sel.id }),
+      lockButtonLabel: sel && sel.locked ? 'Odblokuj' : 'Zakończ i zablokuj',
+      lockIconClass: sel && sel.locked ? 'ph ph-lock-simple-open' : 'ph ph-lock-simple',
+
+      showNewTournamentDialog: s.showNewTournamentDialog, closeNewTournamentDialog: this.closeNewTournamentDialog,
+      newTournamentForm: s.newTournamentForm, submitNewTournament: this.submitNewTournament,
+      onTourNameChange: (e) => this.updateNewTournamentField('name', e.target.value),
+      onTourDateChange: (e) => this.updateNewTournamentField('date', e.target.value),
+      onTourPlaceChange: (e) => this.updateNewTournamentField('place', e.target.value),
+
+      catSheetOpen: !!s.catSheet, closeCatSheet: this.closeCatSheet, catForm: s.catForm, submitCatSheet: this.submitCatSheet,
+      catSheetTitle: s.catSheet === 'edit' ? 'Edytuj kategorię' : 'Nowa kategoria',
+      catSheetSubmitLabel: s.catSheet === 'edit' ? 'Zapisz zmiany' : 'Utwórz kategorię',
+      catStyleChips, catLevelChips,
+      onCatNameChange: (e) => this.updateCatField('name', e.target.value),
+      onCatAgeChange: (e) => this.updateCatField('ageGroup', e.target.value),
+
+      showAddCriterion: s.showAddCriterion, closeAddCriterion: this.closeAddCriterion, newCriterionForm: s.newCriterionForm, submitNewCriterion: this.submitNewCriterion,
+      criterionDialogTitle: s.editingCriterionId ? 'Edytuj kryterium' : 'Nowe kryterium', isEditingCriterion: !!s.editingCriterionId, deleteEditingCriterion: this.deleteEditingCriterion,
+      onCritNameChange: (e) => this.updateNewCriterionField('name', e.target.value),
+      onCritScaleChange: (e) => this.updateNewCriterionField('scale', e.target.value),
+      onCritWeightChange: (e) => this.updateNewCriterionField('weight', e.target.value),
+      onCritDescChange: (e) => this.updateNewCriterionField('desc', e.target.value),
+
+      showAddPenalty: s.showAddPenalty, closeAddPenalty: this.closeAddPenalty, newPenaltyForm: s.newPenaltyForm, submitNewPenalty: this.submitNewPenalty,
+      penaltyDialogTitle: s.editingPenaltyId ? 'Edytuj karę' : 'Nowa kara', isEditingPenalty: !!s.editingPenaltyId, deleteEditingPenalty: this.deleteEditingPenalty,
+      onPenNameChange: (e) => this.updateNewPenaltyField('name', e.target.value),
+      onPenValueChange: (e) => this.updateNewPenaltyField('value', e.target.value),
+      onPenMaxChange: (e) => this.updateNewPenaltyField('max', e.target.value),
+
+      showAddParticipant: s.showAddParticipant, closeAddParticipant: this.closeAddParticipant, newParticipantForm: s.newParticipantForm, submitNewParticipant: this.submitNewParticipant,
+      onPartNumberChange: (e) => this.updateNewParticipantField('number', e.target.value),
+      onPartNameChange: (e) => this.updateNewParticipantField('name', e.target.value),
+      onPartClubChange: (e) => this.updateNewParticipantField('club', e.target.value),
+
+      showExportDialog: s.showExportDialog, closeExportDialog: this.closeExportDialog, downloadExportPdf: this.downloadExportPdf,
+      exportIsAll, exportIsCategory, exportAllCats, exportTitle, exportSubtitle, exportRows,
+
+      showJudgeLogin: !judgeLoggedIn, judgeLoginStepSelect: s.judgeLoginStep === 'select', judgeLoginStepPin: s.judgeLoginStep === 'pin',
+      judgeList, backToJudgeSelect: this.backToJudgeSelect,
+      judgeSelectedName: judgeSelected ? judgeSelected.name : '', judgeSelectedInitials: judgeSelected ? initials(judgeSelected.name) : '',
+      pinDots, pinError: s.pinError, keypadKeys, showPinHint: this.props.showPinHint ?? true,
+      pinHintText: 'Demo · PIN-y: ' + s.judges.map(j => j.pin).join(' · '),
+
+      judgeLoggedIn, judgeLogout: this.judgeLogout,
+      currentJudgeName: currentJudge ? currentJudge.name : '', currentJudgeInitials: currentJudge ? initials(currentJudge.name) : '', currentJudgeFirstName: currentJudge ? currentJudge.name.split(' ')[0] : '',
+      judgeScreenCategories: judgeLoggedIn && s.judgeScreen === 'categories', judgeCategoriesList, judgeNoCategories: curCats.length === 0,
+      judgeInCategory: judgeLoggedIn && (s.judgeScreen === 'queue' || s.judgeScreen === 'scoring'),
+      judgeNoParticipant: judgeLoggedIn && s.judgeScreen === 'queue', judgeScreenScoring: judgeLoggedIn && s.judgeScreen === 'scoring',
+      backToJudgeCategories: this.backToJudgeCategories,
+      judgeCategoryName: jc ? jc.name : '', judgeCategoryLocked: !!(jc && jc.locked), judgeCategoryNotLocked: !(jc && jc.locked),
+      judgeQueueList, judgeProgressText, judgeProgressPct,
+      scoringPointerEvents: jc && jc.locked ? 'none' : 'auto', scoringOpacity: jc && jc.locked ? 0.55 : 1,
+      scoringParticipant, scoringAlreadyScored, scoringCriteria, scoringPenalties, scoringTotal, scoringMax, scoringPenaltyText, hasScoringPenalties, submitLabel,
+      comment: s.scoreDraft ? s.scoreDraft.comment : '', onCommentChange: (e) => this.setComment(e.target.value), submitScore: this.submitScore,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/nocturne-ad5449b5-c133-4699-b786-a1d4f5d6c213/styles.css">
+  <script src="_ds/nocturne-ad5449b5-c133-4699-b786-a1d4f5d6c213/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; }
+    * { box-sizing: border-box; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+    input[type="range"]::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; background: var(--color-neutral-700); }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%; background: var(--color-accent); border: 3px solid var(--color-bg); box-shadow: 0 0 0 1px var(--color-accent); margin-top: -11px; cursor: pointer; }
+    input[type="range"]::-moz-range-track { height: 8px; border-radius: 4px; background: var(--color-neutral-700); }
+    input[type="range"]::-moz-range-thumb { width: 30px; height: 30px; border-radius: 50%; background: var(--color-accent); border: 3px solid var(--color-bg); box-shadow: 0 0 0 1px var(--color-accent); cursor: pointer; }
+    @keyframes pcToast { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    .ios-device-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="min-height: 100vh; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); display: flex; flex-direction: column; align-items: center; padding: var(--space-8) var(--space-6) 80px;">
+
+  <div style="display: flex; align-items: center; gap: var(--space-6); margin-bottom: var(--space-8); flex-wrap: wrap; justify-content: center;">
+    <div style="display: flex; align-items: baseline; gap: var(--space-2);">
+      <h1 style="font-size: 22px; margin: 0;">PoleChamp</h1>
+      <span class="tag tag-outline">prototyp</span>
+    </div>
+    <div style="display: inline-flex; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden;">
+      <div onClick="{{ goAdminView }}" style="padding: 8px 18px; font-size: 13px; cursor: pointer; font-family: var(--font-heading); white-space: nowrap; background: {{ adminTabBg }}; color: {{ adminTabColor }};">Panel administratora</div>
+      <div onClick="{{ goJudgeView }}" style="padding: 8px 18px; font-size: 13px; cursor: pointer; font-family: var(--font-heading); white-space: nowrap; border-left: 1px solid var(--color-divider); background: {{ judgeTabBg }}; color: {{ judgeTabColor }};">Panel sędziego</div>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: center; width: 100%;">
+
+    <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px" style="flex-shrink: 0;">
+        <div data-screen-label="Admin" style="min-height: 100%; display: flex; flex-direction: column; background: var(--color-bg); position: relative;">
+
+          <sc-if value="{{ onTournamentsList }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 64px var(--space-4) var(--space-8);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+                <h2 style="font-size: 19px; margin: 0;">Turnieje</h2>
+                <div class="btn btn-ghost" onClick="{{ openNewTournamentDialog }}" style="font-size: 12.5px;">+ Nowy turniej</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <sc-for list="{{ tournamentsList }}" as="t" hint-placeholder-count="2">
+                  <div class="card elev-sm" onClick="{{ t.openHandler }}" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);">
+                      <div class="card-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;">{{ t.name }}</div>
+                      <span class="{{ t.statusTagClass }}" style="white-space: nowrap; flex-shrink: 0;">{{ t.statusLabel }}</span>
+                    </div>
+                    <div class="card-meta">{{ t.date }} · {{ t.place }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ onDashboard }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 64px var(--space-4) var(--space-8);">
+              <div class="btn btn-ghost" onClick="{{ goTournamentsList }}" style="font-size: 12.5px; padding-left: 0; margin-bottom: var(--space-2);">‹ Turnieje</div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: var(--space-2);">
+                <span class="tag tag-accent">{{ tournamentStatusLabel }}</span>
+              </div>
+              <h2 style="font-size: 21px; margin: 0 0 var(--space-2);">{{ tournamentName }}</h2>
+              <div style="font-size: 12.5px; opacity: 0.65; margin-bottom: var(--space-4);">{{ tournamentDate }} · {{ tournamentPlace }}</div>
+              <div class="btn btn-secondary btn-block" onClick="{{ tournamentStatusActionHandler }}" style="margin-bottom: var(--space-6);">{{ tournamentStatusActionLabel }}</div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3);">
+                <h3 style="font-size: 15px; margin: 0;">Kategorie</h3>
+                <div class="btn btn-ghost" onClick="{{ openNewCategoryDialog }}" style="font-size: 12.5px;">+ Nowa kategoria</div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <sc-for list="{{ categoriesList }}" as="cat" hint-placeholder-count="3">
+                  <div class="card elev-sm" onClick="{{ cat.openHandler }}" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);">
+                      <div class="card-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;">{{ cat.name }}</div>
+                      <span class="{{ cat.statusTagClass }}" style="white-space: nowrap; flex-shrink: 0;">{{ cat.statusLabel }}</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                      <span class="tag tag-outline" style="white-space: nowrap;">{{ cat.style }}</span>
+                      <span class="tag tag-outline" style="white-space: nowrap;">{{ cat.level }}</span>
+                    </div>
+                    <div class="card-meta">{{ cat.criteriaCount }} kryteriów · {{ cat.participantCount }} uczestniczek</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div class="btn btn-secondary btn-block" onClick="{{ exportAllHandler }}" style="margin-top: var(--space-8);">Eksportuj wyniki całego turnieju</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ onCategoryDetail }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 64px var(--space-4) var(--space-8);">
+              <div class="btn btn-ghost" onClick="{{ goDashboard }}" style="font-size: 12.5px; padding-left: 0; margin-bottom: var(--space-3);">‹ Turniej</div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: 6px;">
+                <h2 style="font-size: 19px; margin: 0;">{{ currentCategory.name }}</h2>
+                <div class="btn btn-ghost btn-icon" onClick="{{ openEditCategoryDialog }}" style="font-size: 13px; flex-shrink: 0;">✎</div>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: var(--space-4);">
+                <span class="tag tag-outline" style="white-space: nowrap; flex-shrink: 0;">{{ currentCategory.style }}</span>
+                <span class="tag tag-outline" style="white-space: nowrap; flex-shrink: 0;">{{ currentCategory.level }}</span>
+                <span class="{{ currentCategory.statusTagClass }}" style="white-space: nowrap; flex-shrink: 0;">{{ currentCategory.statusLabel }}</span>
+              </div>
+
+              <sc-if value="{{ categoryNotStarted }}" hint-placeholder-val="{{ false }}">
+                <div class="btn btn-primary btn-block" onClick="{{ startCategoryHandler }}" style="margin-bottom: var(--space-4);">Rozpocznij kategorię</div>
+              </sc-if>
+
+              <div style="display: flex; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; margin-bottom: var(--space-4);">
+                <div onClick="{{ goTabCriteria }}" style="flex: 1; text-align: center; padding: 9px 4px; font-size: 12.5px; cursor: pointer; background: {{ tabCriteriaBg }}; color: {{ tabCriteriaColor }};">Kryteria</div>
+                <div onClick="{{ goTabParticipants }}" style="flex: 1; text-align: center; padding: 9px 4px; font-size: 12.5px; cursor: pointer; border-left: 1px solid var(--color-divider); background: {{ tabParticipantsBg }}; color: {{ tabParticipantsColor }};">Uczestniczki</div>
+                <div onClick="{{ goTabRanking }}" style="flex: 1; text-align: center; padding: 9px 4px; font-size: 12.5px; cursor: pointer; border-left: 1px solid var(--color-divider); background: {{ tabRankingBg }}; color: {{ tabRankingColor }};">Wyniki</div>
+              </div>
+
+              <sc-if value="{{ tabKryteria }}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.6; margin: 0 0 var(--space-2);">Kryteria oceny</h3>
+                  <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);">
+                    <sc-for list="{{ criteriaList }}" as="k" hint-placeholder-count="5">
+                      <div class="card" onClick="{{ k.openHandler }}" style="cursor: pointer;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                          <div class="card-title" style="font-size: 14px;">{{ k.name }}</div>
+                          <div class="btn btn-ghost btn-icon" onClick="{{ k.deleteHandler }}" style="font-size: 11px;">✕</div>
+                        </div>
+                        <div class="card-meta">waga ×{{ k.weight }} · skala 0–{{ k.scale }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div class="btn btn-ghost" onClick="{{ openAddCriterion }}" style="font-size: 12.5px; margin-bottom: var(--space-6);">+ Dodaj kryterium</div>
+
+                  <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.6; margin: 0 0 var(--space-2);">Kary punktowe</h3>
+                  <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-3);">
+                    <sc-for list="{{ penaltiesList }}" as="p" hint-placeholder-count="2">
+                      <div class="card" onClick="{{ p.openHandler }}" style="cursor: pointer; flex-direction: row; align-items: center; justify-content: space-between;">
+                        <div style="font-size: 14px;">{{ p.name }}</div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <span class="tag tag-neutral">−{{ p.value }} pkt · max ×{{ p.max }}</span>
+                          <div class="btn btn-ghost btn-icon" onClick="{{ p.deleteHandler }}" style="font-size: 11px;">✕</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div class="btn btn-ghost" onClick="{{ openAddPenalty }}" style="font-size: 12.5px;">+ Dodaj karę</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ tabUczestniczki }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-3);">
+                    <sc-for list="{{ participantsList }}" as="p" hint-placeholder-count="4">
+                      <div class="card" style="flex-direction: row; align-items: center; gap: var(--space-3);">
+                        <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--color-accent-800); color: var(--color-accent-100); display: flex; align-items: center; justify-content: center; font-size: 13px; font-family: var(--font-heading); flex-shrink: 0;">{{ p.number }}</div>
+                        <div>
+                          <div style="font-size: 14px;">{{ p.name }}</div>
+                          <div class="card-meta">{{ p.club }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <sc-if value="{{ showAddParticipant }}" hint-placeholder-val="{{ false }}">
+                    <div class="card elev-sm" style="margin-bottom: var(--space-3);">
+                      <div class="field"><label>Numer startowy</label><input class="input" type="number" value="{{ newParticipantForm.number }}" onChange="{{ onPartNumberChange }}" /></div>
+                      <div class="field"><label>Imię i nazwisko / pseudonim</label><input class="input" value="{{ newParticipantForm.name }}" onChange="{{ onPartNameChange }}" /></div>
+                      <div class="field"><label>Klub / szkoła</label><input class="input" value="{{ newParticipantForm.club }}" onChange="{{ onPartClubChange }}" /></div>
+                      <div class="dialog-actions">
+                        <div class="btn btn-secondary" onClick="{{ closeAddParticipant }}">Anuluj</div>
+                        <div class="btn btn-primary" onClick="{{ submitNewParticipant }}">Zapisz</div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <div class="btn btn-ghost" onClick="{{ openAddParticipant }}" style="font-size: 12.5px;">+ Dodaj uczestniczkę</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ tabWyniki }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <table class="table" style="width: 100%; font-size: 11.5px; border-collapse: collapse;">
+                    <thead>
+                      <tr><th>#</th><th>Zawodniczka</th><th>Klub</th><th>Suma</th></tr>
+                    </thead>
+                    <tbody>
+                      <sc-for list="{{ rankingRows }}" as="row" hint-placeholder-count="4">
+                        <tr>
+                          <td>{{ row.medal }} {{ row.rank }}</td>
+                          <td>#{{ row.number }} {{ row.name }}</td>
+                          <td style="opacity: 0.7;">{{ row.club }}</td>
+                          <td style="font-family: var(--font-heading); color: var(--color-accent-300);">{{ row.total }}</td>
+                        </tr>
+                      </sc-for>
+                    </tbody>
+                  </table>
+                  <div style="font-size: 11px; opacity: 0.55; margin: var(--space-2) 0 var(--space-4);">Suma = średnia z ocen sędziów (kryteria × waga − kary). Remisy rozstrzyga wyższa ocena z Techniki.</div>
+
+                  <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-2);">
+                    <div class="btn btn-secondary" style="flex: 1;" onClick="{{ toggleLockHandler }}">{{ lockButtonLabel }}</div>
+                    <div class="btn btn-primary" style="flex: 1;" onClick="{{ exportCategoryHandler }}">Eksport PDF</div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showEndTournamentConfirm }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 60;">
+              <div class="dialog" style="width: 100%;">
+                <div class="dialog-title">Zakończyć turniej?</div>
+                <div class="dialog-body">Ta akcja zakończy cały turniej „{{ tournamentName }}”. Nie będzie można cofnąć tej zmiany bez ponownego rozpoczęcia turnieju.</div>
+                <div class="dialog-actions">
+                  <div class="btn btn-secondary" onClick="{{ cancelEndTournament }}">Anuluj</div>
+                  <div class="btn btn-primary" onClick="{{ confirmEndTournament }}">Tak, zakończ turniej</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showNewTournamentDialog }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 50;">
+              <div class="dialog" style="width: 100%;">
+                <div class="dialog-title">Nowy turniej</div>
+                <div class="field"><label>Nazwa turnieju</label><input class="input" value="{{ newTournamentForm.name }}" onChange="{{ onTourNameChange }}" placeholder="np. Wiosenny Puchar PoleChamp" /></div>
+                <div class="field"><label>Data</label><input class="input" value="{{ newTournamentForm.date }}" onChange="{{ onTourDateChange }}" placeholder="np. 12 kwietnia 2027" /></div>
+                <div class="field"><label>Miejsce</label><input class="input" value="{{ newTournamentForm.place }}" onChange="{{ onTourPlaceChange }}" placeholder="np. Poznań, Hala Arena" /></div>
+                <div class="dialog-actions">
+                  <div class="btn btn-secondary" onClick="{{ closeNewTournamentDialog }}">Anuluj</div>
+                  <div class="btn btn-primary" onClick="{{ submitNewTournament }}">Utwórz</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showAddCriterion }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 50;">
+              <div class="dialog" style="width: 100%;">
+                <div class="dialog-title">{{ criterionDialogTitle }}</div>
+                <div class="field"><label>Nazwa kryterium</label><input class="input" value="{{ newCriterionForm.name }}" onChange="{{ onCritNameChange }}" placeholder="np. Technika" /></div>
+                <div style="display: flex; gap: var(--space-3);">
+                  <div class="field" style="flex: 1;"><label>Skala (0–?)</label><input class="input" type="number" min="1" max="20" value="{{ newCriterionForm.scale }}" onChange="{{ onCritScaleChange }}" /></div>
+                  <div class="field" style="flex: 1;"><label>Waga</label><input class="input" type="number" step="0.5" min="0.5" max="5" value="{{ newCriterionForm.weight }}" onChange="{{ onCritWeightChange }}" /></div>
+                </div>
+                <div class="field"><label>Opis (opcjonalnie)</label><input class="input" value="{{ newCriterionForm.desc }}" onChange="{{ onCritDescChange }}" /></div>
+                <div class="dialog-actions">
+                  <div class="btn btn-secondary" onClick="{{ closeAddCriterion }}">Anuluj</div>
+                  <div class="btn btn-primary" onClick="{{ submitNewCriterion }}">Zapisz</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showAddPenalty }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 50;">
+              <div class="dialog" style="width: 100%;">
+                <div class="dialog-title">{{ penaltyDialogTitle }}</div>
+                <div class="field"><label>Nazwa kary</label><input class="input" value="{{ newPenaltyForm.name }}" onChange="{{ onPenNameChange }}" placeholder="np. Upadek" /></div>
+                <div style="display: flex; gap: var(--space-3);">
+                  <div class="field" style="flex: 1;"><label>Punkty do odjęcia (za 1 raz)</label><input class="input" type="number" step="0.5" min="0.5" value="{{ newPenaltyForm.value }}" onChange="{{ onPenValueChange }}" /></div>
+                  <div class="field" style="flex: 1;"><label>Maks. liczba wystąpień</label><input class="input" type="number" min="1" max="10" value="{{ newPenaltyForm.max }}" onChange="{{ onPenMaxChange }}" /></div>
+                </div>
+                <div class="dialog-actions">
+                  <div class="btn btn-secondary" onClick="{{ closeAddPenalty }}">Anuluj</div>
+                  <div class="btn btn-primary" onClick="{{ submitNewPenalty }}">Zapisz</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showEditCategoryDialog }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 50;">
+              <div class="dialog" style="width: 100%;">
+                <div class="dialog-title">Edytuj kategorię</div>
+                <div class="field"><label>Nazwa</label><input class="input" value="{{ editCategoryForm.name }}" onChange="{{ onEditCatNameChange }}" /></div>
+                <div class="field"><label>Styl</label>
+                  <select class="input" value="{{ editCategoryForm.style }}" onChange="{{ onEditCatStyleChange }}">
+                    <sc-for list="{{ styleOptions }}" as="opt" hint-placeholder-count="4"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                  </select>
+                </div>
+                <div class="field"><label>Poziom</label>
+                  <select class="input" value="{{ editCategoryForm.level }}" onChange="{{ onEditCatLevelChange }}">
+                    <sc-for list="{{ levelOptions }}" as="opt" hint-placeholder-count="5"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                  </select>
+                </div>
+                <div class="field"><label>Grupa wiekowa</label><input class="input" value="{{ editCategoryForm.ageGroup }}" onChange="{{ onEditCatAgeChange }}" /></div>
+                <div class="dialog-actions">
+                  <div class="btn btn-secondary" onClick="{{ closeEditCategoryDialog }}">Anuluj</div>
+                  <div class="btn btn-primary" onClick="{{ submitEditCategory }}">Zapisz zmiany</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showNewCategoryDialog }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 50;">
+              <div class="dialog" style="width: 100%;">
+                <div class="dialog-title">Nowa kategoria</div>
+                <div class="field"><label>Nazwa</label><input class="input" value="{{ newCategoryForm.name }}" onChange="{{ onCatNameChange }}" placeholder="np. Pole Sport Beginner" /></div>
+                <div class="field"><label>Styl</label>
+                  <select class="input" value="{{ newCategoryForm.style }}" onChange="{{ onCatStyleChange }}">
+                    <sc-for list="{{ styleOptions }}" as="opt" hint-placeholder-count="4"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                  </select>
+                </div>
+                <div class="field"><label>Poziom</label>
+                  <select class="input" value="{{ newCategoryForm.level }}" onChange="{{ onCatLevelChange }}">
+                    <sc-for list="{{ levelOptions }}" as="opt" hint-placeholder-count="5"><option value="{{ opt }}">{{ opt }}</option></sc-for>
+                  </select>
+                </div>
+                <div class="field"><label>Grupa wiekowa</label><input class="input" value="{{ newCategoryForm.ageGroup }}" onChange="{{ onCatAgeChange }}" /></div>
+                <div class="dialog-actions">
+                  <div class="btn btn-secondary" onClick="{{ closeNewCategoryDialog }}">Anuluj</div>
+                  <div class="btn btn-primary" onClick="{{ submitNewCategory }}">Utwórz</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showExportDialog }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; background: color-mix(in srgb, var(--color-neutral-900) 60%, transparent); display: flex; align-items: center; justify-content: center; padding: var(--space-4); z-index: 50; overflow: auto;">
+              <div class="dialog" style="width: 100%; max-height: 90%; overflow: auto;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--color-accent-700); color: var(--color-accent-100); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-size: 12px;">PC</div>
+                  <div>
+                    <div class="dialog-title" style="font-size: 15px;">{{ tournamentName }}</div>
+                    <div style="font-size: 11px; opacity: 0.6;">{{ tournamentDate }} · {{ tournamentPlace }}</div>
+                  </div>
+                </div>
+
+                <sc-if value="{{ exportIsAll }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <sc-for list="{{ exportAllCats }}" as="ec" hint-placeholder-count="3">
+                      <div style="margin-bottom: var(--space-3);">
+                        <div style="font-size: 13px; font-family: var(--font-heading); margin-bottom: 4px;">{{ ec.name }}</div>
+                        <table class="table" style="width: 100%; font-size: 11px;">
+                          <sc-for list="{{ ec.rows }}" as="row" hint-placeholder-count="3">
+                            <tr><td>{{ row.rank }}.</td><td>#{{ row.number }} {{ row.name }}</td><td style="opacity: 0.7;">{{ row.club }}</td><td style="color: var(--color-accent-300);">{{ row.total }}</td></tr>
+                          </sc-for>
+                        </table>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ exportIsCategory }}" hint-placeholder-val="{{ false }}">
+                  <div>
+                    <div style="font-size: 13px; font-family: var(--font-heading); margin: var(--space-2) 0 6px;">{{ exportTitle }} · {{ exportSubtitle }}</div>
+                    <table class="table" style="width: 100%; font-size: 11.5px;">
+                      <thead><tr><th>Miejsce</th><th>Zawodniczka</th><th>Klub</th><th>Suma</th></tr></thead>
+                      <tbody>
+                        <sc-for list="{{ exportRows }}" as="row" hint-placeholder-count="4">
+                          <tr><td>{{ row.rank }}.</td><td>#{{ row.number }} {{ row.name }}</td><td style="opacity: 0.7;">{{ row.club }}</td><td style="color: var(--color-accent-300);">{{ row.total }}</td></tr>
+                        </sc-for>
+                      </tbody>
+                    </table>
+                  </div>
+                </sc-if>
+
+                <div class="dialog-actions">
+                  <div class="btn btn-secondary" onClick="{{ closeExportDialog }}">Zamknij</div>
+                  <div class="btn btn-primary" onClick="{{ downloadExportPdf }}">Pobierz PDF</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </x-import>
+    </sc-if>
+
+    <sc-if value="{{ isJudge }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 1100px; max-width: 96vw; background: linear-gradient(160deg, #2b2d3d, #1c1e2a); border-radius: 36px; padding: 26px; box-shadow: var(--shadow-lg); position: relative;">
+        <div style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 8px; height: 8px; border-radius: 50%; background: #000; opacity: 0.5;"></div>
+        <div data-screen-label="Judge" style="width: 100%; height: 720px; background: var(--color-bg); border-radius: 20px; overflow: auto; position: relative;">
+
+          <sc-if value="{{ judgeLoggedIn }}" hint-placeholder-val="{{ false }}">
+            <div style="display: none;"></div>
+          </sc-if>
+
+          <sc-if value="{{ showJudgeLogin }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: var(--space-8); max-width: 520px; margin: 0 auto;">
+              <div style="text-align: center; margin-bottom: var(--space-8);">
+                <h2 style="font-size: 22px; margin: 0 0 4px;">Panel sędziego</h2>
+                <div style="font-size: 13px; opacity: 0.6;">{{ tournamentName }}</div>
+              </div>
+
+              <sc-if value="{{ judgeLoginStepSelect }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <sc-for list="{{ judgeList }}" as="j" hint-placeholder-count="3">
+                    <div class="card elev-sm" onClick="{{ j.openHandler }}" style="cursor: pointer; flex-direction: row; align-items: center; gap: var(--space-4); padding: var(--space-4);">
+                      <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--color-accent-800); color: var(--color-accent-100); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-size: 16px; flex-shrink: 0;">{{ j.initials }}</div>
+                      <div>
+                        <div style="font-size: 16px; font-family: var(--font-heading);">{{ j.name }}</div>
+                        <div class="card-meta">Sędzia</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ judgeLoginStepPin }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <div style="text-align: center; font-size: 15px; margin-bottom: var(--space-2);">{{ judgeSelectedName }}</div>
+                  <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: var(--space-2);">
+                    <sc-for list="{{ pinDots }}" as="d" hint-placeholder-count="4">
+                      <div style="width: 18px; height: 18px; border-radius: 50%; background: {{ d.bg }}; border: 1.5px solid var(--color-divider);"></div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ pinError }}" hint-placeholder-val="{{ false }}">
+                    <div style="text-align: center; color: #e08890; font-size: 12.5px; margin-bottom: var(--space-2);">Nieprawidłowy PIN, spróbuj ponownie</div>
+                  </sc-if>
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: var(--space-4) 0;">
+                    <sc-for list="{{ keypadKeys }}" as="key" hint-placeholder-count="12">
+                      <div onClick="{{ key.handler }}" style="height: 64px; border-radius: var(--radius-md); background: var(--color-surface); display: flex; align-items: center; justify-content: center; font-size: 22px; font-family: var(--font-heading); cursor: {{ key.cursor }}; visibility: {{ key.visibility }};">{{ key.label }}</div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; gap: var(--space-2);">
+                    <div class="btn btn-secondary" style="flex: 1;" onClick="{{ backToJudgeSelect }}">Wstecz</div>
+                    <div class="btn btn-primary btn-block" style="flex: 1;" onClick="{{ pinSubmit }}">Zaloguj</div>
+                  </div>
+                  <div style="text-align: center; font-size: 11px; opacity: 0.4; margin-top: var(--space-3);">Podpowiedź (demo): PIN sędziego to jego numer w kolejności — 1234 / 2345 / 3456</div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ judgeScreenCategories }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: var(--space-8);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-accent-800); color: var(--color-accent-100); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading);">{{ currentJudgeInitials }}</div>
+                  <div style="font-size: 16px; font-family: var(--font-heading);">{{ currentJudgeName }}</div>
+                </div>
+                <div class="btn btn-secondary" onClick="{{ judgeLogout }}">Wyloguj</div>
+              </div>
+              <h3 style="font-size: 15px; margin: 0 0 var(--space-3); opacity: 0.7;">Wybierz kategorię</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+                <sc-for list="{{ judgeCategoriesList }}" as="cat" hint-placeholder-count="3">
+                  <div class="card elev-sm" onClick="{{ cat.openHandler }}" style="cursor: pointer; opacity: {{ cat.opacity }};">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);">
+                      <div class="card-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;">{{ cat.name }}</div>
+                      <span class="{{ cat.statusTagClass }}" style="white-space: nowrap; flex-shrink: 0;">{{ cat.statusLabel }}</span>
+                    </div>
+                    <div class="card-meta" style="white-space: nowrap;">{{ cat.progressText }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ judgeScreenQueue }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: var(--space-8);">
+              <div class="btn btn-ghost" onClick="{{ backToJudgeCategories }}" style="margin-bottom: var(--space-3);">‹ Kategorie</div>
+              <h2 style="font-size: 20px; margin: 0 0 var(--space-4);">{{ judgeCategoryName }}</h2>
+              <sc-if value="{{ judgeCategoryLocked }}" hint-placeholder-val="{{ false }}">
+                <div style="background: var(--color-accent-800); color: var(--color-accent-100); padding: var(--space-3); border-radius: var(--radius-md); font-size: 13px; margin-bottom: var(--space-4);">Kategoria zakończona i zablokowana przez administratora — wgląd tylko do odczytu.</div>
+              </sc-if>
+              <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                <sc-for list="{{ judgeQueueList }}" as="p" hint-placeholder-count="4">
+                  <div class="card elev-sm" onClick="{{ p.openHandler }}" style="cursor: pointer; flex-direction: row; align-items: center; justify-content: space-between; min-height: 44px;">
+                    <div style="display: flex; align-items: center; gap: var(--space-4);">
+                      <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-neutral-700); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-size: 14px;">{{ p.number }}</div>
+                      <div>
+                        <div style="font-size: 16px;">{{ p.name }}</div>
+                        <div class="card-meta">{{ p.club }}</div>
+                      </div>
+                    </div>
+                    <span class="{{ p.statusTagClass }}">{{ p.statusLabel }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ judgeScreenScoring }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: var(--space-8); padding-bottom: 100px;">
+              <div class="btn btn-ghost" onClick="{{ backToJudgeQueue }}" style="margin-bottom: var(--space-3);">‹ Lista uczestniczek</div>
+              <sc-if value="{{ judgeCategoryLocked }}" hint-placeholder-val="{{ false }}">
+                <div style="background: var(--color-accent-800); color: var(--color-accent-100); padding: var(--space-3); border-radius: var(--radius-md); font-size: 13px; margin-bottom: var(--space-4);">Kategoria zablokowana — podgląd bez możliwości edycji.</div>
+              </sc-if>
+              <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--color-neutral-700); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-size: 18px;">{{ scoringParticipant.number }}</div>
+                <div>
+                  <h2 style="font-size: 22px; margin: 0; white-space: nowrap;">{{ scoringParticipant.name }}</h2>
+                  <div style="font-size: 13px; opacity: 0.6; white-space: nowrap;">{{ scoringParticipant.club }}</div>
+                </div>
+              </div>
+
+              <div style="pointer-events: {{ scoringPointerEvents }}; opacity: {{ scoringOpacity }};">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4);">
+                <sc-for list="{{ scoringCriteria }}" as="k" hint-placeholder-count="5">
+                  <div class="card elev-sm">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                      <div class="card-title" style="font-size: 15px;">{{ k.name }}</div>
+                      <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-300);">{{ k.value }}<span style="font-size: 12px; opacity: 0.5;"> / {{ k.scale }}</span></div>
+                    </div>
+                    <div class="card-meta" style="min-height: 14px;">{{ k.desc }}</div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <div onClick="{{ k.decHandler }}" style="width: 44px; height: 44px; border-radius: 50%; background: var(--color-surface); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; flex-shrink: 0;">−</div>
+                      <input type="range" min="0" max="{{ k.scale }}" step="0.5" value="{{ k.value }}" onChange="{{ k.sliderHandler }}" style="flex: 1;" />
+                      <div onClick="{{ k.incHandler }}" style="width: 44px; height: 44px; border-radius: 50%; background: var(--color-surface); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; flex-shrink: 0;">+</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display: flex; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap;">
+                <sc-for list="{{ scoringPenalties }}" as="p" hint-placeholder-count="2">
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; border-radius: var(--radius-md); font-size: 13px; background: {{ p.bg }}; color: {{ p.color }}; border: 1px solid var(--color-divider); white-space: nowrap;">
+                    <span>{{ p.name }} ×{{ p.count }}/{{ p.max }} (−{{ p.total }})</span>
+                    <div onClick="{{ p.decHandler }}" style="width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--color-text) 12%, transparent); display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; flex-shrink: 0;">−</div>
+                    <div onClick="{{ p.incHandler }}" style="width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--color-text) 12%, transparent); display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: {{ p.incCursor }}; opacity: {{ p.incOpacity }}; flex-shrink: 0;">+</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div class="field" style="margin-bottom: var(--space-6);">
+                <label>Komentarz (opcjonalnie)</label>
+                <textarea class="input" value="{{ comment }}" onChange="{{ onCommentChange }}" placeholder="Krótki komentarz do występu…"></textarea>
+              </div>
+              </div>
+
+              <sc-if value="{{ judgeCategoryLocked }}" hint-placeholder-val="{{ false }}">
+                <div></div>
+              </sc-if>
+              <sc-if value="{{ judgeCategoryNotLocked }}" hint-placeholder-val="{{ true }}">
+                <div style="position: sticky; bottom: 0; background: linear-gradient(to top, var(--color-bg) 70%, transparent); padding-top: var(--space-4);">
+                  <div style="text-align: center; font-size: 13px; opacity: 0.6; margin-bottom: var(--space-2);">Suma z tego formularza: <b style="color: var(--color-accent-300);">{{ scoringTotal }}</b></div>
+                  <div class="btn btn-primary btn-block" style="height: 56px; font-size: 16px;" onClick="{{ submitScore }}">Zatwierdź i przejdź dalej</div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--color-surface); color: var(--color-text); padding: 12px 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); font-size: 13px; z-index: 200; animation: pcToast 0.2s ease;">{{ toast }}</div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    view: 'admin',
+    idSeq: 100,
+    toast: null,
+    tournaments: [
+      { id: 't1', name: 'PoleChamp — Otwarte Mistrzostwa Regionu', date: '14 września 2026', place: 'Warszawa, Hala Torwar', status: 'trwa' },
+      { id: 't2', name: 'Zimowy Puchar PoleChamp', date: '8 lutego 2026', place: 'Kraków, Arena Lodowa', status: 'zakończona' },
+    ],
+    currentTournamentId: 't1',
+    showNewTournamentDialog: false,
+    newTournamentForm: { name: '', date: '', place: '' },
+    showEndTournamentConfirm: false,
+    judges: [
+      { id: 'jA', name: 'Katarzyna Nowak', pin: '1234' },
+      { id: 'jB', name: 'Michał Woźniak', pin: '2345' },
+      { id: 'jC', name: 'Aleksandra Kot', pin: '3456' },
+    ],
+    participants: {
+      u1: { id: 'u1', number: 12, name: 'Julia Kamińska', club: 'Aerial Dreams Warszawa' },
+      u2: { id: 'u2', number: 7, name: 'Wiktoria Zielińska', club: 'PoleFit Kraków' },
+      u3: { id: 'u3', number: 19, name: 'Natalia Wójcik', club: 'Studio Vertical' },
+      u4: { id: 'u4', number: 3, name: 'Marta Lewandowska', club: 'Pole Passion Gdańsk' },
+      u5: { id: 'u5', number: 21, name: 'Zofia Kowalczyk', club: 'Aerial Dreams Warszawa' },
+      u6: { id: 'u6', number: 5, name: 'Emilia Szymańska', club: 'PoleFit Kraków' },
+      u7: { id: 'u7', number: 14, name: 'Amelia Dąbrowska', club: 'Studio Vertical' },
+      u8: { id: 'u8', number: 9, name: 'Oliwia Kaczmarek', club: 'Pole Passion Gdańsk' },
+      u9: { id: 'u9', number: 2, name: 'Maja Piotrowska', club: 'Aerial Dreams Warszawa' },
+    },
+    categories: [
+      { id: 'c1', tournamentId: 't1', name: 'Pole Sport Advanced', style: 'Pole Sport', level: 'Advanced', ageGroup: 'Open', status: 'zakończona', locked: true,
+        participantIds: ['u1', 'u2', 'u3', 'u4'],
+        criteria: [
+          { id: 'c1_k1', name: 'Technika', scale: 10, weight: 2, desc: 'Siła, elementy na rurze' },
+          { id: 'c1_k2', name: 'Artyzm / interpretacja muzyki', scale: 10, weight: 1.5, desc: 'Muzykalność i wyraz' },
+          { id: 'c1_k3', name: 'Choreografia', scale: 10, weight: 1, desc: 'Struktura i pomysłowość układu' },
+          { id: 'c1_k4', name: 'Płynność i przejścia', scale: 10, weight: 1, desc: 'Płynność ruchu i transferów' },
+          { id: 'c1_k5', name: 'Wrażenie ogólne', scale: 10, weight: 1, desc: 'Ogólne wrażenie sceniczne' },
+        ],
+        penalties: [ { id: 'c1_p1', name: 'Upadek', value: 2, max: 3 }, { id: 'c1_p2', name: 'Przekroczenie czasu', value: 1, max: 2 } ],
+      },
+      { id: 'c2', tournamentId: 't1', name: 'Pole Art Intermediate', style: 'Pole Art', level: 'Intermediate', ageGroup: 'Open', status: 'trwa', locked: false,
+        participantIds: ['u5', 'u6', 'u7'],
+        criteria: [
+          { id: 'c2_k1', name: 'Technika', scale: 10, weight: 2, desc: 'Siła, elementy na rurze' },
+          { id: 'c2_k2', name: 'Artyzm / interpretacja muzyki', scale: 10, weight: 1.5, desc: 'Muzykalność i wyraz' },
+          { id: 'c2_k3', name: 'Choreografia', scale: 10, weight: 1, desc: 'Struktura i pomysłowość układu' },
+          { id: 'c2_k4', name: 'Płynność i przejścia', scale: 10, weight: 1, desc: 'Płynność ruchu i transferów' },
+          { id: 'c2_k5', name: 'Wrażenie ogólne', scale: 10, weight: 1, desc: 'Ogólne wrażenie sceniczne' },
+        ],
+        penalties: [ { id: 'c2_p1', name: 'Upadek', value: 2, max: 3 }, { id: 'c2_p2', name: 'Przekroczenie czasu', value: 1, max: 2 } ],
+      },
+      { id: 'c3', tournamentId: 't1', name: 'Exotic Pro', style: 'Exotic', level: 'Pro', ageGroup: 'Open', status: 'przygotowanie', locked: false,
+        participantIds: ['u8', 'u9'],
+        criteria: [
+          { id: 'c3_k1', name: 'Technika', scale: 10, weight: 2, desc: 'Siła, elementy na rurze' },
+          { id: 'c3_k2', name: 'Artyzm / interpretacja muzyki', scale: 10, weight: 1.5, desc: 'Muzykalność i wyraz' },
+          { id: 'c3_k3', name: 'Choreografia', scale: 10, weight: 1, desc: 'Struktura i pomysłowość układu' },
+          { id: 'c3_k4', name: 'Płynność i przejścia', scale: 10, weight: 1, desc: 'Płynność ruchu i transferów' },
+          { id: 'c3_k5', name: 'Wrażenie ogólne', scale: 10, weight: 1, desc: 'Ogólne wrażenie sceniczne' },
+        ],
+        penalties: [ { id: 'c3_p1', name: 'Upadek', value: 2, max: 3 }, { id: 'c3_p2', name: 'Przekroczenie czasu', value: 1, max: 2 } ],
+      },
+    ],
+    scores: {
+      c1: {
+        u1: { jA: { vals: { c1_k1: 9, c1_k2: 8.5, c1_k3: 8, c1_k4: 8.5, c1_k5: 9 }, pens: { c1_p1: 0, c1_p2: 0 }, comment: 'Bardzo pewny występ.' },
+              jB: { vals: { c1_k1: 8.5, c1_k2: 8.5, c1_k3: 8, c1_k4: 8, c1_k5: 8.5 }, pens: { c1_p1: 0, c1_p2: 0 }, comment: '' },
+              jC: { vals: { c1_k1: 9, c1_k2: 9, c1_k3: 8.5, c1_k4: 8.5, c1_k5: 9 }, pens: { c1_p1: 0, c1_p2: 0 }, comment: 'Świetna muzykalność.' } },
+        u2: { jA: { vals: { c1_k1: 8, c1_k2: 7.5, c1_k3: 7.5, c1_k4: 7, c1_k5: 7.5 }, pens: { c1_p1: 1, c1_p2: 0 }, comment: 'Upadek w drugiej części.' },
+              jB: { vals: { c1_k1: 7.5, c1_k2: 7.5, c1_k3: 7, c1_k4: 7, c1_k5: 7.5 }, pens: { c1_p1: 1, c1_p2: 0 }, comment: '' },
+              jC: { vals: { c1_k1: 8, c1_k2: 7.5, c1_k3: 7.5, c1_k4: 7.5, c1_k5: 7.5 }, pens: { c1_p1: 1, c1_p2: 0 }, comment: '' } },
+        u3: { jA: { vals: { c1_k1: 9.5, c1_k2: 9, c1_k3: 9, c1_k4: 9, c1_k5: 9.5 }, pens: { c1_p1: 0, c1_p2: 0 }, comment: 'Najmocniejszy występ dnia.' },
+              jB: { vals: { c1_k1: 9, c1_k2: 9, c1_k3: 8.5, c1_k4: 9, c1_k5: 9 }, pens: { c1_p1: 0, c1_p2: 0 }, comment: '' },
+              jC: { vals: { c1_k1: 9.5, c1_k2: 9, c1_k3: 9, c1_k4: 9, c1_k5: 9.5 }, pens: { c1_p1: 0, c1_p2: 0 }, comment: '' } },
+        u4: { jA: { vals: { c1_k1: 7, c1_k2: 7, c1_k3: 6.5, c1_k4: 6.5, c1_k5: 7 }, pens: { c1_p1: 0, c1_p2: 1 }, comment: 'Przekroczony czas.' },
+              jB: { vals: { c1_k1: 7, c1_k2: 6.5, c1_k3: 6.5, c1_k4: 6.5, c1_k5: 6.5 }, pens: { c1_p1: 0, c1_p2: 1 }, comment: '' },
+              jC: { vals: { c1_k1: 7.5, c1_k2: 7, c1_k3: 6.5, c1_k4: 7, c1_k5: 7 }, pens: { c1_p1: 0, c1_p2: 1 }, comment: '' } },
+      },
+      c2: {
+        u5: { jA: { vals: { c2_k1: 8, c2_k2: 8.5, c2_k3: 8, c2_k4: 8, c2_k5: 8.5 }, pens: { c2_p1: 0, c2_p2: 0 }, comment: 'Ładna interpretacja muzyki.' },
+              jB: { vals: { c2_k1: 8, c2_k2: 8, c2_k3: 8, c2_k4: 7.5, c2_k5: 8 }, pens: { c2_p1: 0, c2_p2: 0 }, comment: '' } },
+        u6: { jA: { vals: { c2_k1: 7.5, c2_k2: 8, c2_k3: 7.5, c2_k4: 7.5, c2_k5: 8 }, pens: { c2_p1: 0, c2_p2: 0 }, comment: '' } },
+        u7: { jA: { vals: { c2_k1: 8.5, c2_k2: 8, c2_k3: 8.5, c2_k4: 8, c2_k5: 8 }, pens: { c2_p1: 0, c2_p2: 0 }, comment: 'Bardzo dojrzała choreografia.' } },
+      },
+      c3: {},
+    },
+    adminScreen: 'tournaments',
+    selectedCategoryId: null,
+    categoryTab: 'kryteria',
+    showNewCategoryDialog: false,
+    newCategoryForm: { name: '', style: 'Pole Sport', level: 'Beginner', ageGroup: 'Open' },
+    showEditCategoryDialog: false,
+    editCategoryForm: { name: '', style: 'Pole Sport', level: 'Beginner', ageGroup: 'Open' },
+    showAddCriterion: false,
+    newCriterionForm: { name: '', scale: 10, weight: 1, desc: '' },
+    editingCriterionId: null,
+    showAddPenalty: false,
+    newPenaltyForm: { name: '', value: 1, max: 3 },
+    editingPenaltyId: null,
+    showAddParticipant: false,
+    newParticipantForm: { number: '', name: '', club: '' },
+    showExportDialog: false,
+    exportScope: null,
+    judgeLoginStep: 'select',
+    judgeSelectedId: null,
+    pinInput: '',
+    pinError: false,
+    judgeLoggedInId: null,
+    judgeScreen: 'categories',
+    judgeCategoryId: null,
+    judgeParticipantId: null,
+    scoreDraft: null,
+  };
+
+  getCategory(id) { return this.state.categories.find(c => c.id === id); }
+
+  showToast = (msg) => {
+    this.setState({ toast: msg });
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toast: null }), 2200);
+  };
+
+  goAdminView = () => this.setState({ view: 'admin' });
+  goJudgeView = () => this.setState({ view: 'judge' });
+
+  goTournamentsList = () => this.setState({ adminScreen: 'tournaments', selectedCategoryId: null });
+  openTournament = (id) => this.setState({ currentTournamentId: id, adminScreen: 'dashboard', selectedCategoryId: null });
+  openNewTournamentDialog = () => this.setState({ showNewTournamentDialog: true, newTournamentForm: { name: '', date: '', place: '' } });
+  closeNewTournamentDialog = () => this.setState({ showNewTournamentDialog: false });
+  updateNewTournamentField = (field, val) => this.setState(s => ({ newTournamentForm: { ...s.newTournamentForm, [field]: val } }));
+  submitNewTournament = () => {
+    const f = this.state.newTournamentForm;
+    if (!f.name.trim()) return;
+    const id = 'tour' + this.state.idSeq;
+    const t = { id, name: f.name.trim(), date: f.date || 'Data nieustalona', place: f.place || 'Miejsce nieustalone', status: 'przygotowanie' };
+    this.setState(s => ({ tournaments: [...s.tournaments, t], idSeq: s.idSeq + 1, currentTournamentId: id, adminScreen: 'dashboard', showNewTournamentDialog: false }));
+    this.showToast('Utworzono turniej „' + t.name + '”');
+  };
+
+  goDashboard = () => this.setState({ adminScreen: 'dashboard', selectedCategoryId: null });
+  openCategory = (id) => this.setState({ adminScreen: 'category', selectedCategoryId: id, categoryTab: 'kryteria' });
+  goTabCriteria = () => this.setState({ categoryTab: 'kryteria' });
+  goTabParticipants = () => this.setState({ categoryTab: 'uczestniczki' });
+  goTabRanking = () => this.setState({ categoryTab: 'wyniki' });
+
+  openNewCategoryDialog = () => this.setState({ showNewCategoryDialog: true, newCategoryForm: { name: '', style: 'Pole Sport', level: 'Beginner', ageGroup: 'Open' } });
+  closeNewCategoryDialog = () => this.setState({ showNewCategoryDialog: false });
+  updateNewCategoryField = (field, val) => this.setState(s => ({ newCategoryForm: { ...s.newCategoryForm, [field]: val } }));
+  submitNewCategory = () => {
+    const f = this.state.newCategoryForm;
+    if (!f.name.trim()) return;
+    const id = 'cat' + this.state.idSeq;
+    const mk = (n) => id + '_' + n;
+    const cat = {
+      id, tournamentId: this.state.currentTournamentId, name: f.name.trim(), style: f.style, level: f.level, ageGroup: f.ageGroup || 'Open',
+      status: 'przygotowanie', locked: false, participantIds: [],
+      criteria: [
+        { id: mk('k1'), name: 'Technika', scale: 10, weight: 2, desc: 'Siła, elementy na rurze' },
+        { id: mk('k2'), name: 'Artyzm / interpretacja muzyki', scale: 10, weight: 1.5, desc: 'Muzykalność i wyraz' },
+        { id: mk('k3'), name: 'Choreografia', scale: 10, weight: 1, desc: 'Struktura i pomysłowość układu' },
+        { id: mk('k4'), name: 'Płynność i przejścia', scale: 10, weight: 1, desc: 'Płynność ruchu i transferów' },
+        { id: mk('k5'), name: 'Wrażenie ogólne', scale: 10, weight: 1, desc: 'Ogólne wrażenie sceniczne' },
+      ],
+      penalties: [ { id: mk('p1'), name: 'Upadek', value: 2, max: 3 }, { id: mk('p2'), name: 'Przekroczenie czasu', value: 1, max: 2 } ],
+    };
+    this.setState(s => ({ categories: [...s.categories, cat], scores: { ...s.scores, [id]: {} }, idSeq: s.idSeq + 1, showNewCategoryDialog: false }));
+    this.showToast('Utworzono kategorię „' + cat.name + '”');
+  };
+
+  openEditCategoryDialog = () => {
+    const cat = this.getCategory(this.state.selectedCategoryId);
+    this.setState({ showEditCategoryDialog: true, editCategoryForm: { name: cat.name, style: cat.style, level: cat.level, ageGroup: cat.ageGroup } });
+  };
+  closeEditCategoryDialog = () => this.setState({ showEditCategoryDialog: false });
+  updateEditCategoryField = (field, val) => this.setState(s => ({ editCategoryForm: { ...s.editCategoryForm, [field]: val } }));
+  submitEditCategory = () => {
+    const f = this.state.editCategoryForm;
+    if (!f.name.trim()) return;
+    const catId = this.state.selectedCategoryId;
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, name: f.name.trim(), style: f.style, level: f.level, ageGroup: f.ageGroup || 'Open' } : c), showEditCategoryDialog: false }));
+    this.showToast('Zaktualizowano kategorię');
+  };
+
+  openAddCriterion = () => this.setState({ showAddCriterion: true, editingCriterionId: null, newCriterionForm: { name: '', scale: 10, weight: 1, desc: '' } });
+  openEditCriterion = (k) => this.setState({ showAddCriterion: true, editingCriterionId: k.id, newCriterionForm: { name: k.name, scale: k.scale, weight: k.weight, desc: k.desc } });
+  closeAddCriterion = () => this.setState({ showAddCriterion: false, editingCriterionId: null });
+  updateNewCriterionField = (field, val) => this.setState(s => ({ newCriterionForm: { ...s.newCriterionForm, [field]: val } }));
+  submitNewCriterion = () => {
+    const f = this.state.newCriterionForm;
+    if (!f.name.trim()) return;
+    const catId = this.state.selectedCategoryId;
+    const editingId = this.state.editingCriterionId;
+    if (editingId) {
+      this.setState(s => ({
+        categories: s.categories.map(c => c.id === catId ? { ...c, criteria: c.criteria.map(k => k.id === editingId ? { ...k, name: f.name.trim(), scale: Number(f.scale) || 10, weight: Number(f.weight) || 1, desc: f.desc || '' } : k) } : c),
+        showAddCriterion: false, editingCriterionId: null,
+      }));
+      this.showToast('Zaktualizowano kryterium');
+      return;
+    }
+    const critId = catId + '_k' + this.state.idSeq;
+    this.setState(s => ({
+      categories: s.categories.map(c => c.id === catId ? { ...c, criteria: [...c.criteria, { id: critId, name: f.name.trim(), scale: Number(f.scale) || 10, weight: Number(f.weight) || 1, desc: f.desc || '' }] } : c),
+      idSeq: s.idSeq + 1, showAddCriterion: false,
+    }));
+    this.showToast('Dodano kryterium');
+  };
+  deleteCriterion = (catId, critId) => this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, criteria: c.criteria.filter(k => k.id !== critId) } : c) }));
+
+  openAddPenalty = () => this.setState({ showAddPenalty: true, editingPenaltyId: null, newPenaltyForm: { name: '', value: 1, max: 3 } });
+  openEditPenalty = (p) => this.setState({ showAddPenalty: true, editingPenaltyId: p.id, newPenaltyForm: { name: p.name, value: p.value, max: p.max || 1 } });
+  closeAddPenalty = () => this.setState({ showAddPenalty: false, editingPenaltyId: null });
+  updateNewPenaltyField = (field, val) => this.setState(s => ({ newPenaltyForm: { ...s.newPenaltyForm, [field]: val } }));
+  submitNewPenalty = () => {
+    const f = this.state.newPenaltyForm;
+    if (!f.name.trim()) return;
+    const catId = this.state.selectedCategoryId;
+    const editingId = this.state.editingPenaltyId;
+    if (editingId) {
+      this.setState(s => ({
+        categories: s.categories.map(c => c.id === catId ? { ...c, penalties: c.penalties.map(p => p.id === editingId ? { ...p, name: f.name.trim(), value: Number(f.value) || 1, max: Number(f.max) || 1 } : p) } : c),
+        showAddPenalty: false, editingPenaltyId: null,
+      }));
+      this.showToast('Zaktualizowano karę');
+      return;
+    }
+    const penId = catId + '_p' + this.state.idSeq;
+    this.setState(s => ({
+      categories: s.categories.map(c => c.id === catId ? { ...c, penalties: [...c.penalties, { id: penId, name: f.name.trim(), value: Number(f.value) || 1, max: Number(f.max) || 1 }] } : c),
+      idSeq: s.idSeq + 1, showAddPenalty: false,
+    }));
+    this.showToast('Dodano karę');
+  };
+  deletePenalty = (catId, penId) => this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, penalties: c.penalties.filter(p => p.id !== penId) } : c) }));
+
+  openAddParticipant = () => this.setState({ showAddParticipant: true, newParticipantForm: { number: '', name: '', club: '' } });
+  closeAddParticipant = () => this.setState({ showAddParticipant: false });
+  updateNewParticipantField = (field, val) => this.setState(s => ({ newParticipantForm: { ...s.newParticipantForm, [field]: val } }));
+  submitNewParticipant = () => {
+    const f = this.state.newParticipantForm;
+    if (!f.name.trim()) return;
+    const catId = this.state.selectedCategoryId;
+    const pid = 'p' + this.state.idSeq;
+    const participant = { id: pid, number: Number(f.number) || 0, name: f.name.trim(), club: f.club || '—' };
+    this.setState(s => ({
+      participants: { ...s.participants, [pid]: participant },
+      categories: s.categories.map(c => c.id === catId ? { ...c, participantIds: [...c.participantIds, pid] } : c),
+      idSeq: s.idSeq + 1, showAddParticipant: false,
+    }));
+    this.showToast('Dodano uczestniczkę');
+  };
+
+  startCategory = (catId) => {
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, status: 'trwa' } : c) }));
+    this.showToast('Kategoria rozpoczęta — sędziowie mogą teraz oceniać');
+  };
+
+  requestEndTournament = () => this.setState({ showEndTournamentConfirm: true });
+  cancelEndTournament = () => this.setState({ showEndTournamentConfirm: false });
+  confirmEndTournament = () => { this.cycleTournamentStatus(); this.setState({ showEndTournamentConfirm: false }); };
+
+  cycleTournamentStatus = () => {
+    this.setState(s => ({
+      tournaments: s.tournaments.map(t => {
+        if (t.id !== s.currentTournamentId) return t;
+        const next = t.status === 'przygotowanie' ? 'trwa' : t.status === 'trwa' ? 'zakończona' : 'zakończona';
+        return { ...t, status: next };
+      }),
+    }));
+    this.showToast('Zmieniono status turnieju');
+  };
+
+  toggleLockCategory = (catId) => {
+    this.setState(s => ({ categories: s.categories.map(c => c.id === catId ? { ...c, locked: !c.locked, status: !c.locked ? 'zakończona' : 'trwa' } : c) }));
+    this.showToast('Zmieniono status kategorii');
+  };
+
+  openExportDialog = (scope) => this.setState({ showExportDialog: true, exportScope: scope });
+  closeExportDialog = () => this.setState({ showExportDialog: false });
+  downloadExportPdf = () => this.showToast('Wygenerowano PDF (demo)');
+
+  judgeTotalFor(cat, participantId, judgeId) {
+    const entry = (this.state.scores[cat.id] || {})[participantId] && (this.state.scores[cat.id] || {})[participantId][judgeId];
+    if (!entry) return null;
+    let raw = 0; cat.criteria.forEach(k => { raw += (entry.vals[k.id] || 0) * k.weight; });
+    let pen = 0; cat.penalties.forEach(p => { pen += (entry.pens[p.id] || 0) * p.value; });
+    return raw - pen;
+  }
+  aggregateFor(cat, participantId) {
+    const totals = []; let techSum = 0, techCount = 0;
+    const techId = cat.criteria[0] && cat.criteria[0].id;
+    this.state.judges.forEach(j => {
+      const t = this.judgeTotalFor(cat, participantId, j.id);
+      if (t !== null) {
+        totals.push(t);
+        const entry = this.state.scores[cat.id][participantId][j.id];
+        if (techId && entry.vals[techId] !== undefined) { techSum += entry.vals[techId]; techCount++; }
+      }
+    });
+    if (!totals.length) return null;
+    const avg = totals.reduce((a, b) => a + b, 0) / totals.length;
+    return { avg, techAvg: techCount ? techSum / techCount : 0, judgeCount: totals.length };
+  }
+  computeRanking(cat) {
+    const rows = cat.participantIds.map(pid => ({ participant: this.state.participants[pid], agg: this.aggregateFor(cat, pid) }));
+    rows.sort((a, b) => {
+      const av = a.agg ? a.agg.avg : -Infinity, bv = b.agg ? b.agg.avg : -Infinity;
+      if (bv !== av) return bv - av;
+      return (b.agg ? b.agg.techAvg : 0) - (a.agg ? a.agg.techAvg : 0);
+    });
+    return rows;
+  }
+
+  selectJudge = (id) => this.setState({ judgeSelectedId: id, judgeLoginStep: 'pin', pinInput: '', pinError: false });
+  backToJudgeSelect = () => this.setState({ judgeLoginStep: 'select', judgeSelectedId: null, pinInput: '', pinError: false });
+  pinDigit = (d) => this.setState(s => s.pinInput.length < 4 ? { pinInput: s.pinInput + d, pinError: false } : s);
+  pinBackspace = () => this.setState(s => ({ pinInput: s.pinInput.slice(0, -1), pinError: false }));
+  pinSubmit = () => {
+    const judge = this.state.judges.find(j => j.id === this.state.judgeSelectedId);
+    if (judge && judge.pin === this.state.pinInput) {
+      this.setState({ judgeLoggedInId: judge.id, judgeScreen: 'categories', pinInput: '', judgeLoginStep: 'select', judgeSelectedId: null });
+    } else {
+      this.setState({ pinError: true, pinInput: '' });
+    }
+  };
+  judgeLogout = () => this.setState({ judgeLoggedInId: null, judgeScreen: 'categories', judgeCategoryId: null, judgeParticipantId: null, scoreDraft: null, judgeLoginStep: 'select', judgeSelectedId: null, pinInput: '' });
+
+  openJudgeCategory = (catId) => {
+    const cat = this.getCategory(catId);
+    if (cat.status === 'przygotowanie') { this.showToast('Kategoria jeszcze nie rozpoczęta'); return; }
+    this.setState({ judgeCategoryId: catId, judgeScreen: 'queue' });
+  };
+  backToJudgeCategories = () => this.setState({ judgeScreen: 'categories', judgeCategoryId: null });
+  backToJudgeQueue = () => this.setState({ judgeScreen: 'queue', judgeParticipantId: null, scoreDraft: null });
+
+  openParticipantScoring = (pid) => {
+    const catId = this.state.judgeCategoryId, cat = this.getCategory(catId), judgeId = this.state.judgeLoggedInId;
+    const existing = (this.state.scores[catId] || {})[pid] && (this.state.scores[catId] || {})[pid][judgeId];
+    const vals = {}, pens = {};
+    cat.criteria.forEach(k => { vals[k.id] = existing ? existing.vals[k.id] : Math.round(k.scale / 2 * 2) / 2; });
+    cat.penalties.forEach(p => { pens[p.id] = existing ? (existing.pens[p.id] || 0) : 0; });
+    this.setState({ judgeParticipantId: pid, judgeScreen: 'scoring', scoreDraft: { vals, pens, comment: existing ? existing.comment : '' } });
+  };
+
+  setCriterionVal = (critId, val) => this.setState(s => ({ scoreDraft: { ...s.scoreDraft, vals: { ...s.scoreDraft.vals, [critId]: Number(val) } } }));
+  adjustCriterionVal = (critId, delta, scale) => this.setState(s => {
+    const cur = s.scoreDraft.vals[critId] || 0;
+    const next = Math.min(scale, Math.max(0, Math.round((cur + delta) * 2) / 2));
+    return { scoreDraft: { ...s.scoreDraft, vals: { ...s.scoreDraft.vals, [critId]: next } } };
+  });
+  adjustPenalty = (penId, delta, max) => this.setState(s => {
+    const cur = s.scoreDraft.pens[penId] || 0;
+    const next = Math.min(max, Math.max(0, cur + delta));
+    return { scoreDraft: { ...s.scoreDraft, pens: { ...s.scoreDraft.pens, [penId]: next } } };
+  });
+  setComment = (val) => this.setState(s => ({ scoreDraft: { ...s.scoreDraft, comment: val } }));
+
+  submitScore = () => {
+    const catId = this.state.judgeCategoryId, pid = this.state.judgeParticipantId, judgeId = this.state.judgeLoggedInId;
+    const draft = this.state.scoreDraft, cat = this.getCategory(catId);
+    const remaining = cat.participantIds.filter(id => id !== pid && !(((this.state.scores[catId] || {})[id] || {})[judgeId]));
+    this.setState(s => {
+      const catScores = { ...(s.scores[catId] || {}) };
+      catScores[pid] = { ...(catScores[pid] || {}), [judgeId]: { vals: { ...draft.vals }, pens: { ...draft.pens }, comment: draft.comment } };
+      return { scores: { ...s.scores, [catId]: catScores } };
+    });
+    this.showToast('Zapisano ocenę');
+    if (remaining.length) this.openParticipantScoring(remaining[0]);
+    else this.setState({ judgeScreen: 'queue', judgeParticipantId: null, scoreDraft: null });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const isAdmin = s.view === 'admin', isJudge = s.view === 'judge';
+    const statusLabel = (st) => st === 'przygotowanie' ? 'Przygotowanie' : st === 'trwa' ? 'Trwa' : 'Zakończona';
+    const statusTagClass = (st) => st === 'trwa' ? 'tag tag-accent' : st === 'zakończona' ? 'tag tag-accent-2' : 'tag tag-neutral';
+
+    const currentTournament = s.tournaments.find(t => t.id === s.currentTournamentId) || s.tournaments[0];
+    const tournamentsList = s.tournaments.map(t => ({
+      id: t.id, name: t.name, date: t.date, place: t.place,
+      statusLabel: statusLabel(t.status), statusTagClass: statusTagClass(t.status),
+      openHandler: () => this.openTournament(t.id),
+    }));
+
+    const categoriesList = s.categories.filter(c => c.tournamentId === s.currentTournamentId).map(c => ({
+      id: c.id, name: c.name, style: c.style, level: c.level,
+      statusLabel: statusLabel(c.status), statusTagClass: statusTagClass(c.status),
+      criteriaCount: c.criteria.length, participantCount: c.participantIds.length,
+      openHandler: () => this.openCategory(c.id),
+    }));
+
+    const selectedCategory = s.selectedCategoryId ? this.getCategory(s.selectedCategoryId) : null;
+    let currentCategory = null, criteriaList = [], penaltiesList = [], participantsList = [], rankingRows = [];
+    let toggleLockHandler = () => {}, exportCategoryHandler = () => {}, lockButtonLabel = '';
+    if (selectedCategory) {
+      currentCategory = {
+        name: selectedCategory.name, style: selectedCategory.style, level: selectedCategory.level,
+        statusLabel: statusLabel(selectedCategory.status), statusTagClass: statusTagClass(selectedCategory.status),
+      };
+      criteriaList = selectedCategory.criteria.map(k => ({ id: k.id, name: k.name, scale: k.scale, weight: k.weight, desc: k.desc, openHandler: () => this.openEditCriterion(k), deleteHandler: (e) => { e.stopPropagation(); this.deleteCriterion(selectedCategory.id, k.id); } }));
+      penaltiesList = selectedCategory.penalties.map(p => ({ id: p.id, name: p.name, value: p.value, max: p.max || 1, openHandler: () => this.openEditPenalty(p), deleteHandler: (e) => { e.stopPropagation(); this.deletePenalty(selectedCategory.id, p.id); } }));
+      participantsList = selectedCategory.participantIds.map(pid => s.participants[pid]);
+      const ranked = this.computeRanking(selectedCategory);
+      rankingRows = ranked.map((r, idx) => {
+        const rank = idx + 1;
+        return {
+          rank, medal: rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '',
+          number: r.participant.number, name: r.participant.name, club: r.participant.club,
+          total: r.agg ? r.agg.avg.toFixed(1) : '—',
+        };
+      });
+      toggleLockHandler = () => this.toggleLockCategory(selectedCategory.id);
+      exportCategoryHandler = () => this.openExportDialog({ type: 'category', id: selectedCategory.id });
+      lockButtonLabel = selectedCategory.locked ? 'Odblokuj kategorię' : 'Zablokuj i zakończ kategorię';
+    }
+    const categoryNotStarted = selectedCategory ? selectedCategory.status === 'przygotowanie' : false;
+    const startCategoryHandler = selectedCategory ? (() => this.startCategory(selectedCategory.id)) : (() => {});
+
+    const tStatus = currentTournament.status;
+    const tournamentStatusActionLabel = tStatus === 'przygotowanie' ? 'Rozpocznij turniej' : tStatus === 'trwa' ? 'Zakończ turniej' : 'Turniej zakończony';
+    const tournamentStatusActionHandler = tStatus === 'przygotowanie' ? this.cycleTournamentStatus : tStatus === 'trwa' ? this.requestEndTournament : (() => {});
+
+    let exportTitle = '', exportSubtitle = '', exportRows = [], exportIsAll = false, exportIsCategory = false, exportAllCats = [];
+    if (s.showExportDialog && s.exportScope) {
+      if (s.exportScope.type === 'all') {
+        exportIsAll = true;
+        exportAllCats = s.categories.map(cat => {
+          const ranked = this.computeRanking(cat);
+          return { name: cat.name, rows: ranked.map((r, idx) => ({ rank: idx + 1, number: r.participant.number, name: r.participant.name, club: r.participant.club, total: r.agg ? r.agg.avg.toFixed(1) : '—' })) };
+        });
+      } else {
+        exportIsCategory = true;
+        const cat = this.getCategory(s.exportScope.id);
+        exportTitle = cat.name; exportSubtitle = statusLabel(cat.status);
+        const ranked = this.computeRanking(cat);
+        exportRows = ranked.map((r, idx) => ({ rank: idx + 1, number: r.participant.number, name: r.participant.name, club: r.participant.club, total: r.agg ? r.agg.avg.toFixed(1) : '—' }));
+      }
+    }
+
+    const judgeLoggedIn = !!s.judgeLoggedInId;
+    const currentJudge = judgeLoggedIn ? s.judges.find(j => j.id === s.judgeLoggedInId) : null;
+    const judgeSelected = s.judgeSelectedId ? s.judges.find(j => j.id === s.judgeSelectedId) : null;
+    const initials = (name) => name.split(' ').map(w => w[0]).join('');
+
+    const judgeList = s.judges.map(j => ({ id: j.id, name: j.name, initials: initials(j.name), openHandler: () => this.selectJudge(j.id) }));
+
+    const judgeCategoriesList = s.categories.map(c => {
+      const total = c.participantIds.length;
+      const scoredByMe = judgeLoggedIn ? c.participantIds.filter(pid => ((s.scores[c.id] || {})[pid] || {})[s.judgeLoggedInId]).length : 0;
+      return {
+        id: c.id, name: c.name, statusLabel: statusLabel(c.status), statusTagClass: statusTagClass(c.status),
+        opacity: c.status === 'przygotowanie' ? 0.55 : 1,
+        progressText: c.status === 'przygotowanie' ? 'Jeszcze nie rozpoczęto' : (scoredByMe + '/' + total + ' ocenione przez Ciebie'),
+        openHandler: () => this.openJudgeCategory(c.id),
+      };
+    });
+
+    const judgeCategory = s.judgeCategoryId ? this.getCategory(s.judgeCategoryId) : null;
+    let judgeQueueList = [];
+    if (judgeCategory && judgeLoggedIn) {
+      judgeQueueList = judgeCategory.participantIds.map(pid => {
+        const p = s.participants[pid];
+        const scored = !!((s.scores[judgeCategory.id] || {})[pid] || {})[s.judgeLoggedInId];
+        return { id: pid, number: p.number, name: p.name, club: p.club, statusLabel: scored ? 'Ocenione' : 'Do oceny', statusTagClass: scored ? 'tag tag-accent-2' : 'tag tag-neutral', openHandler: () => this.openParticipantScoring(pid) };
+      });
+    }
+
+    let scoringParticipant = null, scoringCriteria = [], scoringPenalties = [], scoringTotal = '0.0';
+    if (judgeCategory && s.judgeParticipantId && s.scoreDraft) {
+      const p = s.participants[s.judgeParticipantId];
+      scoringParticipant = { number: p.number, name: p.name, club: p.club };
+      scoringCriteria = judgeCategory.criteria.map(k => ({
+        id: k.id, name: k.name, desc: k.desc, scale: k.scale, value: s.scoreDraft.vals[k.id],
+        decHandler: () => this.adjustCriterionVal(k.id, -0.5, k.scale),
+        incHandler: () => this.adjustCriterionVal(k.id, 0.5, k.scale),
+        sliderHandler: (e) => this.setCriterionVal(k.id, e.target.value),
+      }));
+      scoringPenalties = judgeCategory.penalties.map(p2 => {
+        const count = s.scoreDraft.pens[p2.id] || 0;
+        const max = p2.max || 1;
+        const atMax = count >= max;
+        return { id: p2.id, name: p2.name, count, max, total: (count * p2.value).toFixed(1), bg: count > 0 ? 'var(--color-accent-800)' : 'var(--color-surface)', color: count > 0 ? 'var(--color-accent-100)' : 'var(--color-text)', decHandler: () => this.adjustPenalty(p2.id, -1, max), incHandler: () => this.adjustPenalty(p2.id, 1, max), incOpacity: atMax ? 0.35 : 1, incCursor: atMax ? 'default' : 'pointer' };
+      });
+      let raw = 0; judgeCategory.criteria.forEach(k => { raw += (s.scoreDraft.vals[k.id] || 0) * k.weight; });
+      let pen = 0; judgeCategory.penalties.forEach(p2 => { pen += (s.scoreDraft.pens[p2.id] || 0) * p2.value; });
+      scoringTotal = (raw - pen).toFixed(1);
+    }
+
+    const pinDots = [0, 1, 2, 3].map(i => ({ bg: i < s.pinInput.length ? 'var(--color-accent)' : 'transparent' }));
+    const keypadRaw = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
+    const keypadKeys = keypadRaw.map(k => ({
+      label: k, cursor: k === '' ? 'default' : 'pointer', visibility: k === '' ? 'hidden' : 'visible',
+      handler: k === '' ? (() => {}) : k === '⌫' ? this.pinBackspace : (() => this.pinDigit(k)),
+    }));
+
+    return {
+      isAdmin, isJudge, goAdminView: this.goAdminView, goJudgeView: this.goJudgeView,
+      adminTabBg: isAdmin ? 'var(--color-accent-800)' : 'transparent', adminTabColor: isAdmin ? 'var(--color-accent-100)' : 'var(--color-text)',
+      judgeTabBg: isJudge ? 'var(--color-accent-800)' : 'transparent', judgeTabColor: isJudge ? 'var(--color-accent-100)' : 'var(--color-text)',
+
+      tournamentName: currentTournament.name, tournamentDate: currentTournament.date, tournamentPlace: currentTournament.place,
+      tournamentStatusLabel: statusLabel(currentTournament.status),
+      tournamentStatusActionLabel, tournamentStatusActionHandler,
+      categoryNotStarted, startCategoryHandler,
+      showEndTournamentConfirm: s.showEndTournamentConfirm, cancelEndTournament: this.cancelEndTournament, confirmEndTournament: this.confirmEndTournament,
+
+      onTournamentsList: s.adminScreen === 'tournaments', tournamentsList, goTournamentsList: this.goTournamentsList,
+      showNewTournamentDialog: s.showNewTournamentDialog, openNewTournamentDialog: this.openNewTournamentDialog, closeNewTournamentDialog: this.closeNewTournamentDialog,
+      newTournamentForm: s.newTournamentForm, submitNewTournament: this.submitNewTournament,
+      onTourNameChange: (e) => this.updateNewTournamentField('name', e.target.value),
+      onTourDateChange: (e) => this.updateNewTournamentField('date', e.target.value),
+      onTourPlaceChange: (e) => this.updateNewTournamentField('place', e.target.value),
+
+      onDashboard: s.adminScreen === 'dashboard', onCategoryDetail: s.adminScreen === 'category',
+      categoriesList, goDashboard: this.goDashboard,
+      exportAllHandler: () => this.openExportDialog({ type: 'all' }),
+
+      currentCategory, criteriaList, penaltiesList, participantsList, rankingRows,
+      tabKryteria: s.categoryTab === 'kryteria', tabUczestniczki: s.categoryTab === 'uczestniczki', tabWyniki: s.categoryTab === 'wyniki',
+      goTabCriteria: this.goTabCriteria, goTabParticipants: this.goTabParticipants, goTabRanking: this.goTabRanking,
+      tabCriteriaBg: s.categoryTab === 'kryteria' ? 'var(--color-accent-800)' : 'transparent', tabCriteriaColor: s.categoryTab === 'kryteria' ? 'var(--color-accent-100)' : 'var(--color-text)',
+      tabParticipantsBg: s.categoryTab === 'uczestniczki' ? 'var(--color-accent-800)' : 'transparent', tabParticipantsColor: s.categoryTab === 'uczestniczki' ? 'var(--color-accent-100)' : 'var(--color-text)',
+      tabRankingBg: s.categoryTab === 'wyniki' ? 'var(--color-accent-800)' : 'transparent', tabRankingColor: s.categoryTab === 'wyniki' ? 'var(--color-accent-100)' : 'var(--color-text)',
+
+      showEditCategoryDialog: s.showEditCategoryDialog, openEditCategoryDialog: this.openEditCategoryDialog, closeEditCategoryDialog: this.closeEditCategoryDialog,
+      editCategoryForm: s.editCategoryForm, submitEditCategory: this.submitEditCategory,
+      onEditCatNameChange: (e) => this.updateEditCategoryField('name', e.target.value),
+      onEditCatStyleChange: (e) => this.updateEditCategoryField('style', e.target.value),
+      onEditCatLevelChange: (e) => this.updateEditCategoryField('level', e.target.value),
+      onEditCatAgeChange: (e) => this.updateEditCategoryField('ageGroup', e.target.value),
+
+      showAddCriterion: s.showAddCriterion, openAddCriterion: this.openAddCriterion, closeAddCriterion: this.closeAddCriterion,
+      criterionDialogTitle: s.editingCriterionId ? 'Edytuj kryterium' : 'Nowe kryterium',
+      newCriterionForm: s.newCriterionForm, submitNewCriterion: this.submitNewCriterion,
+      onCritNameChange: (e) => this.updateNewCriterionField('name', e.target.value),
+      onCritScaleChange: (e) => this.updateNewCriterionField('scale', e.target.value),
+      onCritWeightChange: (e) => this.updateNewCriterionField('weight', e.target.value),
+      onCritDescChange: (e) => this.updateNewCriterionField('desc', e.target.value),
+
+      showAddPenalty: s.showAddPenalty, openAddPenalty: this.openAddPenalty, closeAddPenalty: this.closeAddPenalty,
+      penaltyDialogTitle: s.editingPenaltyId ? 'Edytuj karę' : 'Nowa kara',
+      newPenaltyForm: s.newPenaltyForm, submitNewPenalty: this.submitNewPenalty,
+      onPenNameChange: (e) => this.updateNewPenaltyField('name', e.target.value),
+      onPenValueChange: (e) => this.updateNewPenaltyField('value', e.target.value),
+      onPenMaxChange: (e) => this.updateNewPenaltyField('max', e.target.value),
+
+      showAddParticipant: s.showAddParticipant, openAddParticipant: this.openAddParticipant, closeAddParticipant: this.closeAddParticipant,
+      newParticipantForm: s.newParticipantForm, submitNewParticipant: this.submitNewParticipant,
+      onPartNumberChange: (e) => this.updateNewParticipantField('number', e.target.value),
+      onPartNameChange: (e) => this.updateNewParticipantField('name', e.target.value),
+      onPartClubChange: (e) => this.updateNewParticipantField('club', e.target.value),
+
+      toggleLockHandler, exportCategoryHandler, lockButtonLabel,
+
+      showNewCategoryDialog: s.showNewCategoryDialog, openNewCategoryDialog: this.openNewCategoryDialog, closeNewCategoryDialog: this.closeNewCategoryDialog,
+      newCategoryForm: s.newCategoryForm, submitNewCategory: this.submitNewCategory,
+      onCatNameChange: (e) => this.updateNewCategoryField('name', e.target.value),
+      onCatStyleChange: (e) => this.updateNewCategoryField('style', e.target.value),
+      onCatLevelChange: (e) => this.updateNewCategoryField('level', e.target.value),
+      onCatAgeChange: (e) => this.updateNewCategoryField('ageGroup', e.target.value),
+      styleOptions: ['Pole Sport', 'Pole Art', 'Exotic', 'Doubles'], levelOptions: ['Beginner', 'Intermediate', 'Advanced', 'Pro', 'Elite'],
+
+      showExportDialog: s.showExportDialog, closeExportDialog: this.closeExportDialog, downloadExportPdf: this.downloadExportPdf,
+      exportTitle, exportSubtitle, exportRows, exportIsAll, exportIsCategory, exportAllCats,
+
+      toast: s.toast,
+
+      judgeLoginStepSelect: s.judgeLoginStep === 'select', judgeLoginStepPin: s.judgeLoginStep === 'pin',
+      showJudgeLogin: !judgeLoggedIn, judgeList, backToJudgeSelect: this.backToJudgeSelect,
+      judgeSelectedName: judgeSelected ? judgeSelected.name : '',
+      pinDots, pinError: s.pinError, pinSubmit: this.pinSubmit, keypadKeys,
+
+      judgeLoggedIn, currentJudgeName: currentJudge ? currentJudge.name : '', currentJudgeInitials: currentJudge ? initials(currentJudge.name) : '', judgeLogout: this.judgeLogout,
+      judgeScreenCategories: judgeLoggedIn && s.judgeScreen === 'categories', judgeScreenQueue: judgeLoggedIn && s.judgeScreen === 'queue', judgeScreenScoring: judgeLoggedIn && s.judgeScreen === 'scoring',
+      judgeCategoriesList,
+      judgeCategoryName: judgeCategory ? judgeCategory.name : '', judgeCategoryLocked: judgeCategory ? judgeCategory.locked : false, judgeCategoryNotLocked: judgeCategory ? !judgeCategory.locked : true,
+      scoringPointerEvents: judgeCategory && judgeCategory.locked ? 'none' : 'auto', scoringOpacity: judgeCategory && judgeCategory.locked ? 0.55 : 1,
+      backToJudgeCategories: this.backToJudgeCategories, backToJudgeQueue: this.backToJudgeQueue,
+      judgeQueueList,
+
+      scoringParticipant, scoringCriteria, scoringPenalties, scoringTotal,
+      comment: s.scoreDraft ? s.scoreDraft.comment : '', onCommentChange: (e) => this.setComment(e.target.value), submitScore: this.submitScore,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
