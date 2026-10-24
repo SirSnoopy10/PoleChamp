@@ -1,0 +1,27 @@
+{
+  "name": "@polechamp/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Aplikacja mobilna PoleChamp (Expo SDK 58) – szkielet",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@polechamp/scoring": "workspace:*",
+    "@polechamp/contracts": "workspace:*",
+    "@polechamp/tokens": "workspace:*",
+    "@polechamp/i18n": "workspace:*"
+  }
+}

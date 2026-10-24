@@ -1,0 +1,13 @@
+# Konfiguracja gitleaks (IMP-003, TC-SEC-004). Domyślne reguły + wyjątki dla danych testowych.
+title = "PoleChamp gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Pliki bez sekretów: dokumentacja, eksport designu, lockfile"
+paths = [
+  '''^docs/''',
+  '''^design/''',
+  '''pnpm-lock\.yaml$''',
+]
