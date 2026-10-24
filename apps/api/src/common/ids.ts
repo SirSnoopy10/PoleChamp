@@ -20,5 +20,15 @@ export function safeEqual(a: Buffer, b: Buffer): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+/** JSON z posortowanymi kluczami – skrót treści żądania niezależny od kolejności pól (idempotencja). */
+export function canonical(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter(([, v]) => v !== undefined)
+    .sort(([a], [b]) => (a < b ? -1 : 1));
+  return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(',')}}`;
+}
+
 /** Losowy token 256 bit w base64url (refresh, reset hasła, sekret urządzenia). */
 export const randomToken = (): string => randomBytes(32).toString('base64url');

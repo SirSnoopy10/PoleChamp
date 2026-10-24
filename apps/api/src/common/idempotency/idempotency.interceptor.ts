@@ -12,19 +12,12 @@ import { DB, type Db } from '../../db/client.js';
 import { idempotencyKey } from '../../db/schema.js';
 import type { AuthedRequest } from '../auth/auth.decorators.js';
 import { DomainError, validationFailed } from '../errors/domain-error.js';
-import { sha256Hex, UUID_RE } from '../ids.js';
+import { canonical, sha256Hex, UUID_RE } from '../ids.js';
 
 /** Wiersz w toku (odpowiedź jeszcze nie zapisana). */
 const IN_PROGRESS = 0;
 const WAIT_STEP_MS = 50;
 const WAIT_MAX_MS = 5_000;
-
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : 1));
-  return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(',')}}`;
-}
 
 /**
  * `Idempotency-Key` dla POST organizatora (IMP-110, US-011): pierwszy zapis rezerwuje klucz,

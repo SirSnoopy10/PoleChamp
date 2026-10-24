@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   aggregateEntry,
   type CategoryConfig,
@@ -11,9 +11,10 @@ import {
   type SheetSummary,
   summarizeSheet,
 } from '@polechamp/scoring';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { sha256Hex } from '../../common/ids.js';
 import type { Db, Tx } from '../../db/client.js';
+import { one } from '../../db/one.js';
 import {
   category,
   categoryJudge,
@@ -26,6 +27,7 @@ import {
   scoreSheet,
   scoreValue,
 } from '../../db/schema.js';
+import { DomainEventService } from '../audit/audit.service.js';
 
 type Conn = Db | Tx;
 
@@ -41,6 +43,95 @@ export interface RecomputeResult {
  */
 @Injectable()
 export class ResultsService {
+  constructor(@Inject(DomainEventService) private readonly events: DomainEventService) {}
+
+  /**
+   * Przeliczenie po zmianie ocen, panelu lub statusu startu (IMP-150) w transakcji komendy,
+   * z sygnałami `results.updated` i `progress.updated` dla organizatora.
+   */
+  async recalculate(tx: Tx, categoryId: string): Promise<RecomputeResult> {
+    const result = await this.recompute(tx, categoryId);
+    const { tournamentId } = one(
+      await tx
+        .select({ tournamentId: category.tournamentId })
+        .from(category)
+        .where(eq(category.id, categoryId)),
+    );
+    await this.events.emit(
+      tx,
+      'results.updated',
+      { categoryId, resultsVersion: result.resultsVersion },
+      tournamentId,
+    );
+    const progress = await this.tournamentProgress(tx, tournamentId);
+    const own = progress.categories.get(categoryId) ?? { done: 0, expected: 0 };
+    await this.events.emit(
+      tx,
+      'progress.updated',
+      {
+        tournamentId,
+        done: progress.done,
+        expected: progress.expected,
+        categoryId,
+        categoryDone: own.done,
+        categoryExpected: own.expected,
+      },
+      tournamentId,
+    );
+    return result;
+  }
+
+  /**
+   * Postęp turnieju zbiorczo (kategorie Trwa i Zakończona) – stała liczba zapytań niezależnie od liczby
+   * kategorii, bo liczony przy każdej przyjętej ocenie.
+   */
+  async tournamentProgress(conn: Conn, tournamentId: string) {
+    const cats = await conn
+      .select({ id: category.id, status: category.status })
+      .from(category)
+      .where(and(eq(category.tournamentId, tournamentId), ne(category.status, 'DRAFT')));
+    const categories = new Map<string, Progress>();
+    if (!cats.length) return { done: 0, expected: 0, categories };
+    const ids = cats.map((c) => c.id);
+    const [active, done, panel, withSheets] = await Promise.all([
+      conn
+        .select({ categoryId: entry.categoryId, n: sql<number>`count(*)::int` })
+        .from(entry)
+        .where(and(inArray(entry.categoryId, ids), eq(entry.status, 'ACTIVE')))
+        .groupBy(entry.categoryId),
+      conn
+        .select({ categoryId: scoreSheet.categoryId, n: sql<number>`count(*)::int` })
+        .from(scoreSheet)
+        .innerJoin(entry, eq(entry.id, scoreSheet.entryId))
+        .where(and(inArray(scoreSheet.categoryId, ids), eq(entry.status, 'ACTIVE')))
+        .groupBy(scoreSheet.categoryId),
+      conn
+        .select({ categoryId: categoryJudge.categoryId, judgeId: judge.id, isActive: judge.isActive })
+        .from(categoryJudge)
+        .innerJoin(judge, eq(judge.id, categoryJudge.judgeId))
+        .where(inArray(categoryJudge.categoryId, ids)),
+      conn
+        .selectDistinct({ categoryId: scoreSheet.categoryId, judgeId: scoreSheet.judgeId })
+        .from(scoreSheet)
+        .where(inArray(scoreSheet.categoryId, ids)),
+    ]);
+    const count = (rows: { categoryId: string; n: number }[], id: string) =>
+      rows.find((r) => r.categoryId === id)?.n ?? 0;
+    for (const c of cats) {
+      const judges = expectedJudges(
+        panel.filter((p) => p.categoryId === c.id),
+        withSheets.filter((s) => s.categoryId === c.id).map((s) => s.judgeId),
+      );
+      categories.set(c.id, categoryProgress(count(done, c.id), count(active, c.id), judges));
+    }
+    const all = [...categories.values()];
+    return {
+      done: all.reduce((s, p) => s + p.done, 0),
+      expected: all.reduce((s, p) => s + p.expected, 0),
+      categories,
+    };
+  }
+
   async config(conn: Conn, categoryId: string): Promise<CategoryConfig> {
     const [cat] = await conn
       .select({ tieBreak: category.tieBreakCriterionId })

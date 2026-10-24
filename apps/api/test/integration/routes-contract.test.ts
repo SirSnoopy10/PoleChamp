@@ -10,7 +10,6 @@ import { flushValkey } from '../support/http.js';
  * Trasa bez kontraktu = błąd; kontrakt bez trasy musi być na liście zadań kolejnych epików.
  */
 const PENDING_EPICS: Record<string, string> = {
-  'POST /v1/sync/push': 'EP-04',
   'GET /v1/judge/me/score-sheets': 'EP-04',
   'GET /v1/categories/{categoryId}/results': 'EP-04',
   'GET /v1/tournaments/{tournamentId}/results': 'EP-05',
