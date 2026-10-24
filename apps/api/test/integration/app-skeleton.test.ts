@@ -2,11 +2,13 @@ import { Body, Controller, Get, Module, Post } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { TournamentCreate } from '@polechamp/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { Public } from '../../src/common/auth/auth.decorators.js';
 import { DomainError } from '../../src/common/errors/domain-error.js';
 import { zod } from '../../src/common/validation/zod.pipe.js';
 import { startApp } from '../support/app.js';
 
 @Controller('test-errors')
+@Public()
 class ErrorsController {
   @Get('not-found')
   notFound() {

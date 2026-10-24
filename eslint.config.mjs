@@ -22,7 +22,11 @@ export default tseslint.config(
   // Testy: asercja `!` po wstawieniu rekordu testowego jest czytelniejsza niż warunki.
   {
     files: ['**/test/**/*.ts'],
-    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      // Treść odpowiedzi HTTP w testach integracyjnych jest dowolnym JSON-em.
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
   },
   // Silnik punktacji działa identycznie na serwerze i tablecie (ADR-011): zero importów platformowych.
   {

@@ -1,6 +1,7 @@
 import { Controller, Get, HttpCode, Inject, Injectable } from '@nestjs/common';
 import type Valkey from 'iovalkey';
 import type pg from 'pg';
+import { Public } from '../common/auth/auth.decorators.js';
 import { DomainError } from '../common/errors/domain-error.js';
 import { DB_POOL } from '../db/client.js';
 import { VALKEY } from '../infra/infra.module.js';
@@ -21,6 +22,7 @@ export class Readiness {
 }
 
 @Controller('health')
+@Public()
 export class HealthController {
   constructor(
     @Inject(DB_POOL) private readonly pool: pg.Pool,

@@ -26,8 +26,20 @@ export const pdf = {
   provisional: 'wstępny',
 } as const;
 
-/** E-maile transakcyjne (IMP-119 uzupełni treści). */
+/** E-maile transakcyjne (IMP-119). */
 export const email = {
+  greeting: 'Dzień dobry, {name}!',
+  signature: 'Zespół PoleChamp',
   verifySubject: 'Kod weryfikacyjny PoleChamp: {code}',
+  verifyBody:
+    'Twój kod weryfikacyjny to {code}. Wpisz go w aplikacji PoleChamp. Kod jest ważny przez 24 godziny.',
+  accountExistsSubject: 'Konto PoleChamp już istnieje',
+  accountExistsBody:
+    'Ktoś (być może Ty) próbował założyć konto PoleChamp na ten adres e-mail. Konto już istnieje – zaloguj się w aplikacji albo zresetuj hasło. Jeśli to nie Ty, zignoruj tę wiadomość.',
   resetSubject: 'Ustaw nowe hasło w PoleChamp',
+  resetBody:
+    'Aby ustawić nowe hasło, otwórz link: {link}. Link jest ważny przez 1 godzinę. Jeśli to nie Ty prosiłaś/prosiłeś o zmianę hasła, zignoruj tę wiadomość.',
+  deletionSubject: 'Twoje konto PoleChamp zostanie usunięte',
+  deletionBody:
+    'Przyjęliśmy wniosek o usunięcie konta. Konto jest już nieaktywne, a dane zostaną trwale usunięte {date}.',
 } as const;
