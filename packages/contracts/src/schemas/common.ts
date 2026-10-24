@@ -34,6 +34,16 @@ export function TrimmedString(min: number, max: number) {
     });
 }
 
+/**
+ * Imię i nazwisko (zawodniczka, sędzia – IMP-128 krok 4): litery łacińskie z diakrytykami, spacje,
+ * łącznik, apostrof i kropka; emoji i inne znaki → INVALID_FORMAT.
+ */
+export function PersonName(min: number, max: number) {
+  return TrimmedString(min, max).refine((v) => /^[\p{Script=Latin}\s'’.-]*$/u.test(v), {
+    message: 'INVALID_FORMAT',
+  });
+}
+
 /** Tekst opcjonalny: pusty po przycięciu → null. */
 export function OptionalTrimmedString(max: number) {
   return z

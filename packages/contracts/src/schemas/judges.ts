@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { Id, IsoDateTime, TrimmedString } from './common.js';
+import { Id, IsoDateTime, PersonName, TrimmedString } from './common.js';
 
 /** Sędziowie, urządzenia i parowanie (03-api §3.5; FR-502, FR-504, FR-505, FR-806; IMP-062). */
-export const JudgeCreate = z.strictObject({ fullName: TrimmedString(3, 80) });
+export const JudgeCreate = z.strictObject({ fullName: PersonName(3, 80) });
 
 export const JudgePatch = z.strictObject({
-  fullName: TrimmedString(3, 80).optional(),
+  fullName: PersonName(3, 80).optional(),
   initials: TrimmedString(1, 3).optional(),
   isActive: z.boolean().optional(),
 });

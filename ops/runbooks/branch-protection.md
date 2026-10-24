@@ -4,7 +4,7 @@ Ustawienia w GitHub → Settings → Branches → Branch protection rule dla `ma
 
 - Wymagaj PR przed scaleniem, **1 zatwierdzenie**; odrzucaj nieaktualne zatwierdzenia po nowych commitach.
 - Wymagane statusy (workflow `pr`): `lint`, `typecheck`, `unit`, `secrets`, `audit`.
-  Status `integration` dochodzi po pierwszym zielonym przebiegu w IMP-004.
+  Status `integration` (testy Testcontainers) – dodaj do wymaganych po pierwszym zielonym przebiegu.
 - Wymagaj aktualności gałęzi z `main` przed scaleniem.
 - Zakaz force-push i usuwania gałęzi.
 - Scalanie tylko przez squash (00-konwencje §6).

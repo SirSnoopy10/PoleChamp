@@ -8,11 +8,13 @@
     "build": "tsc -b tsconfig.build.json",
     "start": "node dist/main.js",
     "dev": "node --watch --env-file-if-exists=.env dist/main.js",
-    "migrate": "node dist/cli.js migrate",
+    "migrate": "node --env-file-if-exists=.env dist/cli.js migrate",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:int": "vitest run --config vitest.int.config.ts"
+    "test:int": "vitest run --config vitest.int.config.ts",
+    "dev-keys": "node dist/dev-keys.js",
+    "start:worker": "node --env-file-if-exists=.env dist/worker.js"
   },
   "dependencies": {
     "@fastify/compress": "^9.2.2",

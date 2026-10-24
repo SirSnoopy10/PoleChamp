@@ -89,3 +89,33 @@ jobs:
       - uses: ./.github/actions/setup
       # TC-SEC-005: podatność high/critical w zależnościach produkcyjnych blokuje PR.
       - run: pnpm audit --prod --audit-level high
+
+  # IMP-004: testy integracyjne na prawdziwym PostgreSQL 18 i Valkey (Testcontainers) dla zmian w API i pakietach.
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/contracts/**'
+              - 'packages/scoring/**'
+              - 'packages/i18n/**'
+      - if: steps.changes.outputs.api == 'true' || github.event_name == 'push'
+        uses: ./.github/actions/setup
+      - if: steps.changes.outputs.api == 'true' || github.event_name == 'push'
+        run: pnpm turbo run test:int --filter=@polechamp/api
+      - name: Raport JUnit
+        if: always() && (steps.changes.outputs.api == 'true' || github.event_name == 'push')
+        uses: dorny/test-reporter@v2
+        with:
+          name: integration
+          path: apps/api/reports/int.xml
+          reporter: java-junit

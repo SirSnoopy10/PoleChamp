@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/reports
+**/.env
+**/.env.*
+!**/.env.example
+**/.secrets
+design
+docs
+.git
+.claude

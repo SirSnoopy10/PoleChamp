@@ -23,6 +23,8 @@ describe('migracje (IMP-103…107)', () => {
       '0002_tournament_config',
       '0003_scoring',
       '0004_technical',
+      '0005_search',
+      '0006_judge_name_ci',
     ]);
   });
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Id, IntInRange, OptionalTrimmedString, TrimmedString } from './common.js';
+import { Id, IntInRange, OptionalTrimmedString, PersonName } from './common.js';
 
 /** Lista startowa (03-api §3.4; FR-402, FR-406; IMP-062). */
 export const EntryStatus = z.enum(['ACTIVE', 'WITHDRAWN']);
@@ -15,7 +15,7 @@ const BirthYear = z.number({ error: 'INVALID_FORMAT' }).superRefine((year, ctx) 
 
 const entryFields = {
   startNumber: IntInRange(1, 9999),
-  fullName: TrimmedString(2, 100),
+  fullName: PersonName(2, 100),
   club: OptionalTrimmedString(100),
   birthYear: BirthYear.nullable().optional(),
   isMinor: z.boolean().optional(),
