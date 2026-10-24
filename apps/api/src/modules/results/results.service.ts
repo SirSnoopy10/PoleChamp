@@ -1,15 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  aggregateEntry,
   type CategoryConfig,
   categoryProgress,
   canonicalResults,
   expectedJudges,
   type Progress,
-  rankEntries,
   type RankedRow,
-  type SheetSummary,
-  summarizeSheet,
 } from '@polechamp/scoring';
 import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { sha256Hex } from '../../common/ids.js';
@@ -28,6 +24,7 @@ import {
   scoreValue,
 } from '../../db/schema.js';
 import { DomainEventService } from '../audit/audit.service.js';
+import { rankCategory } from './calculator.js';
 
 type Conn = Db | Tx;
 
@@ -177,42 +174,44 @@ export class ResultsService {
     const config = await this.config(tx, categoryId);
     const judgeCount = await this.expectedJudgeCount(tx, categoryId);
     const entries = await tx.select().from(entry).where(eq(entry.categoryId, categoryId));
-    const sheets = await tx.select().from(scoreSheet).where(eq(scoreSheet.categoryId, categoryId));
-    const sheetIds = sheets.map((s) => s.id);
-    const values = sheetIds.length
-      ? await tx.select().from(scoreValue).where(inArray(scoreValue.scoreSheetId, sheetIds))
-      : [];
-    const penalties = sheetIds.length
-      ? await tx.select().from(scorePenalty).where(inArray(scorePenalty.scoreSheetId, sheetIds))
-      : [];
+    const sheets = await tx
+      .select({ id: scoreSheet.id, entryId: scoreSheet.entryId, judgeId: scoreSheet.judgeId })
+      .from(scoreSheet)
+      .where(eq(scoreSheet.categoryId, categoryId));
+    const [values, penalties] = sheets.length
+      ? await Promise.all([
+          tx
+            .select({
+              scoreSheetId: scoreValue.scoreSheetId,
+              criterionId: scoreValue.criterionId,
+              valueTenths: scoreValue.valueTenths,
+            })
+            .from(scoreValue)
+            .innerJoin(scoreSheet, eq(scoreSheet.id, scoreValue.scoreSheetId))
+            .where(eq(scoreSheet.categoryId, categoryId)),
+          tx
+            .select({
+              scoreSheetId: scorePenalty.scoreSheetId,
+              penaltyTypeId: scorePenalty.penaltyTypeId,
+              count: scorePenalty.count,
+            })
+            .from(scorePenalty)
+            .innerJoin(scoreSheet, eq(scoreSheet.id, scorePenalty.scoreSheetId))
+            .where(eq(scoreSheet.categoryId, categoryId)),
+        ])
+      : [[], []];
 
-    const summaries = new Map<string, SheetSummary[]>();
-    for (const s of sheets) {
-      const summary = summarizeSheet(
-        s.judgeId,
-        {
-          criteria: Object.fromEntries(
-            values.filter((v) => v.scoreSheetId === s.id).map((v) => [v.criterionId, v.valueTenths]),
-          ),
-          penalties: Object.fromEntries(
-            penalties.filter((p) => p.scoreSheetId === s.id).map((p) => [p.penaltyTypeId, p.count]),
-          ),
-        },
-        config,
-      );
-      summaries.set(s.entryId, [...(summaries.get(s.entryId) ?? []), summary]);
-    }
-
-    const ranked = rankEntries(
-      entries.map((e) => ({
-        entryId: e.id,
-        startNumber: e.startNumber,
-        startOrder: e.startOrder,
-        entryStatus: e.status,
-        aggregate: aggregateEntry(summaries.get(e.id) ?? [], judgeCount, cat.aggregationMethod),
-      })),
-      { categoryStatus: cat.status, forPdf: options.forPdf },
-    );
+    const ranked = rankCategory({
+      config,
+      judgeCount,
+      aggregationMethod: cat.aggregationMethod,
+      categoryStatus: cat.status,
+      forPdf: options.forPdf,
+      entries,
+      sheets,
+      values,
+      penalties,
+    });
 
     const resultsVersion = cat.resultsVersion + 1;
     await tx.update(category).set({ resultsVersion }).where(eq(category.id, categoryId));

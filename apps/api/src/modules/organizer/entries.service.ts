@@ -172,6 +172,8 @@ export class EntriesService {
       });
       await this.changes.append(tx, { tournamentId: t.id, entityType: 'athlete', entityId: a.id });
       await this.configChanged(tx, t, c, e.id);
+      // Nowy start w kategorii Trwa zmienia postęp i ranking (04 §10).
+      if (c.status === 'IN_PROGRESS') await this.results.recalculate(tx, c.id);
       return this.rowFor(tx, c, e.id);
     });
   }
@@ -257,10 +259,7 @@ export class EntriesService {
         entityId: e.id,
       });
       await this.configChanged(tx, t, c, e.id);
-      if (c.status === 'IN_PROGRESS') {
-        const { resultsVersion } = await this.results.recompute(tx, c.id);
-        await this.events.emit(tx, 'results.updated', { categoryId: c.id, resultsVersion }, t.id);
-      }
+      if (c.status === 'IN_PROGRESS') await this.results.recalculate(tx, c.id);
       return this.rowFor(tx, c, e.id);
     });
   }
@@ -295,10 +294,11 @@ export class EntriesService {
         .where(and(eq(entry.athleteId, a.id), ne(entry.id, e.id)));
       if ((others?.n ?? 0) === 0) await tx.delete(athlete).where(eq(athlete.id, a.id));
       await tx.execute(sql`SET CONSTRAINTS entry_start_order_uq DEFERRED`);
-      await tx
+      const shifted = await tx
         .update(entry)
         .set({ startOrder: sql`${entry.startOrder} - 1` })
-        .where(and(eq(entry.categoryId, c.id), gt(entry.startOrder, e.startOrder)));
+        .where(and(eq(entry.categoryId, c.id), gt(entry.startOrder, e.startOrder)))
+        .returning({ id: entry.id });
       await this.audit.record(tx, {
         action: 'ENTRY_DELETED',
         tournamentId: t.id,
@@ -307,6 +307,11 @@ export class EntriesService {
         before: { startNumber: e.startNumber },
       });
       await this.configChanged(tx, t, c, e.id, 'D');
+      // Przesunięta kolejka startowa też musi dotrzeć do tabletów.
+      for (const s of shifted) {
+        await this.changes.append(tx, { tournamentId: t.id, entityType: 'entry', entityId: s.id });
+      }
+      if (c.status === 'IN_PROGRESS') await this.results.recalculate(tx, c.id);
     });
   }
 }

@@ -360,7 +360,7 @@ describe('SUBMIT_SCORE_SHEET (IMP-147)', () => {
     expect((await rejections(t.id)).map((r) => r.reason)).toEqual(['PIN_VERSION_OUTDATED']);
   });
 
-  it('TC-INT-001: warunki przyjęcia – każdy kod z wpisem rejected_submission', async () => {
+  it('TC-INT-001 / TC-SYNC-031 / TC-SYNC-032: warunki przyjęcia – każdy kod z wpisem rejected_submission', async () => {
     const { t, c, judges, jA, entries, tablet, session } = await runningCategory(call, org, {
       judges: ['Katarzyna Nowak', 'Ewa Zielińska', 'Iwona Lis'],
     });

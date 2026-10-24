@@ -66,6 +66,8 @@ export const RejectedSubmission = z.object({
   receivedAt: IsoDateTime,
   payloadTotal: z.number(),
   resolution: RejectionResolution,
+  /** Po przyjęciu: sędzia ma nowszą ocenę tego startu – przyjęcie ją nadpisało (TC-EDGE-033). */
+  newerSheetExists: z.boolean().optional(),
 });
 
 export const ExportCreate = z

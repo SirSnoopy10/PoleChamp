@@ -146,6 +146,8 @@ export class CategoryLockService {
       });
       await this.changes.append(tx, { tournamentId: t.id, entityType: 'category', entityId: c.id });
       await this.events.emit(tx, 'category.unlocked', { categoryId: c.id }, t.id);
+      // Wyniki znów tymczasowe (bez sumy kontrolnej) – nowa wersja wyników (04 §10).
+      await this.results.recalculate(tx, c.id);
       return c.id;
     });
   }

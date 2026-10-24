@@ -6,6 +6,7 @@ import * as s from '../../src/db/schema.js';
 import { startApp } from '../support/app.js';
 import { testDb } from '../support/db.js';
 import { type Call, client, flushValkey, registerAndLogin } from '../support/http.js';
+import { mutation, push, runningCategory } from '../support/push.js';
 import { organizer } from '../support/scenario.js';
 
 let app: NestFastifyApplication;
@@ -33,7 +34,7 @@ const logCount = async (tournamentId: string) =>
 
 /**
  * IMP-145 krok 5: każda komenda zmieniająca encje synchronizowane z tabletem (02-model §2.21) zapisuje
- * co najmniej jeden wpis `change_log`. Komendy ocen i odrzuceń dopisuje IMP-147…149.
+ * co najmniej jeden wpis `change_log`. Odrzucenie ostateczne (`discard`) nie zmienia encji tabletu.
  */
 describe('kompletność dziennika zmian (IMP-145)', () => {
   it('komendy turniejów, kategorii, kryteriów, kar, startów i sędziów zapisują change_log', async () => {
@@ -188,5 +189,41 @@ describe('kompletność dziennika zmian (IMP-145)', () => {
     const before = await logCount(draft.id);
     expect((await org.req('DELETE', `/v1/tournaments/${draft.id}`, undefined, ifMatch(1))).status).toBe(204);
     expect(await logCount(draft.id), 'DELETE tournament').toBeGreaterThan(before);
+  });
+
+  it('komendy ocen (sync/push) i przyjęcie odrzuconego zgłoszenia zapisują change_log', async () => {
+    const { t, c, judges, jA, entries, tablet, session } = await runningCategory(call, org);
+    const sheet = (entryId: string) =>
+      mutation.submit({
+        judgeId: jA.id,
+        judgeSessionId: session.sessionId,
+        categoryId: c.id,
+        entryId,
+        criteria: c.criteria,
+      });
+    const steps: [string, () => Promise<unknown>][] = [
+      ['SUBMIT_SCORE_SHEET', () => push(call, tablet.token, [sheet(entries[0]!.id)])],
+      [
+        'PIN_ATTEMPTS_REPORT (blokada)',
+        () => push(call, tablet.token, [mutation.pinAttempts(judges[1]!.id, 10)]),
+      ],
+      [
+        'POST rejected accept',
+        async () => {
+          await org.req('POST', `/v1/categories/${c.id}/lock`, { force: true });
+          await push(call, tablet.token, [sheet(entries[1]!.id)]);
+          await org.req('POST', `/v1/categories/${c.id}/unlock`, { reason: 'Odrzucona ocena' });
+          const before = await logCount(t.id);
+          const [item] = (await org.req('GET', `/v1/tournaments/${t.id}/rejected-submissions`)).body.items;
+          await org.req('POST', `/v1/rejected-submissions/${item.id}/accept`);
+          return before;
+        },
+      ],
+    ];
+    for (const [name, run] of steps) {
+      const before = await logCount(t.id);
+      const inner = await run();
+      expect(await logCount(t.id), name).toBeGreaterThan(typeof inner === 'number' ? inner : before);
+    }
   });
 });

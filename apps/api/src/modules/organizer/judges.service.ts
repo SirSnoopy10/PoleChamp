@@ -15,6 +15,7 @@ import { category, categoryJudge, judge, judgeSession, scoreSheet } from '../../
 import { withTx } from '../../db/tx.js';
 import { AuditService, ChangeLogService, DomainEventService } from '../audit/audit.service.js';
 import { LimitsService } from '../limits/limits.service.js';
+import { ResultsService } from '../results/results.service.js';
 import { initialsOf } from './mappers.js';
 import { PinService } from './pin.service.js';
 import { one } from '../../db/one.js';
@@ -37,6 +38,7 @@ export class JudgesService {
     @Inject(OwnershipRepository) private readonly owned: OwnershipRepository,
     @Inject(LimitsService) private readonly limits: LimitsService,
     @Inject(PinService) private readonly pins: PinService,
+    @Inject(ResultsService) private readonly results: ResultsService,
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(ChangeLogService) private readonly changes: ChangeLogService,
     @Inject(DomainEventService) private readonly events: DomainEventService,
@@ -84,6 +86,30 @@ export class JudgesService {
         .returning({ categoryId: categoryJudge.categoryId });
       await this.panelsChanged(tx, tournamentId, joined);
     }
+  }
+
+  /** Zmiana J w kategoriach Trwa z sędzią w panelu (TL-18): przeliczenie wyników i postępu (IMP-150). */
+  private async recalculatePanels(tx: Tx, tournamentId: string, categoryIds: string[]) {
+    if (!categoryIds.length) return;
+    const running = await tx
+      .select({ id: category.id })
+      .from(category)
+      .where(
+        and(
+          eq(category.tournamentId, tournamentId),
+          eq(category.status, 'IN_PROGRESS'),
+          inArray(category.id, categoryIds),
+        ),
+      );
+    for (const c of running) await this.results.recalculate(tx, c.id);
+  }
+
+  private async panelsOf(tx: Tx, judgeId: string) {
+    const rows = await tx
+      .select({ categoryId: categoryJudge.categoryId })
+      .from(categoryJudge)
+      .where(eq(categoryJudge.judgeId, judgeId));
+    return rows.map((r) => r.categoryId);
   }
 
   /** Zmieniony skład panelu = zmiana kategorii dla tabletów (`panelJudgeIds` – TC-SYNC-038). */
@@ -151,6 +177,11 @@ export class JudgesService {
         )
         .returning({ categoryId: categoryJudge.categoryId });
       await this.panelsChanged(tx, t.id, joined);
+      await this.recalculatePanels(
+        tx,
+        t.id,
+        joined.map((r) => r.categoryId),
+      );
       await this.audit.record(tx, {
         action: 'JUDGE_CREATED',
         tournamentId: t.id,
@@ -195,6 +226,9 @@ export class JudgesService {
         after: { fullName: updated.fullName, initials: updated.initials, isActive: updated.isActive },
       });
       await this.judgesChanged(tx, t, j.id);
+      if (patch.isActive !== undefined && patch.isActive !== j.isActive) {
+        await this.recalculatePanels(tx, t.id, await this.panelsOf(tx, j.id));
+      }
       return this.toRow(tx, updated);
     });
   }
@@ -251,12 +285,14 @@ export class JudgesService {
         .from(scoreSheet)
         .where(eq(scoreSheet.judgeId, j.id));
       if ((sheets?.n ?? 0) > 0) throw new DomainError('HAS_SCORES');
-      const panels = await tx
-        .select({ categoryId: categoryJudge.categoryId })
-        .from(categoryJudge)
-        .where(eq(categoryJudge.judgeId, j.id));
+      const panels = await this.panelsOf(tx, j.id);
       await tx.delete(judge).where(eq(judge.id, j.id));
-      await this.panelsChanged(tx, t.id, panels);
+      await this.panelsChanged(
+        tx,
+        t.id,
+        panels.map((categoryId) => ({ categoryId })),
+      );
+      await this.recalculatePanels(tx, t.id, panels);
       await this.audit.record(tx, {
         action: 'JUDGE_DELETED',
         tournamentId: t.id,
