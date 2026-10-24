@@ -1,0 +1,33 @@
+{
+  "description": "Wektory TL-04 (IMP-144, IMP-305): K_dev = HKDF-SHA256(pinPepper, salt pusty, info \"pc-pin-v1\", 32 B); aad = UTF-8(judgeId małymi literami) ‖ uint32 BE(pinVersion); wrapped = base64(iv 12 B ‖ AES-256-GCM(K_dev, verifier, aad) ‖ tag 16 B); verifier = PBKDF2-HMAC-SHA256(pin, salt, iterations, 32 B). Wszystkie bajty w base64.",
+  "vectors": [
+    {
+      "name": "PIN 8306, wersja 1",
+      "pinPepper": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "judgeId": "019a2b3c-4d5e-7f60-8a1b-2c3d4e5f6a7b",
+      "pinVersion": 1,
+      "pin": "8306",
+      "salt": "oKGio6SlpqeoqaqrrK2urw==",
+      "iterations": 600000,
+      "verifier": "UrTFVKWRX088SWzURoaMe+LRSVs4qIFgEy4DjsbL+TM=",
+      "deviceKey": "Oaw75l6/wFNT2aR86zfwcsogAkNkAjQfK39IZOziGng=",
+      "aad": "MDE5YTJiM2MtNGQ1ZS03ZjYwLThhMWItMmMzZDRlNWY2YTdiAAAAAQ==",
+      "iv": "sLGys7S1tre4ubq7",
+      "wrapped": "sLGys7S1tre4ubq7ouS3uGPBrZFzWn8cTo+YJnTUFqWYBYaJe9PCxj83SK/Zp1dFa0gZBv0tsLLLIzxA"
+    },
+    {
+      "name": "PIN 4092, wersja 4 (po resetach)",
+      "pinPepper": "/+7dzLuqmYh3ZlVEMyIRAP/u3cy7qpmId2ZVRDMiEQA=",
+      "judgeId": "019a2b3c-4d5e-7f60-8a1b-000000000042",
+      "pinVersion": 4,
+      "pin": "4092",
+      "salt": "Dx4tPEtaaXiHlqW0w9Lh8A==",
+      "iterations": 600000,
+      "verifier": "d85+9z4pl3IebH2UaJAgLbNLs0JnVySROOO3pNTi3LE=",
+      "deviceKey": "zf+Ln/63TklEBdMEZevZg0Mqq/jVlDecyqe92JHdWRY=",
+      "aad": "MDE5YTJiM2MtNGQ1ZS03ZjYwLThhMWItMDAwMDAwMDAwMDQyAAAABA==",
+      "iv": "AAAAAAAAAAAAAAAB",
+      "wrapped": "AAAAAAAAAAAAAAABhi+7yk/2iCCuPLYNA6rQciiMnlDjGtvLegdlLsjBan4fKRLblgaNWMWGUO03kdOd"
+    }
+  ]
+}

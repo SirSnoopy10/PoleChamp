@@ -116,6 +116,7 @@ export class TournamentsService {
         entityId: t.id,
         after: toTournament(t),
       });
+      await this.changes.append(tx, { tournamentId: t.id, entityType: 'tournament', entityId: t.id });
       return toTournament(t);
     });
   }
@@ -218,6 +219,12 @@ export class TournamentsService {
         entityType: 'tournament',
         entityId: t.id,
         before: toTournament(t),
+      });
+      await this.changes.append(tx, {
+        tournamentId: t.id,
+        entityType: 'tournament',
+        entityId: t.id,
+        op: 'D',
       });
     });
   }

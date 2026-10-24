@@ -77,10 +77,19 @@ export class JudgesService {
         and(eq(category.tournamentId, tournamentId), inArray(category.status, ['DRAFT', 'IN_PROGRESS'])),
       );
     if (cats.length) {
-      await tx
+      const joined = await tx
         .insert(categoryJudge)
         .values(cats.map((c) => ({ categoryId: c.id, judgeId })))
-        .onConflictDoNothing();
+        .onConflictDoNothing()
+        .returning({ categoryId: categoryJudge.categoryId });
+      await this.panelsChanged(tx, tournamentId, joined);
+    }
+  }
+
+  /** Zmieniony skład panelu = zmiana kategorii dla tabletów (`panelJudgeIds` – TC-SYNC-038). */
+  private async panelsChanged(tx: Tx, tournamentId: string, rows: { categoryId: string }[]) {
+    for (const { categoryId } of rows) {
+      await this.changes.append(tx, { tournamentId, entityType: 'category', entityId: categoryId });
     }
   }
 
@@ -132,12 +141,16 @@ export class JudgesService {
           .returning()
           .catch(nameTaken),
       );
-      await tx.insert(categoryJudge).select(
-        tx
-          .select({ categoryId: category.id, judgeId: sql<string>`${j.id}::uuid`.as('judge_id') })
-          .from(category)
-          .where(and(eq(category.tournamentId, t.id), eq(category.status, 'IN_PROGRESS'))),
-      );
+      const joined = await tx
+        .insert(categoryJudge)
+        .select(
+          tx
+            .select({ categoryId: category.id, judgeId: sql<string>`${j.id}::uuid`.as('judge_id') })
+            .from(category)
+            .where(and(eq(category.tournamentId, t.id), eq(category.status, 'IN_PROGRESS'))),
+        )
+        .returning({ categoryId: categoryJudge.categoryId });
+      await this.panelsChanged(tx, t.id, joined);
       await this.audit.record(tx, {
         action: 'JUDGE_CREATED',
         tournamentId: t.id,
@@ -238,7 +251,12 @@ export class JudgesService {
         .from(scoreSheet)
         .where(eq(scoreSheet.judgeId, j.id));
       if ((sheets?.n ?? 0) > 0) throw new DomainError('HAS_SCORES');
+      const panels = await tx
+        .select({ categoryId: categoryJudge.categoryId })
+        .from(categoryJudge)
+        .where(eq(categoryJudge.judgeId, j.id));
       await tx.delete(judge).where(eq(judge.id, j.id));
+      await this.panelsChanged(tx, t.id, panels);
       await this.audit.record(tx, {
         action: 'JUDGE_DELETED',
         tournamentId: t.id,

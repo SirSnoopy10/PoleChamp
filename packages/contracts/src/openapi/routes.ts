@@ -669,7 +669,7 @@ export const routes: readonly RouteDef[] = [
     path: '/v1/sync/snapshot',
     operationId: 'getSnapshot',
     summary: 'Migawka turnieju dla tabletu',
-    permission: 'DEV',
+    permission: 'DEV|JDG',
     success: { status: 200, schema: sync.Snapshot },
     errors: ['DEVICE_REVOKED'],
   },

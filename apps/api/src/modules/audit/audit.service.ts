@@ -77,6 +77,13 @@ export class ChangeLogService {
       audience?: string;
     },
   ): Promise<number> {
+    // Blokada wiersza turnieju przed przydziałem `seq`: numery w turnieju rosną w kolejności zatwierdzeń,
+    // więc kursor (maks. widoczny `seq`) nie pomija zmian zatwierdzanych równolegle (TC-EDGE-050).
+    await tx
+      .select({ id: tournament.id })
+      .from(tournament)
+      .where(eq(tournament.id, input.tournamentId))
+      .for('no key update');
     const [row] = await tx
       .insert(changeLog)
       .values({
@@ -89,6 +96,30 @@ export class ChangeLogService {
       .returning({ seq: changeLog.seq });
     const seq = row?.seq ?? 0;
     await tx.update(tournament).set({ changeSeq: seq }).where(eq(tournament.id, input.tournamentId));
+    return seq;
+  }
+
+  /**
+   * Arkusz ocen widzą tylko jego autor (`JUDGE:{id}`) i urządzenie, z którego pochodzi (`DEVICE:{id}`),
+   * także po przyjęciu odrzuconego zgłoszenia przez organizatora (TL-49).
+   */
+  async appendSheet(
+    tx: Tx,
+    input: { tournamentId: string; scoreSheetId: string; judgeId: string; deviceId: string | null },
+  ): Promise<number> {
+    const base = { tournamentId: input.tournamentId, entityType: 'score_sheet' as const };
+    let seq = await this.append(tx, {
+      ...base,
+      entityId: input.scoreSheetId,
+      audience: `JUDGE:${input.judgeId}`,
+    });
+    if (input.deviceId) {
+      seq = await this.append(tx, {
+        ...base,
+        entityId: input.scoreSheetId,
+        audience: `DEVICE:${input.deviceId}`,
+      });
+    }
     return seq;
   }
 }

@@ -11,7 +11,7 @@ export type Isolation = 'read committed' | 'repeatable read' | 'serializable';
 export function withTx<T>(
   db: Db,
   fn: (tx: Tx) => Promise<T>,
-  options: { isolation?: Isolation; actor?: Actor } = {},
+  options: { isolation?: Isolation; readOnly?: boolean; actor?: Actor } = {},
 ): Promise<T> {
   const actor = options.actor ?? requestContext.actor();
   const requestId = requestContext.requestId();
@@ -24,6 +24,9 @@ export function withTx<T>(
       );
       return fn(tx);
     },
-    { isolationLevel: options.isolation ?? 'read committed' },
+    {
+      isolationLevel: options.isolation ?? 'read committed',
+      ...(options.readOnly ? { accessMode: 'read only' as const } : {}),
+    },
   );
 }
