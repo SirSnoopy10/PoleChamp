@@ -3,8 +3,12 @@ packages:
   - packages/*
   - tools/*
 
+# Skrypty instalacyjne zależności: tylko te, które budują binaria natywne potrzebne projektowi.
 allowBuilds:
   lefthook: true
-
-minimumReleaseAgeExclude:
-  - i18next@26.5.8
+  '@swc/core': true
+  argon2: true
+  esbuild: true
+  cpu-features: false
+  protobufjs: false
+  ssh2: false

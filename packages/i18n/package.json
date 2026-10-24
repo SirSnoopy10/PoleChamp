@@ -20,6 +20,6 @@
   },
   "dependencies": {
     "@polechamp/contracts": "workspace:*",
-    "i18next": "26.5.8"
+    "i18next": "26.5.6"
   }
 }
