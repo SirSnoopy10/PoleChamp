@@ -4,7 +4,9 @@
     "composite": false,
     "declaration": false,
     "declarationMap": false,
-    "types": ["node"]
+    "types": ["node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src", "test", "*.ts"]
 }

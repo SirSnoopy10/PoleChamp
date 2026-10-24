@@ -2,22 +2,17 @@
   "name": "@polechamp/api",
   "version": "0.0.0",
   "private": true,
-  "description": "Backend PoleChamp (NestJS 12 + Fastify) – szkielet",
+  "description": "Backend PoleChamp (NestJS 12 + Fastify 5, PostgreSQL 18)",
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
+    "start": "node dist/main.js",
+    "dev": "node --watch --env-file-if-exists=.env dist/main.js",
+    "migrate": "node dist/cli.js migrate",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --passWithNoTests",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:int": "vitest run --config vitest.int.config.ts"
   },
   "dependencies": {
     "@fastify/compress": "^9.2.2",
@@ -29,6 +24,7 @@
     "@polechamp/scoring": "workspace:*",
     "argon2": "0.45.1",
     "drizzle-orm": "0.45.4",
+    "fastify": "5.12.7",
     "iovalkey": "^0.4.0",
     "jose": "6.2.13",
     "nestjs-pino": "5.3.1",

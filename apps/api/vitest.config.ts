@@ -1,13 +1,14 @@
+import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
 
-// API: 80% linii (IMP-003). Testy integracyjne (test:int) mają osobną konfigurację w IMP-451.
+// Testy jednostkowe API (bez Dockera). SWC emituje metadane dekoratorów potrzebne NestJS.
 export default defineConfig({
+  plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
-    include: ['test/**/*.test.ts', 'src/**/*.test.ts'],
+    include: ['test/unit/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts'],
       reporter: ['text', 'json-summary', 'json'],
       thresholds: { lines: 80 },
     },

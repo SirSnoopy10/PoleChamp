@@ -15,7 +15,14 @@ export default tseslint.config(
     linterOptions: { reportUnusedDisableDirectives: 'error' },
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+      // Moduły NestJS to klasy z samym dekoratorem `@Module`.
+      '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
     },
+  },
+  // Testy: asercja `!` po wstawieniu rekordu testowego jest czytelniejsza niż warunki.
+  {
+    files: ['**/test/**/*.ts'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   // Silnik punktacji działa identycznie na serwerze i tablecie (ADR-011): zero importów platformowych.
   {
