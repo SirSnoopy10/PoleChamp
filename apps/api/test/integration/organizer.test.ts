@@ -432,12 +432,13 @@ describe('blokada kategorii (IMP-127)', () => {
 
     const locked = await org.req('POST', `/v1/categories/${c.id}/lock`, { force: true });
     expect(locked.status).toBe(200);
-    expect(locked.body).toMatchObject({ status: 'LOCKED', resultsVersion: 1 });
+    // Wersja 1 powstaje przy starcie kategorii (IMP-150), blokada daje kolejną.
+    expect(locked.body).toMatchObject({ status: 'LOCKED', resultsVersion: 2 });
     const rows = await handle.db.select().from(s.categoryResult).where(eq(s.categoryResult.categoryId, c.id));
     const expected = createHash('sha256')
       .update(
         canonicalResults(
-          { categoryId: c.id, resultsVersion: 1, aggregationMethod: 'MEAN', judgeCount: 2 },
+          { categoryId: c.id, resultsVersion: 2, aggregationMethod: 'MEAN', judgeCount: 2 },
           rows.map((r) => {
             const e = entries.find((x) => x.id === r.entryId)!;
             return {

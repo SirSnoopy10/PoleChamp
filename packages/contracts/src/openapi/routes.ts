@@ -587,7 +587,7 @@ export const routes: readonly RouteDef[] = [
     operationId: 'listEntryScoreSheets',
     summary: 'Oceny sędziów dla startu',
     permission: 'ORG:owner',
-    success: { status: 200, schema: z.object({ items: z.array(res.OrgScoreSheet) }) },
+    success: { status: 200, schema: res.EntryScoreSheets },
     errors: [],
   },
   {

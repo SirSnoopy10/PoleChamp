@@ -30,6 +30,8 @@ export const ResultsResponse = z.object({
   formula: AggregationMethod,
   tieBreak: z.object({ criterionId: Id, criterionName: z.string() }).nullable(),
   rows: z.array(ResultRow),
+  /** Kategoria nierozegrana (W przygotowaniu) w turnieju zakończonym (FR-705). */
+  unplayed: z.boolean().optional(),
 });
 
 export const TournamentResults = z.object({ tournamentId: Id, categories: z.array(ResultsResponse) });
@@ -45,7 +47,22 @@ export const OrgScoreSheet = z.object({
   total: z.number(),
   authMode: AuthMode,
   revision: z.number().int().positive(),
+  /** Liczba rewizji (> 1 – ocena poprawiana, SCR-ORG-19). */
+  revisionCount: z.number().int().positive(),
   updatedAt: IsoDateTime,
+});
+
+/** Oceny startu dla organizatora (SCR-ORG-19): arkusze, sędziowie panelu bez oceny, podsumowanie. */
+export const EntryScoreSheets = z.object({
+  items: z.array(OrgScoreSheet),
+  missingJudges: z.array(z.object({ id: Id, fullName: z.string() })),
+  summary: z.object({
+    official: z.number().nullable(),
+    display: z.string(),
+    rank: z.number().int().positive().nullable(),
+    sheetCount: z.number().int().min(0),
+    expectedCount: z.number().int().min(0),
+  }),
 });
 
 export const ScoreSheetRevision = z.object({
@@ -53,6 +70,10 @@ export const ScoreSheetRevision = z.object({
   createdAt: IsoDateTime,
   total: z.number(),
   actorType: z.enum(['JUDGE', 'ORGANIZER']),
+  authMode: AuthMode.optional(),
+  criteria: z.array(z.object({ criterionId: Id, value: z.number() })).optional(),
+  penalties: z.array(z.object({ penaltyTypeId: Id, count: z.number().int() })).optional(),
+  comment: z.string().optional(),
 });
 
 export const RejectionResolution = z.enum(['PENDING', 'ACCEPTED', 'DISCARDED']);

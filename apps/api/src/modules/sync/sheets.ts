@@ -16,6 +16,7 @@ export interface SheetView {
   comment: string;
   revision: number;
   total: number;
+  authMode: 'ONLINE_PIN' | 'OFFLINE_PIN';
   updatedAt: string;
 }
 
@@ -43,6 +44,7 @@ export async function loadSheets(conn: Conn, where: SQL | undefined): Promise<Sh
     comment: s.comment,
     revision: s.revision,
     total: s.totalHundredths / 100,
+    authMode: s.authMode,
     updatedAt: s.submittedAt.toISOString(),
   }));
 }

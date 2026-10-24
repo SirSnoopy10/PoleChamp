@@ -169,18 +169,44 @@ export class ResultsService {
   }
 
   async recompute(tx: Tx, categoryId: string, options: { forPdf?: boolean } = {}): Promise<RecomputeResult> {
-    const [cat] = await tx.select().from(category).where(eq(category.id, categoryId));
+    const { cat, ranked, judgeCount } = await this.compute(tx, categoryId, options);
+    const resultsVersion = cat.resultsVersion + 1;
+    await tx.update(category).set({ resultsVersion }).where(eq(category.id, categoryId));
+    await tx.delete(categoryResult).where(eq(categoryResult.categoryId, categoryId));
+    if (ranked.length) {
+      await tx.insert(categoryResult).values(
+        ranked.map((r) => ({
+          categoryId,
+          entryId: r.entryId,
+          sheetCount: r.aggregate.sheetCount,
+          expectedCount: r.aggregate.expectedCount,
+          sumHundredths: r.aggregate.sumHundredths,
+          officialHundredths: r.aggregate.officialHundredths,
+          tieBreakHundredths: r.aggregate.tieBreakHundredths,
+          penaltyMeanHundredths: r.aggregate.penaltyMeanHundredths,
+          rank: r.rank,
+          isComplete: r.aggregate.isComplete,
+          resultsVersion,
+        })),
+      );
+    }
+    return { resultsVersion, rows: ranked, judgeCount };
+  }
+
+  /** Ranking z bieżących ocen bez zapisu (podstawa `recompute`; odczyt kategorii bez `category_result`). */
+  async compute(conn: Conn, categoryId: string, options: { forPdf?: boolean } = {}) {
+    const [cat] = await conn.select().from(category).where(eq(category.id, categoryId));
     if (!cat) throw new Error(`Brak kategorii ${categoryId}`);
-    const config = await this.config(tx, categoryId);
-    const judgeCount = await this.expectedJudgeCount(tx, categoryId);
-    const entries = await tx.select().from(entry).where(eq(entry.categoryId, categoryId));
-    const sheets = await tx
+    const config = await this.config(conn, categoryId);
+    const judgeCount = await this.expectedJudgeCount(conn, categoryId);
+    const entries = await conn.select().from(entry).where(eq(entry.categoryId, categoryId));
+    const sheets = await conn
       .select({ id: scoreSheet.id, entryId: scoreSheet.entryId, judgeId: scoreSheet.judgeId })
       .from(scoreSheet)
       .where(eq(scoreSheet.categoryId, categoryId));
     const [values, penalties] = sheets.length
       ? await Promise.all([
-          tx
+          conn
             .select({
               scoreSheetId: scoreValue.scoreSheetId,
               criterionId: scoreValue.criterionId,
@@ -189,7 +215,7 @@ export class ResultsService {
             .from(scoreValue)
             .innerJoin(scoreSheet, eq(scoreSheet.id, scoreValue.scoreSheetId))
             .where(eq(scoreSheet.categoryId, categoryId)),
-          tx
+          conn
             .select({
               scoreSheetId: scorePenalty.scoreSheetId,
               penaltyTypeId: scorePenalty.penaltyTypeId,
@@ -212,28 +238,7 @@ export class ResultsService {
       values,
       penalties,
     });
-
-    const resultsVersion = cat.resultsVersion + 1;
-    await tx.update(category).set({ resultsVersion }).where(eq(category.id, categoryId));
-    await tx.delete(categoryResult).where(eq(categoryResult.categoryId, categoryId));
-    if (ranked.length) {
-      await tx.insert(categoryResult).values(
-        ranked.map((r) => ({
-          categoryId,
-          entryId: r.entryId,
-          sheetCount: r.aggregate.sheetCount,
-          expectedCount: r.aggregate.expectedCount,
-          sumHundredths: r.aggregate.sumHundredths,
-          officialHundredths: r.aggregate.officialHundredths,
-          tieBreakHundredths: r.aggregate.tieBreakHundredths,
-          penaltyMeanHundredths: r.aggregate.penaltyMeanHundredths,
-          rank: r.rank,
-          isComplete: r.aggregate.isComplete,
-          resultsVersion,
-        })),
-      );
-    }
-    return { resultsVersion, rows: ranked, judgeCount };
+    return { cat, ranked, judgeCount };
   }
 
   /** SHA-256 kanonicznego JSON wyników (FR-706, TL-16) – bez danych osobowych. */

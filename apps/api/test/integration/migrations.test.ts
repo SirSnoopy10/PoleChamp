@@ -26,6 +26,7 @@ describe('migracje (IMP-103…107)', () => {
       '0005_search',
       '0006_judge_name_ci',
       '0007_event_device_target',
+      '0008_score_sheet_judge_idx',
     ]);
   });
 

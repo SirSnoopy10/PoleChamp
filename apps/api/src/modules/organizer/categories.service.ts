@@ -296,7 +296,9 @@ export class CategoriesService {
         t.id,
       );
       await this.events.emit(tx, 'sync.hint', { cursor }, t.id);
-      return this.details(tx, updated);
+      // Pierwsza wersja wyników (wszystkie starty bez ocen) – `category_result` kompletny od startu.
+      await this.results.recalculate(tx, c.id);
+      return this.details(tx, (await this.owned.category(tx, c.id, ownerId)).category);
     });
   }
 
