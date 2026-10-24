@@ -30,6 +30,11 @@ export const EnvSchema = z.object({
   PASSWORD_LIST_FILE: z.string().optional(),
   /** Opóźnienie zamknięcia po SIGTERM (deregistracja ALB) – IMP-100 krok 5. */
   SHUTDOWN_DELAY_MS: z.coerce.number().int().min(0).default(10_000),
+  /** Publikator outboxu zdarzeń realtime w tym procesie (lider wybierany blokadą advisory – IMP-155). */
+  EVENT_PUBLISHER_ENABLED: z
+    .enum(['true', 'false', '1', '0'])
+    .transform((v) => v === 'true' || v === '1')
+    .default(true),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

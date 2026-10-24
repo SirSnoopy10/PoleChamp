@@ -29,6 +29,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
   constructor(@Inject(DB) private readonly db: Db) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (context.getType() !== 'http') return next.handle();
     const request = context.switchToHttp().getRequest<AuthedRequest>();
     const header = request.headers['idempotency-key'];
     if (request.method !== 'POST' || header === undefined || request.auth?.typ !== 'org')

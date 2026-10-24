@@ -1,5 +1,5 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { and, count, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, eq, inArray } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { uuidv7 } from '../../src/common/ids.js';
 import type { DbHandle } from '../../src/db/client.js';
@@ -38,7 +38,8 @@ const events = (tournamentId: string, type: string) =>
   handle.db
     .select()
     .from(s.domainEvent)
-    .where(and(eq(s.domainEvent.tournamentId, tournamentId), eq(s.domainEvent.type, type)));
+    .where(and(eq(s.domainEvent.tournamentId, tournamentId), eq(s.domainEvent.type, type)))
+    .orderBy(asc(s.domainEvent.id));
 const audits = (tournamentId: string, action: string) =>
   handle.db
     .select()

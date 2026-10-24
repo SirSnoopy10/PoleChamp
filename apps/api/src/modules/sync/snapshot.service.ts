@@ -5,6 +5,7 @@ import { DomainError } from '../../common/errors/domain-error.js';
 import { groupBy } from '../../common/group-by.js';
 import { deviceKey, wrapVerifier } from '../../crypto/pin-wrap.js';
 import { DB, type Db, type Tx } from '../../db/client.js';
+import { inSequence } from '../../db/sequence.js';
 import {
   athlete,
   category,
@@ -94,7 +95,7 @@ export class SnapshotService {
       .orderBy(asc(category.position));
     const ids = categories.map((c) => c.id);
     const [criteria, penalties, panel, entries] = ids.length
-      ? await Promise.all([
+      ? await inSequence([
           tx
             .select()
             .from(criterion)

@@ -6,6 +6,7 @@ import { DomainError } from '../../common/errors/domain-error.js';
 import { groupBy } from '../../common/group-by.js';
 import { deviceKey } from '../../crypto/pin-wrap.js';
 import { DB, type Db, type Tx } from '../../db/client.js';
+import { inSequence } from '../../db/sequence.js';
 import {
   athlete,
   category,
@@ -154,7 +155,7 @@ export class ChangesService {
 
     const categoryIds = of('category');
     if (categoryIds.length) {
-      const [cats, panel] = await Promise.all([
+      const [cats, panel] = await inSequence([
         tx
           .select()
           .from(category)
@@ -219,7 +220,7 @@ export class ChangesService {
 
     const athleteIds = of('athlete');
     if (athleteIds.length) {
-      const [athletes, starts] = await Promise.all([
+      const [athletes, starts] = await inSequence([
         tx
           .select({ id: athlete.id, fullName: athlete.fullName, club: athlete.club })
           .from(athlete)

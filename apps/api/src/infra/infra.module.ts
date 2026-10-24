@@ -1,4 +1,4 @@
-import { Global, Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
+import { Global, Inject, Logger, Module, type OnApplicationShutdown } from '@nestjs/common';
 import Valkey from 'iovalkey';
 import { ENV, type Env } from '../config/env.js';
 import { createDb, DB, DB_POOL, type DbHandle } from '../db/client.js';
@@ -29,13 +29,22 @@ export class InfraModule implements OnApplicationShutdown {
         { provide: DB_POOL, useFactory: (h: DbHandle) => h.pool, inject: [DB_HANDLE] },
         {
           provide: VALKEY,
-          useFactory: () =>
-            new Valkey(env.VALKEY_URL, {
+          useFactory: () => {
+            const client = new Valkey(env.VALKEY_URL, {
               lazyConnect: true,
               maxRetriesPerRequest: 1,
               enableOfflineQueue: false,
               connectTimeout: 1_000,
-            }),
+            });
+            // Awaria Valkey nie zatrzymuje API (limity fail-open, realtime czeka – NFR-307); log raz na stan.
+            let lastError = '';
+            client.on('error', (err: Error) => {
+              if (err.message !== lastError) new Logger('Valkey').warn(`Valkey niedostępny: ${err.message}`);
+              lastError = err.message;
+            });
+            client.on('ready', () => (lastError = ''));
+            return client;
+          },
         },
       ],
       exports: [ENV, DB, DB_POOL, DB_HANDLE, VALKEY],

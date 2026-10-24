@@ -3,6 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditService, ChangeLogService, DomainEventService } from '../modules/audit/audit.service.js';
 import { JwtService } from '../modules/auth/jwt.service.js';
 import { AuthGuard } from './auth/auth.guard.js';
+import { PrincipalService } from './auth/principal.service.js';
 import { EtagInterceptor } from './concurrency/etag.js';
 import { IdempotencyInterceptor } from './idempotency/idempotency.interceptor.js';
 import { RateLimitGuard } from './rate-limit/rate-limit.guard.js';
@@ -16,6 +17,7 @@ import { RateLimitService } from './rate-limit/rate-limit.service.js';
 @Module({
   providers: [
     JwtService,
+    PrincipalService,
     RateLimitService,
     AuditService,
     ChangeLogService,
@@ -25,6 +27,13 @@ import { RateLimitService } from './rate-limit/rate-limit.service.js';
     { provide: APP_INTERCEPTOR, useClass: EtagInterceptor },
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
   ],
-  exports: [JwtService, RateLimitService, AuditService, ChangeLogService, DomainEventService],
+  exports: [
+    JwtService,
+    PrincipalService,
+    RateLimitService,
+    AuditService,
+    ChangeLogService,
+    DomainEventService,
+  ],
 })
 export class CommonModule {}

@@ -29,6 +29,7 @@ export const IfMatch = createParamDecorator((_data: unknown, ctx: ExecutionConte
 @Injectable()
 export class EtagInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (context.getType() !== 'http') return next.handle();
     const reply = context.switchToHttp().getResponse<FastifyReply>();
     return next.handle().pipe(
       map((body: unknown) => {

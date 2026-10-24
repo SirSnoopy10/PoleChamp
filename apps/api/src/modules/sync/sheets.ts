@@ -1,6 +1,7 @@
 import { asc, inArray, type SQL } from 'drizzle-orm';
 import { groupBy } from '../../common/group-by.js';
 import type { Db, Tx } from '../../db/client.js';
+import { inSequence } from '../../db/sequence.js';
 import { scorePenalty, scoreSheet, scoreValue } from '../../db/schema.js';
 
 type Conn = Db | Tx;
@@ -25,7 +26,7 @@ export async function loadSheets(conn: Conn, where: SQL | undefined): Promise<Sh
   const sheets = await conn.select().from(scoreSheet).where(where).orderBy(asc(scoreSheet.submittedAt));
   if (!sheets.length) return [];
   const ids = sheets.map((s) => s.id);
-  const [values, penalties] = await Promise.all([
+  const [values, penalties] = await inSequence([
     conn.select().from(scoreValue).where(inArray(scoreValue.scoreSheetId, ids)),
     conn.select().from(scorePenalty).where(inArray(scorePenalty.scoreSheetId, ids)),
   ]);

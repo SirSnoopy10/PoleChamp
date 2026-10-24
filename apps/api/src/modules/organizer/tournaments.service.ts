@@ -209,10 +209,14 @@ export class TournamentsService {
       if ((sheets?.n ?? 0) > 0) throw new DomainError('HAS_SCORES');
       await tx.update(tournament).set({ deletedAt: new Date() }).where(eq(tournament.id, t.id));
       // Tablety usuniętego turnieju są unieważniane (IMP-141 krok 6).
-      await tx
+      const revoked = await tx
         .update(device)
         .set({ revokedAt: new Date() })
-        .where(and(eq(device.tournamentId, t.id), isNull(device.revokedAt)));
+        .where(and(eq(device.tournamentId, t.id), isNull(device.revokedAt)))
+        .returning({ id: device.id });
+      for (const d of revoked) {
+        await this.events.emit(tx, 'session.revoked', { reason: 'DEVICE_REVOKED' }, t.id, { deviceId: d.id });
+      }
       await this.audit.record(tx, {
         action: 'TOURNAMENT_DELETED',
         tournamentId: t.id,

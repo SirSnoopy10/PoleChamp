@@ -8,6 +8,7 @@ import { uuidv7, UUID_RE } from './common/ids.js';
 import { requestContext, SYSTEM_ACTOR } from './common/request-context.js';
 import type { Env } from './config/env.js';
 import { Readiness } from './health/health.controller.js';
+import { RealtimeAdapter } from './modules/realtime/adapter.js';
 
 type RawRequest = { headers: Record<string, string | string[] | undefined> };
 
@@ -38,6 +39,7 @@ export async function createApp(
     },
   );
   app.setGlobalPrefix('v1', { exclude: ['health/{*path}'] });
+  app.useWebSocketAdapter(new RealtimeAdapter(app, env.VALKEY_URL));
   app.enableShutdownHooks();
 
   const fastify = app.getHttpAdapter().getInstance();

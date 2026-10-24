@@ -284,18 +284,14 @@ export class CategoriesService {
         entityId: c.id,
         after: { panelJudgeIds: activeJudges.map((j) => j.id) },
       });
-      const cursor = await this.changes.append(tx, {
-        tournamentId: t.id,
-        entityType: 'category',
-        entityId: c.id,
-      });
+      // `sync.hint` dla tabletów emituje dziennik zmian (raz na transakcję).
+      await this.changes.append(tx, { tournamentId: t.id, entityType: 'category', entityId: c.id });
       await this.events.emit(
         tx,
         'category.updated',
         { categoryId: c.id, status: 'IN_PROGRESS', version: updated.version },
         t.id,
       );
-      await this.events.emit(tx, 'sync.hint', { cursor }, t.id);
       // Pierwsza wersja wyników (wszystkie starty bez ocen) – `category_result` kompletny od startu.
       await this.results.recalculate(tx, c.id);
       return this.details(tx, (await this.owned.category(tx, c.id, ownerId)).category);

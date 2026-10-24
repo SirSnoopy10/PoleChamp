@@ -1,5 +1,5 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { DbHandle } from '../../src/db/client.js';
 import * as s from '../../src/db/schema.js';
@@ -71,7 +71,8 @@ describe('przeliczanie wyników (IMP-150)', () => {
     const updates = await handle.db
       .select()
       .from(s.domainEvent)
-      .where(eq(s.domainEvent.type, 'results.updated'));
+      .where(eq(s.domainEvent.type, 'results.updated'))
+      .orderBy(asc(s.domainEvent.id));
     expect(
       updates.filter((e) => (e.payload as { categoryId: string }).categoryId === c.id).at(-1)!.payload,
     ).toEqual({

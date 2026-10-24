@@ -2,6 +2,7 @@ import type { Type } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { OrganizerModule } from './organizer/organizer.module.js';
+import { RealtimeModule } from './realtime/realtime.module.js';
 import { RejectedModule } from './rejected/rejected.module.js';
 import { ResultsModule } from './results/results.module.js';
 import { ScoringModule } from './scoring/scoring.module.js';
@@ -16,4 +17,5 @@ export const FEATURE_MODULES: Type[] = [
   RejectedModule,
   ResultsModule,
   ScoringModule,
+  RealtimeModule,
 ];

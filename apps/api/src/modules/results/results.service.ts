@@ -10,6 +10,7 @@ import {
 import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { sha256Hex } from '../../common/ids.js';
 import type { Db, Tx } from '../../db/client.js';
+import { inSequence } from '../../db/sequence.js';
 import { one } from '../../db/one.js';
 import {
   category,
@@ -90,7 +91,7 @@ export class ResultsService {
     const categories = new Map<string, Progress>();
     if (!cats.length) return { done: 0, expected: 0, categories };
     const ids = cats.map((c) => c.id);
-    const [active, done, panel, withSheets] = await Promise.all([
+    const [active, done, panel, withSheets] = await inSequence([
       conn
         .select({ categoryId: entry.categoryId, n: sql<number>`count(*)::int` })
         .from(entry)
@@ -205,7 +206,7 @@ export class ResultsService {
       .from(scoreSheet)
       .where(eq(scoreSheet.categoryId, categoryId));
     const [values, penalties] = sheets.length
-      ? await Promise.all([
+      ? await inSequence([
           conn
             .select({
               scoreSheetId: scoreValue.scoreSheetId,

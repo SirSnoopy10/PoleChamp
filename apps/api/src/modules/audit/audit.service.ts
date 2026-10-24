@@ -67,6 +67,9 @@ export type ChangeEntity =
 /** Dziennik zmian dla synchronizacji tabletów (IMP-109, 06-offline §4): kursor `seq` per turniej. */
 @Injectable()
 export class ChangeLogService {
+  /** Zdarzenie `sync.hint` bieżącej transakcji (jedno na transakcję – IMP-156 krok 3). */
+  private readonly hints = new WeakMap<Tx, number>();
+
   async append(
     tx: Tx,
     input: {
@@ -96,7 +99,22 @@ export class ChangeLogService {
       .returning({ seq: changeLog.seq });
     const seq = row?.seq ?? 0;
     await tx.update(tournament).set({ changeSeq: seq }).where(eq(tournament.id, input.tournamentId));
+    await this.hint(tx, input.tournamentId, seq);
     return seq;
+  }
+
+  /** `sync.hint { cursor }` dla tabletów turnieju – kolejne wpisy w transakcji przesuwają tylko kursor. */
+  private async hint(tx: Tx, tournamentId: string, cursor: number): Promise<void> {
+    const existing = this.hints.get(tx);
+    if (existing !== undefined) {
+      await tx.update(domainEvent).set({ payload: { cursor } }).where(eq(domainEvent.id, existing));
+      return;
+    }
+    const [event] = await tx
+      .insert(domainEvent)
+      .values({ type: 'sync.hint', payload: { cursor }, tournamentId })
+      .returning({ id: domainEvent.id });
+    if (event) this.hints.set(tx, event.id);
   }
 
   /**

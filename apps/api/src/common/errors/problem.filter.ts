@@ -29,6 +29,16 @@ export class ProblemDetailsFilter implements ExceptionFilter {
   private readonly logger = new Logger('ProblemDetails');
 
   catch(exception: unknown, host: ArgumentsHost): void {
+    if (host.getType() !== 'http') {
+      // Kanał realtime: błąd handlera tylko w logu, klient dostaje kod bez szczegółów.
+      const code = exception instanceof DomainError ? exception.code : 'INTERNAL';
+      if (code === 'INTERNAL') this.logger.error({ err: exception }, 'Błąd handlera realtime');
+      host
+        .switchToWs()
+        .getClient<{ emit: (event: string, data: unknown) => void }>()
+        .emit('exception', { code });
+      return;
+    }
     const http = host.switchToHttp();
     const reply = http.getResponse<FastifyReply>();
     const request = http.getRequest<FastifyRequest>();
