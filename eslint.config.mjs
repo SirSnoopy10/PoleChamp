@@ -13,6 +13,9 @@ export default tseslint.config(
   {
     languageOptions: { globals: { ...globals.node } },
     linterOptions: { reportUnusedDisableDirectives: 'error' },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+    },
   },
   // Silnik punktacji działa identycznie na serwerze i tablecie (ADR-011): zero importów platformowych.
   {
