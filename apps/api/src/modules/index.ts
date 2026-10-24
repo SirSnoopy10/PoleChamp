@@ -4,6 +4,7 @@ import { DevicesModule } from './devices/devices.module.js';
 import { OrganizerModule } from './organizer/organizer.module.js';
 import { RealtimeModule } from './realtime/realtime.module.js';
 import { RejectedModule } from './rejected/rejected.module.js';
+import { ExportsModule } from './exports/exports.module.js';
 import { ResultsModule } from './results/results.module.js';
 import { ScoringModule } from './scoring/scoring.module.js';
 import { SyncModule } from './sync/sync.module.js';
@@ -18,4 +19,5 @@ export const FEATURE_MODULES: Type[] = [
   ResultsModule,
   ScoringModule,
   RealtimeModule,
+  ExportsModule,
 ];

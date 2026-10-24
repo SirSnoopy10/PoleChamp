@@ -1,4 +1,4 @@
-# Środowisko lokalne backendu (IMP-006): PostgreSQL 18, Valkey 8, MinIO (eksporty PDF), Mailpit (e-maile).
+# Środowisko lokalne backendu (IMP-006): PostgreSQL 18, Valkey 8, S3Mock (eksporty PDF), Mailpit (e-maile).
 # Uruchomienie: docker compose up -d && pnpm --filter @polechamp/api migrate (szczegóły w apps/api/README.md).
 services:
   postgres:
@@ -22,21 +22,12 @@ services:
       interval: 2s
       retries: 30
 
-  minio:
-    image: minio/minio
-    command: server /data --console-address :9001
+  # Lokalne S3 dla eksportów PDF (IMP-171); obrazy MinIO nie są już publikowane w Docker Hub.
+  s3:
+    image: adobe/s3mock:4.10.0
     environment:
-      MINIO_ROOT_USER: polechamp
-      MINIO_ROOT_PASSWORD: polechamp-dev
-    ports: ['9000:9000', '9001:9001']
-    volumes: ['miniodata:/data']
-
-  minio-init:
-    image: minio/mc
-    depends_on: [minio]
-    entrypoint: >
-      /bin/sh -c "until mc alias set local http://minio:9000 polechamp polechamp-dev; do sleep 1; done;
-      mc mb --ignore-existing local/exports"
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: exports
+    ports: ['9090:9090']
 
   mailpit:
     image: axllent/mailpit
@@ -44,4 +35,3 @@ services:
 
 volumes:
   pgdata:
-  miniodata:

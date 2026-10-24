@@ -23,7 +23,28 @@ export const org = {
 /** PDF z wynikami (ADR-009). */
 export const pdf = {
   footer: 'Wersja wyników {version} · suma kontrolna {hash}',
+  version: 'Wersja wyników {version}',
   provisional: 'wstępny',
+  title: 'Wyniki',
+  categoryTitle: '{name} · {status}',
+  columns: {
+    rank: '#',
+    number: 'Nr',
+    athlete: 'Zawodniczka',
+    club: 'Klub',
+    score: 'Wynik',
+    judges: 'Sędziowie',
+  },
+  withdrawn: 'Wycofana',
+  noScores: 'brak ocen',
+  unplayed: 'Nie rozegrano: {names}',
+  noCategories: 'Brak kategorii',
+  pseudonym: 'Zawodniczka nr {number}',
+  generatedAt: 'Wygenerowano {date}',
+  page: 'Strona {page} z {pages}',
+  personalData:
+    'Dokument zawiera dane osobowe uczestniczek – udostępniaj wyłącznie w celu ogłoszenia wyników zawodów.',
+  fileName: 'wyniki-{slug}.pdf',
 } as const;
 
 /** E-maile transakcyjne (IMP-119). */

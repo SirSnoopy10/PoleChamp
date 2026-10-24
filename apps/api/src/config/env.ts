@@ -35,6 +35,14 @@ export const EnvSchema = z.object({
     .enum(['true', 'false', '1', '0'])
     .transform((v) => v === 'true' || v === '1')
     .default(true),
+  /** Eksporty PDF (IMP-171): bucket S3; lokalnie MinIO (`S3_ENDPOINT`, styl ścieżek, klucze dev). */
+  S3_BUCKET: z.string().default('exports'),
+  S3_REGION: z.string().default('eu-central-1'),
+  S3_ENDPOINT: z.url().optional(),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  /** Klucz KMS dla SSE-KMS (w chmurze); brak = bez nagłówka szyfrowania (MinIO). */
+  S3_KMS_KEY_ID: z.string().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

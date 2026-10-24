@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ResultsResponse } from '@polechamp/contracts';
+import { pseudonymLabel } from '@polechamp/i18n';
 import { formatRanking, maxJudgeScore, type RankedRow } from '@polechamp/scoring';
 import { asc, eq } from 'drizzle-orm';
 import { DB, type Db } from '../../db/client.js';
@@ -105,11 +106,24 @@ export class ResultsReadService {
       .where(eq(criterion.categoryId, c.id))
       .orderBy(asc(criterion.position));
     const people = await this.db
-      .select({ id: entry.id, fullName: athlete.fullName, club: athlete.club })
+      .select({
+        id: entry.id,
+        startNumber: entry.startNumber,
+        fullName: athlete.fullName,
+        club: athlete.club,
+        pseudonymizedAt: athlete.pseudonymizedAt,
+      })
       .from(entry)
       .innerJoin(athlete, eq(athlete.id, entry.athleteId))
       .where(eq(entry.categoryId, c.id));
-    const person = new Map(people.map((p) => [p.id, p]));
+    // Dane po pseudonimizacji (FR-904): „Zawodniczka nr {nr}”, bez klubu – tak samo w UI i PDF.
+    const person = new Map(
+      people.map((p) =>
+        p.pseudonymizedAt
+          ? [p.id, { fullName: pseudonymLabel(p.startNumber), club: null }]
+          : [p.id, { fullName: p.fullName, club: p.club }],
+      ),
+    );
     const { rows, judgeCount } = await this.rows(c);
     rows.sort(displayOrder);
     const display = formatRanking(

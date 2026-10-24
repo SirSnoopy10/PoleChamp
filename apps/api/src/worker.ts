@@ -1,23 +1,16 @@
-import { Worker } from 'bullmq';
-import { createTransport } from 'nodemailer';
+import 'reflect-metadata';
+import { pino } from 'pino';
 import { loadEnv } from './config/env.js';
-import { EmailProcessor } from './modules/email/email.processor.js';
-import { bullConnection, EMAIL_QUEUE_NAME, type EmailJob } from './modules/email/email.queue.js';
+import { startWorker } from './worker/bootstrap.js';
 
-/** Worker bez HTTP (IMP-100 krok 2): kolejka e-maili; PDF i retencja dojdą w EP-05. */
+/** Proces `worker` bez HTTP (IMP-170): kolejki `pdf`, `email`, `retention` z DLQ i metrykami. */
 const env = loadEnv();
-const smtpUrl = process.env.SMTP_URL ?? 'smtp://localhost:1025';
-const processor = new EmailProcessor(
-  createTransport(smtpUrl),
-  process.env.EMAIL_FROM ?? 'PoleChamp <no-reply@polechamp.app>',
-);
-
-const worker = new Worker<EmailJob>(EMAIL_QUEUE_NAME, (job) => processor.process(job), {
-  connection: bullConnection(env.VALKEY_URL),
-  concurrency: 5,
-});
+const logger = pino({ level: env.LOG_LEVEL });
+const worker = await startWorker(env, logger);
+logger.info('worker uruchomiony');
 
 const shutdown = async () => {
+  logger.info('zamykanie workera');
   await worker.close();
   process.exit(0);
 };

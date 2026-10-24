@@ -9,13 +9,13 @@ Backend PoleChamp: NestJS 12 na Fastify 5, PostgreSQL 18 (Drizzle), Valkey 8, Bu
 ## Uruchomienie lokalne (IMP-006)
 
 ```bash
-docker compose up -d                      # PostgreSQL, Valkey, MinIO, Mailpit
+docker compose up -d                      # PostgreSQL, Valkey, S3Mock, Mailpit
 cp apps/api/.env.example apps/api/.env
 pnpm --filter @polechamp/api build
 pnpm --filter @polechamp/api dev-keys     # wklej wypisane JWT_KEYS i PIN_FINGERPRINT_KEY do .env
 pnpm --filter @polechamp/api migrate      # role, migracje SQL, uprawnienia
 pnpm --filter @polechamp/api dev          # API: http://localhost:3000, health: /health/ready
-pnpm --filter @polechamp/api start:worker # kolejka e-maili → Mailpit (http://localhost:8025)
+pnpm --filter @polechamp/api start:worker # kolejki pdf, email (Mailpit http://localhost:8025), retention
 ```
 
 | Usługa     | Port        | Uwagi                                                                            |
@@ -23,14 +23,14 @@ pnpm --filter @polechamp/api start:worker # kolejka e-maili → Mailpit (http://
 | API        | 3000        | prefiks `/v1`, `/health/live`, `/health/ready`                                   |
 | PostgreSQL | 5432        | aplikacja: rola `pc_app`; migracje: `postgres` lokalnie, `pc_migrator` w chmurze |
 | Valkey     | 6379        | limity zapytań, kolejki BullMQ                                                   |
-| MinIO      | 9000 / 9001 | bucket `exports` (PDF – EP-05)                                                   |
+| S3Mock     | 9090        | lokalne S3, bucket `exports` (PDF – EP-05)                                       |
 | Mailpit    | 1025 / 8025 | e-maile z kodami i resetem hasła                                                 |
 
 ## Testy
 
 ```bash
 pnpm --filter @polechamp/api test        # jednostkowe (bez Dockera)
-pnpm --filter @polechamp/api test:int    # integracyjne: Testcontainers (postgres:18, valkey/valkey:8)
+pnpm --filter @polechamp/api test:int    # integracyjne: Testcontainers (postgres:18, valkey:8, s3mock)
 ```
 
 ## Zmienne środowiskowe

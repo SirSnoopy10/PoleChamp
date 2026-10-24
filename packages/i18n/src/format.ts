@@ -60,3 +60,6 @@ export const formatRange = (from: number, to: number): string => `${from}${EN_DA
 
 /** Polskie cudzysłowy: „tekst”. */
 export const quote = (text: string): string => `„${text}”`;
+
+/** Etykieta zawodniczki po pseudonimizacji (FR-904): „Zawodniczka nr 47”. */
+export const pseudonymLabel = (startNumber: number): string => `Zawodniczka nr ${startNumber}`;

@@ -5,6 +5,7 @@ import { exportJWK, generateKeyPair } from 'jose';
 import { inject } from 'vitest';
 import { createApp } from '../../src/bootstrap.js';
 import { loadEnv, type Env } from '../../src/config/env.js';
+import { S3_KEY, S3_SECRET } from '../setup/containers.js';
 
 /** Para kluczy ES256 w formacie sekretu `jwt-signing` (IMP-014). */
 export async function generateJwtKeys(kid = 'test-key-1'): Promise<string> {
@@ -22,6 +23,9 @@ export async function testEnv(overrides: Record<string, string> = {}): Promise<E
     PIN_FINGERPRINT_KEY: randomBytes(32).toString('base64'),
     APP_MIN_VERSION: '1.2.0',
     SHUTDOWN_DELAY_MS: '0',
+    S3_ENDPOINT: inject('s3Endpoint'),
+    S3_ACCESS_KEY_ID: S3_KEY,
+    S3_SECRET_ACCESS_KEY: S3_SECRET,
     ...overrides,
   });
 }
