@@ -16,7 +16,7 @@ export default tseslint.config(
   },
   // Silnik punktacji działa identycznie na serwerze i tablecie (ADR-011): zero importów platformowych.
   {
-    files: ['packages/scoring/**/*.ts'],
+    files: ['packages/scoring/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

@@ -19,5 +19,9 @@
     "test": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "fast-check": "^4.10.2"
+  },
+  "sideEffects": false
 }
