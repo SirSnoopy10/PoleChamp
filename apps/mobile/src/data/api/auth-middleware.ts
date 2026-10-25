@@ -1,4 +1,5 @@
 import type { Middleware } from 'openapi-fetch';
+import { network } from '../network/online';
 import { updateSignal } from './app-version';
 import { tokenStore, type OrgTokens } from './tokens';
 import { uuidv7 } from './uuid';
@@ -57,6 +58,10 @@ export function createAuthMiddleware(options: AuthMiddlewareOptions): Middleware
   }
 
   return {
+    onError({ id }) {
+      pending.delete(id);
+      network.reportHttpFailure();
+    },
     onRequest({ request, id }) {
       const token = options.getToken();
       if (token && !request.headers.has('Authorization'))
@@ -72,6 +77,8 @@ export function createAuthMiddleware(options: AuthMiddlewareOptions): Middleware
     async onResponse({ request, response, id }) {
       const original = pending.get(id);
       pending.delete(id);
+      // Dowolna odpowiedź serwera = API osiągalne (definicja „online”, TL-45).
+      network.reportHttpSuccess();
       const minApp = response.headers.get('X-Min-App-Version');
       if (minApp) updateSignal.report({ minAppVersion: minApp });
       if (response.status !== 401 || !original || NO_REFRESH.test(new URL(request.url).pathname))
