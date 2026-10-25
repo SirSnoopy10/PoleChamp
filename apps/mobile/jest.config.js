@@ -17,13 +17,25 @@ const TRANSFORM = [
   'react-native-mmkv',
   'react-native-nitro-modules',
   'standard-navigation',
+  // msw 2 (testy warstwy API) – zależności tylko w ESM.
+  'msw',
+  '@mswjs/.*',
+  'rettime',
+  'until-async',
+  'outvariant',
+  'strict-event-emitter',
+  '@open-draft/.*',
 ].join('|');
+
+const expoPreset = require('jest-expo/jest-preset');
 
 /** @type {import('jest').Config} */
 module.exports = {
   preset: 'jest-expo',
   // Reanimated 4 / Worklets: w Jest moduły w wariancie web (bez natywnego runtime'u workletów).
   resolver: require.resolve('react-native-reanimated/jest/resolver'),
+  // Pakiety tylko ESM (`.mjs`, np. zależności msw) transformuje ten sam babel co `.js`.
+  transform: { ...expoPreset.transform, '\\.mjs$': expoPreset.transform['\\.[jt]sx?$'] },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testMatch: [
     '<rootDir>/src/**/*.test.{ts,tsx}',
