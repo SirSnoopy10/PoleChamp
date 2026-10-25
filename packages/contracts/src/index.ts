@@ -5,6 +5,7 @@ export const PACKAGE_NAME = '@polechamp/contracts';
 
 export * from './errors/codes.js';
 export * from './validation.js';
+export * from './privacy.js';
 export * from './schemas/common.js';
 export * from './schemas/auth.js';
 export * from './schemas/tournaments.js';

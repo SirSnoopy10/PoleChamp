@@ -17,6 +17,7 @@ const TRANSFORM = [
   'react-native-mmkv',
   'react-native-nitro-modules',
   'standard-navigation',
+  '@sentry/.*',
   // msw 2 (testy warstwy API) – zależności tylko w ESM.
   'msw',
   '@mswjs/.*',

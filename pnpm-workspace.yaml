@@ -20,3 +20,5 @@ allowBuilds:
   better-sqlite3: false
   # msw: postinstall kopiuje service worker dla przeglądarki – w testach Node zbędny.
   msw: false
+  # @sentry/cli: binarium z pakietów opcjonalnych (@sentry/cli-<platforma>); postinstall to tylko zapas.
+  '@sentry/cli': false

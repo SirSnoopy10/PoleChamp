@@ -5,6 +5,19 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  * Wartości zastępcze do czasu kont Apple/Google/EAS: `EAS_PROJECT_ID`, `APPLE_TEAM_ID`.
  */
 const BG = '#161826';
+const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
+/** Sentry (region UE) – plugin tylko po ustawieniu organizacji i projektu (wysyłka source map w EAS). */
+const SENTRY =
+  process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
+    ? ([
+        '@sentry/react-native/expo',
+        {
+          organization: process.env.SENTRY_ORG,
+          project: process.env.SENTRY_PROJECT,
+          url: 'https://de.sentry.io/',
+        },
+      ] as [string, Record<string, string>])
+    : null;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -13,6 +26,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'polechamp',
   version: '0.1.0',
   runtimeVersion: { policy: 'appVersion' },
+  // Aktualizacje EAS dopiero po założeniu projektu (EAS_PROJECT_ID); do tego czasu wyłączone.
+  updates: EAS_PROJECT_ID ? { url: `https://u.expo.dev/${EAS_PROJECT_ID}` } : { enabled: false },
   // Blokady orientacji per tryb ustawiane w runtime (IMP-213).
   orientation: 'default',
   userInterfaceStyle: 'dark',
@@ -60,9 +75,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       { image: './assets/splash-icon.png', imageWidth: 160, backgroundColor: BG, resizeMode: 'contain' },
     ],
     './plugins/with-android-resizability.js',
+    ...(SENTRY ? [SENTRY] : []),
   ],
   experiments: { typedRoutes: true },
   extra: {
-    eas: { projectId: process.env.EAS_PROJECT_ID ?? '00000000-0000-0000-0000-000000000000' },
+    eas: { projectId: EAS_PROJECT_ID ?? '00000000-0000-0000-0000-000000000000' },
   },
 });
