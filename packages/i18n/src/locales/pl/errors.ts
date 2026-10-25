@@ -47,6 +47,11 @@ export const errors = {
   CURSOR_EXPIRED: GENERIC,
   EMAIL_TAKEN: GENERIC,
   INTERNAL: GENERIC,
+  /** Błędy po stronie klienta (aplikacja, IMP-214) – bez kodu API. */
+  client: {
+    NETWORK: 'Brak połączenia z internetem.',
+    TIMEOUT: 'Serwer nie odpowiada. Spróbuj ponownie.',
+  },
   field: {
     REQUIRED: 'To pole jest wymagane.',
     TOO_SHORT: 'Za krótki tekst (min. {min} znaki).',

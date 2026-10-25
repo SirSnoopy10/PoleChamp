@@ -3,15 +3,16 @@ import { common, email, org, pdf } from './locales/pl/common.js';
 import { errors } from './locales/pl/errors.js';
 import { judge } from './locales/pl/judge.js';
 import { toasts } from './locales/pl/toasts.js';
+import { ui } from './locales/pl/ui.js';
 import { pseudoDictionary } from './pseudo.js';
 
 /** @polechamp/i18n – teksty PL dla aplikacji, PDF i e-maili (IMP-069, IMP-070). */
 export const PACKAGE_NAME = '@polechamp/i18n';
 
-export const NAMESPACES = ['common', 'org', 'judge', 'errors', 'toasts', 'pdf', 'email'] as const;
+export const NAMESPACES = ['common', 'org', 'judge', 'errors', 'toasts', 'pdf', 'email', 'ui'] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
-export const pl = { common, org, judge, errors, toasts, pdf, email } as const;
+export const pl = { common, org, judge, errors, toasts, pdf, email, ui } as const;
 
 export interface CreateI18nOptions {
   /** Pseudolokalizacja do testów układu (NFR-604). */

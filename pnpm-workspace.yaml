@@ -13,3 +13,8 @@ allowBuilds:
   protobufjs: false
   ssh2: false
   msgpackr-extract: false
+  # Mobile (EP-06): binaria z opcjonalnych pakietów platformowych – skrypty zbędne.
+  '@parcel/watcher': false
+  unrs-resolver: false
+  # Mock expo-sqlite w testach Jest (IMP-201) – binaria w pakiecie (prebuilds/).
+  better-sqlite3: false

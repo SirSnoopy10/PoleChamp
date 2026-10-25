@@ -4,7 +4,11 @@
     "composite": false,
     "declaration": false,
     "declarationMap": false,
-    "types": ["node"]
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2023", "DOM"],
+    "allowJs": false,
+    "types": ["jest", "node"]
   },
-  "include": ["src", "test", "*.ts"]
+  "include": ["app", "src", "*.ts", "expo-env.d.ts", ".expo/types/**/*.ts"]
 }

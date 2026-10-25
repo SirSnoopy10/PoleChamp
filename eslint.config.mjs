@@ -6,7 +6,15 @@ import polechamp from './tools/eslint-rules/src/index.ts';
 
 export default tseslint.config(
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '**/.turbo/**', 'design/**', 'docs/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      '**/.turbo/**',
+      'design/**',
+      'docs/**',
+      '**/.expo/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.strict,
@@ -73,5 +81,12 @@ export default tseslint.config(
       'polechamp/no-raw-style-values': 'error',
     },
   },
-  // eslint-plugin-react-native-a11y nie deklaruje zgodności z ESLint 9 – dołączenie w IMP-200 (projekt Expo).
+  // Konfiguracja Expo/Metro/Jest i config pluginy aplikacji mobilnej są w CommonJS.
+  {
+    files: ['apps/mobile/*.js', 'apps/mobile/plugins/**/*.js'],
+    languageOptions: { sourceType: 'commonjs', globals: { ...globals.node, ...globals.jest } },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  // eslint-plugin-react-native-a11y nie deklaruje zgodności z ESLint 9 – a11y sprawdzają testy RNTL
+  // (role, etykiety) i przegląd DevCatalog (IMP-212).
 );
