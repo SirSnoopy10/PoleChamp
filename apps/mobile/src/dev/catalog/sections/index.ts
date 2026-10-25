@@ -2,3 +2,5 @@
 import './typography.catalog';
 import './buttons.catalog';
 import './icons.catalog';
+import './status.catalog';
+import './cards.catalog';
