@@ -26,7 +26,7 @@ GRANT UPDATE (before, after, ip) ON audit_log TO pc_retention;
 GRANT UPDATE (snapshot) ON score_sheet_revision TO pc_retention;
 GRANT UPDATE (full_name, club, birth_year, pseudonymized_at) ON athlete TO pc_retention;
 GRANT UPDATE (full_name, initials) ON judge TO pc_retention;
-GRANT DELETE ON export_job TO pc_retention;
+GRANT DELETE ON export_job, domain_event TO pc_retention;
 -- Dziennik zmian dla tabletów po pseudonimizacji (blokada i kursor turnieju) oraz audyt `SYSTEM`.
 GRANT INSERT ON change_log, domain_event, audit_log TO pc_retention;
 GRANT UPDATE (change_seq) ON tournament TO pc_retention;

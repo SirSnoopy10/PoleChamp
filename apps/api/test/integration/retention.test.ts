@@ -203,8 +203,27 @@ describe('zadanie retencji (IMP-176)', () => {
       sql`CREATE TABLE audit_log_2020_01 PARTITION OF audit_log FOR VALUES FROM ('2020-01-01') TO ('2020-02-01')`,
     );
 
+    const events = await admin.db
+      .insert(s.domainEvent)
+      .values([
+        { type: 'sync.hint', payload: {}, publishedAt: daysAgo(8) },
+        { type: 'sync.hint', payload: {}, publishedAt: daysAgo(6) },
+        { type: 'sync.hint', payload: {} },
+      ])
+      .returning({ id: s.domainEvent.id });
+
     const report = await job().run(NOW);
 
+    const leftEvents = await admin.db
+      .select({ id: s.domainEvent.id })
+      .from(s.domainEvent)
+      .where(
+        inArray(
+          s.domainEvent.id,
+          events.map((e) => e.id),
+        ),
+      );
+    expect(leftEvents.map((e) => e.id)).toEqual(events.slice(1).map((e) => e.id));
     const logs = async (id: string) => admin.db.$count(s.changeLog, eq(s.changeLog.tournamentId, id));
     expect(await logs(old.tournament.id)).toBe(0);
     expect(await logs(fresh.tournament.id)).toBe(1);

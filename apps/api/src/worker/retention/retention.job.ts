@@ -124,6 +124,14 @@ export class RetentionJob {
                 AND (t.status <> 'FINISHED' OR t.finished_at >= ${at}::timestamptz - interval '30 days'))`),
       ),
     );
+    // Outbox zdarzeń realtime: opublikowane > 7 dni (jak `EventPublisher.purgePublished`).
+    await step('domainEventsDeleted', async (tx) =>
+      count(
+        await tx.execute(
+          sql`DELETE FROM domain_event WHERE published_at < ${at}::timestamptz - interval '7 days'`,
+        ),
+      ),
+    );
     await step('idempotencyKeysDeleted', async (tx) =>
       count(
         await tx.execute(
