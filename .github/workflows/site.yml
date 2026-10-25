@@ -1,0 +1,61 @@
+# Strona statyczna (IMP-179): build i testy na PR; publikacja do S3 + unieważnienie CloudFront po scaleniu.
+# Publikacja działa dopiero po utworzeniu infrastruktury (IMP-012) i ustawieniu zmiennych repozytorium:
+# AWS_SITE_ROLE_ARN, SITE_BUCKET, SITE_DISTRIBUTION_ID, APPLE_APP_ID, ANDROID_PACKAGE, ANDROID_CERT_SHA256.
+name: site
+
+on:
+  pull_request:
+    paths: ['apps/site/**', 'packages/tokens/**', '.github/workflows/site.yml']
+  push:
+    branches: [main]
+    paths: ['apps/site/**', 'packages/tokens/**', '.github/workflows/site.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - run: pnpm turbo run build test --filter=@polechamp/site
+        env:
+          APPLE_APP_ID: ${{ vars.APPLE_APP_ID }}
+          ANDROID_PACKAGE: ${{ vars.ANDROID_PACKAGE }}
+          ANDROID_CERT_SHA256: ${{ vars.ANDROID_CERT_SHA256 }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: apps/site/public
+          include-hidden-files: true
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && vars.SITE_BUCKET != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: public
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_SITE_ROLE_ARN }}
+          aws-region: eu-central-1
+      - name: Publikacja do S3
+        run: |
+          aws s3 sync public "s3://${{ vars.SITE_BUCKET }}" --delete \
+            --exclude ".well-known/apple-app-site-association"
+          # Bez rozszerzenia – jawny Content-Type wymagany przez Apple.
+          aws s3 cp public/.well-known/apple-app-site-association \
+            "s3://${{ vars.SITE_BUCKET }}/.well-known/apple-app-site-association" \
+            --content-type application/json
+      - name: Unieważnienie CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "${{ vars.SITE_DISTRIBUTION_ID }}" --paths "/*"

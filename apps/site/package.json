@@ -1,0 +1,16 @@
+{
+  "name": "@polechamp/site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Strona statyczna PoleChamp: dokumenty prawne, usunięcie konta, linki uniwersalne (IMP-179)",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json && node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@expo-google-fonts/inter": "0.4.2",
+    "@polechamp/tokens": "workspace:*"
+  }
+}

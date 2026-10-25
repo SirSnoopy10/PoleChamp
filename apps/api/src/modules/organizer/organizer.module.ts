@@ -30,6 +30,15 @@ import { TournamentsService } from './tournaments.service.js';
     EntriesService,
     JudgesService,
   ],
-  exports: [OwnershipRepository, LimitsService, ResultsService, CategoryLockService],
+  exports: [
+    OwnershipRepository,
+    LimitsService,
+    ResultsService,
+    CategoryLockService,
+    TournamentsService,
+    CategoriesService,
+    EntriesService,
+    JudgesService,
+  ],
 })
 export class OrganizerModule {}

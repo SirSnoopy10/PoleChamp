@@ -357,6 +357,15 @@ importers:
         specifier: workspace:*
         version: link:../../packages/tokens
 
+  apps/site:
+    dependencies:
+      '@expo-google-fonts/inter':
+        specifier: 0.4.2
+        version: 0.4.2
+      '@polechamp/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+
   packages/contracts:
     dependencies:
       '@asteasolutions/zod-to-openapi':
