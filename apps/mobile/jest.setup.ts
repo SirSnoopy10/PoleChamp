@@ -30,3 +30,8 @@ jest.mock('react-native-worklets', () => ({
   ...jest.requireActual('react-native-worklets'),
   getUIRuntimeHolder: () => ({}),
 }));
+
+jest.mock('react-native-keyboard-controller', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('react-native-keyboard-controller/jest'),
+);

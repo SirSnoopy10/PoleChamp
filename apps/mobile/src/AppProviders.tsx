@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { color } from '@polechamp/tokens';
 import { I18nProvider } from './i18n';
 import { MAX_FONT_SCALE, ModeProvider, useMode } from './mode/mode';
+import { PortalProvider } from './ui/portal';
 import { ThemeProvider } from './ui/theme/ThemeProvider';
 import { ToastHost } from './ui/Toast';
 
@@ -32,8 +34,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <ModeProvider>
           <ThemedByMode>
             <I18nProvider>
-              {children}
-              <ToastHost />
+              <KeyboardProvider>
+                <PortalProvider>
+                  {children}
+                  <ToastHost />
+                </PortalProvider>
+              </KeyboardProvider>
             </I18nProvider>
           </ThemedByMode>
         </ModeProvider>

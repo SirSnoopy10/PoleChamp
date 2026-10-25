@@ -1,10 +1,12 @@
 import type { ReactElement, ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, type RenderOptions } from '@testing-library/react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nProvider } from '../i18n';
 import { ModeProvider, type AppMode } from '../mode/mode';
 import { ThemedByMode } from '../AppProviders';
+import { PortalProvider } from '../ui/portal';
 import { ToastHost } from '../ui/Toast';
 
 export const SAFE_AREA_METRICS = {
@@ -31,18 +33,22 @@ export function Providers({
   reducedMotion,
 }: ProvidersOptions & { children: ReactNode }) {
   return (
-    <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
-      <ModeProvider initial={mode}>
-        <ThemedByMode reducedMotion={reducedMotion}>
-          <I18nProvider>
-            <QueryClientProvider client={queryClient ?? createTestQueryClient()}>
-              {children}
-              <ToastHost />
-            </QueryClientProvider>
-          </I18nProvider>
-        </ThemedByMode>
-      </ModeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView>
+      <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
+        <ModeProvider initial={mode}>
+          <ThemedByMode reducedMotion={reducedMotion}>
+            <I18nProvider>
+              <QueryClientProvider client={queryClient ?? createTestQueryClient()}>
+                <PortalProvider>
+                  {children}
+                  <ToastHost />
+                </PortalProvider>
+              </QueryClientProvider>
+            </I18nProvider>
+          </ThemedByMode>
+        </ModeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

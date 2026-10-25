@@ -29,7 +29,7 @@ export default tseslint.config(
   },
   // Testy: asercja `!` po wstawieniu rekordu testowego jest czytelniejsza niż warunki.
   {
-    files: ['**/test/**/*.ts'],
+    files: ['**/test/**/*.ts', '**/*.test.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
       // Treść odpowiedzi HTTP w testach integracyjnych jest dowolnym JSON-em.

@@ -4,3 +4,6 @@ import './buttons.catalog';
 import './icons.catalog';
 import './status.catalog';
 import './cards.catalog';
+import './sheets.catalog';
+import './forms.catalog';
+import './feedback.catalog';

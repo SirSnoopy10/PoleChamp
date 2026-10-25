@@ -1,3 +1,4 @@
+import type { ComponentRef, Ref } from 'react';
 import { Text as RNText, type TextProps as RNTextProps, type TextStyle } from 'react-native';
 import { typography, type TypographyStyle } from '@polechamp/tokens';
 import { useTheme, useThemeSettings } from './theme/ThemeProvider';
@@ -12,7 +13,11 @@ export interface TextProps extends RNTextProps {
   /** Cyfry tabelaryczne (`tabular-nums`) dla liczb i wyników. */
   tabular?: boolean;
   align?: TextStyle['textAlign'];
+  ref?: Ref<TextInstance>;
 }
+
+/** Instancja natywnego tekstu (RN 0.88: `ReactNativeElement`). */
+export type TextInstance = ComponentRef<typeof RNText>;
 
 const resolve = (variant: TextVariant): TypographyStyle =>
   variant in ALIASES ? ALIASES[variant as keyof typeof ALIASES] : (variant as TypographyStyle);
