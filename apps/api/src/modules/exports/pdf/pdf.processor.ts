@@ -4,13 +4,14 @@ import { eq } from 'drizzle-orm';
 import { DB, type Db } from '../../../db/client.js';
 import { exportJob } from '../../../db/schema.js';
 import type { ExportStorage } from '../../../infra/storage.js';
+import { resultsCsv } from '../csv/results-csv.js';
 import { ExportDataService } from '../export-data.service.js';
 import { EXPORT_STORAGE, EXPORT_TTL_MS, exportKey } from '../exports.service.js';
 import type { PdfJob } from '../pdf.queue.js';
 import { PdfRenderer } from './renderer.js';
 
 /**
- * Procesor kolejki `pdf` (IMP-172 krok 6): render, zapis do S3 pod stałym kluczem (ponowienie
+ * Procesor kolejki `pdf` (IMP-172 krok 6; CSV – IMP-174): render, zapis do S3 pod stałym kluczem (ponowienie
  * nadpisuje ten sam obiekt – brak duplikatów, TC-REL-007), `export_job` `DONE`/`FAILED`.
  */
 @Injectable()
@@ -33,10 +34,13 @@ export class PdfProcessor {
     try {
       const started = Date.now();
       const data = await this.data.load(row);
-      const pdf = await this.renderer.render(data, row.scope);
-      this.renderMs.push(Date.now() - started);
-      const key = exportKey(row.tournamentId, row.id);
-      await this.storage.put(key, pdf, 'application/pdf', { 'results-hash': data.hash });
+      const csv = row.format === 'CSV';
+      const file = csv ? resultsCsv(data) : await this.renderer.render(data, row.scope);
+      if (!csv) this.renderMs.push(Date.now() - started);
+      const key = exportKey(row.tournamentId, row.id, row.format);
+      await this.storage.put(key, file, csv ? 'text/csv; charset=utf-8' : 'application/pdf', {
+        'results-hash': data.hash,
+      });
       const now = new Date();
       await this.db
         .update(exportJob)

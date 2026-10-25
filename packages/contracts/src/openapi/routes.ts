@@ -658,9 +658,9 @@ export const routes: readonly RouteDef[] = [
     operationId: 'getAuditLog',
     summary: 'Dziennik audytu',
     permission: 'ORG:owner',
-    query: z.object({ cursor: z.string().optional(), entityType: z.string().optional() }),
+    query: res.AuditQuery,
     success: { status: 200, schema: res.AuditPage },
-    errors: [],
+    errors: VALIDATION,
   },
 
   // §4 Urządzenie i sędzia

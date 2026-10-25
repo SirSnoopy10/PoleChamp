@@ -45,6 +45,17 @@ export const pdf = {
   personalData:
     'Dokument zawiera dane osobowe uczestniczek – udostępniaj wyłącznie w celu ogłoszenia wyników zawodów.',
   fileName: 'wyniki-{slug}.pdf',
+  /** Nagłówki CSV wyników (FR-708). */
+  csv: {
+    category: 'Kategoria',
+    rank: 'Miejsce',
+    number: 'Numer',
+    athlete: 'Zawodniczka',
+    club: 'Klub',
+    score: 'Wynik',
+    sheets: 'Liczba ocen',
+    status: 'Status',
+  },
 } as const;
 
 /** E-maile transakcyjne (IMP-119). */

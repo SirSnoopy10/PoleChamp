@@ -96,6 +96,8 @@ export const ExportCreate = z
     scope: z.enum(['TOURNAMENT', 'CATEGORY']),
     tournamentId: Id,
     categoryId: Id.optional(),
+    /** CSV wyników (FR-708, Could – IMP-174). */
+    format: z.enum(['PDF', 'CSV']).default('PDF'),
   })
   .superRefine((v, ctx) => {
     if (v.scope === 'CATEGORY' && v.categoryId === undefined) {
@@ -112,15 +114,24 @@ export const ExportStatus = z.object({
   resultsHash: z.string().nullable(),
 });
 
+/** Wpis dziennika audytu (IMP-175): `id` = numer wpisu (bigserial jako tekst), bez IP. */
 export const AuditEntry = z.object({
   id: Id,
   at: IsoDateTime,
   actorType: z.enum(['ORGANIZER', 'JUDGE', 'DEVICE', 'SYSTEM']),
   actorId: Id.nullable(),
+  deviceId: Id.nullable(),
   action: z.string().max(60),
-  entityType: z.string(),
+  entityType: z.string().nullable(),
   entityId: Id.nullable(),
-  details: z.record(z.string(), z.unknown()).optional(),
+  before: z.record(z.string(), z.unknown()).nullable(),
+  after: z.record(z.string(), z.unknown()).nullable(),
+});
+
+export const AuditQuery = z.object({
+  cursor: z.string().max(200).optional(),
+  entityType: z.string().max(40).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 
 export const AuditPage = CursorPage(AuditEntry);

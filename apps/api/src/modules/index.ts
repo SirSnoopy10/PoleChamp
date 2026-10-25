@@ -1,4 +1,5 @@
 import type { Type } from '@nestjs/common';
+import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { OrganizerModule } from './organizer/organizer.module.js';
@@ -20,4 +21,5 @@ export const FEATURE_MODULES: Type[] = [
   ScoringModule,
   RealtimeModule,
   ExportsModule,
+  AuditModule,
 ];

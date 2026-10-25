@@ -40,6 +40,7 @@ afterAll(async () => {
   storage.close();
 });
 
+const CRLF = String.fromCharCode(13, 10);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function waitExport(exportId: string, timeoutMs = 10_000) {
@@ -270,6 +271,31 @@ describe('eksport PDF (IMP-171, IMP-172)', () => {
     const [row] = await handle.db.select().from(s.exportJob).where(eq(s.exportJob.id, job!.id));
     expect(row).toMatchObject({ status: 'FAILED', error: expect.stringContaining('NOT_FOUND') });
     expect((await queue.getJob(job!.id))?.attemptsMade).toBe(3);
+  });
+
+  it('TC-API-109: CSV wyników – UTF-8 z BOM, „;”, przecinek dziesiętny, kolumny PL', async () => {
+    const res = await org.req('POST', '/v1/exports', {
+      scope: 'CATEGORY',
+      tournamentId: ctx.t.id,
+      categoryId: ctx.c.id,
+      format: 'CSV',
+    });
+    expect(res.status).toBe(202);
+    const done = await waitExport(res.body.exportId);
+    expect(done.body.status).toBe('READY');
+    expect(new URL(done.body.downloadUrl).searchParams.get('response-content-disposition')).toContain('.csv');
+    const bytes = Buffer.from(await (await fetch(done.body.downloadUrl)).arrayBuffer());
+    expect([...bytes.subarray(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
+    const lines = bytes.toString('utf8').slice(1).trimEnd().split(CRLF);
+    expect(lines[0]).toBe('Kategoria;Miejsce;Numer;Zawodniczka;Klub;Wynik;Liczba ocen;Status');
+    expect(lines).toHaveLength(1 + 6);
+    const preview = (await org.req('GET', `/v1/categories/${ctx.c.id}/results`)).body;
+    const first = preview.rows[0];
+    expect(lines[1]).toBe(
+      `Pole Sport Advanced;1;${first.startNumber};${first.fullName};${first.club ?? ''};${first.display};3;`,
+    );
+    expect(first.display).toMatch(/^\d+,\d{1,2}$/);
+    expect(lines.at(-1)).toBe('Pole Sport Advanced;;49;Ewa Wycofana;Aerial Dreams Warszawa;;0;Wycofana');
   });
 
   it('cudzy eksport → 404', async () => {

@@ -62,6 +62,7 @@ export const actorType = pgEnum('actor_type', ['ORGANIZER', 'JUDGE', 'DEVICE', '
 export const authMode = pgEnum('auth_mode', ['ONLINE_PIN', 'OFFLINE_PIN']);
 export const exportScope = pgEnum('export_scope', ['TOURNAMENT', 'CATEGORY']);
 export const exportStatus = pgEnum('export_status', ['QUEUED', 'RUNNING', 'DONE', 'FAILED']);
+export const exportFormat = pgEnum('export_format', ['PDF', 'CSV']);
 
 // §2.1–2.2, 2.22a, 2.23a – konto
 export const appUser = pgTable('app_user', {
@@ -411,6 +412,7 @@ export const exportJob = pgTable('export_job', {
   tournamentId: uuid('tournament_id').notNull(),
   scope: exportScope('scope').notNull(),
   categoryId: uuid('category_id'),
+  format: exportFormat('format').notNull().default('PDF'),
   status: exportStatus('status').notNull().default('QUEUED'),
   resultsVersions: jsonb('results_versions'),
   resultsHash: char('results_hash', { length: 64 }),

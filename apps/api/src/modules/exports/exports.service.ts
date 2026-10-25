@@ -17,19 +17,23 @@ export const EXPORT_STORAGE = Symbol('EXPORT_STORAGE');
 /** Ważność pliku eksportu (02-model-danych §2.24). */
 export const EXPORT_TTL_MS = 7 * 24 * 3600 * 1000;
 
-export const exportKey = (tournamentId: string, exportId: string) =>
-  `exports/${tournamentId}/${exportId}.pdf`;
+export type ExportFormat = 'PDF' | 'CSV';
+
+const EXTENSION: Record<ExportFormat, string> = { PDF: 'pdf', CSV: 'csv' };
+
+export const exportKey = (tournamentId: string, exportId: string, format: ExportFormat = 'PDF') =>
+  `exports/${tournamentId}/${exportId}.${EXTENSION[format]}`;
 
 /** Nazwa pliku do pobrania: „wyniki-mistrzostwa-polski.pdf”. */
-export function exportFileName(name: string): string {
+export function exportFileName(name: string, format: ExportFormat = 'PDF'): string {
   const slug = name
     .toLowerCase()
     .replace(/ł/g, 'l')
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}/gu, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-  return `wyniki-${slug || 'turniej'}.pdf`;
+  return `wyniki-${slug || 'turniej'}.${EXTENSION[format]}`;
 }
 
 type ApiStatus = 'PENDING' | 'READY' | 'FAILED';
@@ -46,7 +50,11 @@ export class ExportsService {
     @Inject(EXPORT_STORAGE) private readonly storage: ExportStorage,
   ) {}
 
-  async create(ownerId: string, input: ExportTarget): Promise<{ exportId: string }> {
+  async create(
+    ownerId: string,
+    input: ExportTarget & { format?: ExportFormat },
+  ): Promise<{ exportId: string }> {
+    const format = input.format ?? 'PDF';
     const t = await this.owned.tournament(this.db, input.tournamentId, ownerId);
     const categoryId = input.scope === 'CATEGORY' ? (input.categoryId ?? null) : null;
     if (categoryId) {
@@ -63,6 +71,7 @@ export class ExportsService {
         and(
           eq(exportJob.tournamentId, t.id),
           eq(exportJob.scope, input.scope),
+          eq(exportJob.format, format),
           categoryId ? eq(exportJob.categoryId, categoryId) : sql`${exportJob.categoryId} IS NULL`,
           eq(exportJob.status, 'DONE'),
           eq(exportJob.resultsHash, hash),
@@ -82,6 +91,7 @@ export class ExportsService {
             tournamentId: t.id,
             scope: input.scope,
             categoryId,
+            format,
             resultsVersions: versions,
             resultsHash: hash,
             createdBy: ownerId,
@@ -91,9 +101,9 @@ export class ExportsService {
       await this.audit.record(tx, {
         action: 'EXPORT_REQUESTED',
         tournamentId: t.id,
-        entityType: 'EXPORT',
+        entityType: 'export_job',
         entityId: row.id,
-        after: { scope: input.scope, categoryId, resultsVersions: versions, resultsHash: hash },
+        after: { scope: input.scope, format, categoryId, resultsVersions: versions, resultsHash: hash },
       });
       return row;
     });
@@ -125,7 +135,7 @@ export class ExportsService {
     return {
       status,
       resultsHash: job.resultsHash,
-      downloadUrl: await this.storage.signedUrl(job.s3Key, exportFileName(name)),
+      downloadUrl: await this.storage.signedUrl(job.s3Key, exportFileName(name, job.format)),
       expiresAt: job.expiresAt?.toISOString(),
     };
   }
