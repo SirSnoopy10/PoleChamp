@@ -55,15 +55,15 @@ export default tseslint.config(
       ],
     },
   },
-  // Aplikacja mobilna: teksty tylko z kluczy i18n (TC-I18N-005), style tylko z tokenów (TC-TOKENS-003).
+  // Aplikacja mobilna: teksty tylko z kluczy i18n w całym src/ i app/ (TC-I18N-005) – poza DevCatalog
+  // (narzędzie zespołu, `src/dev/**` i `*.dev.tsx`) i testami.
   {
-    files: ['apps/mobile/src/features/**/*.{ts,tsx}'],
-    ignores: ['**/*.dev.tsx'],
+    files: ['apps/mobile/src/**/*.{ts,tsx}', 'apps/mobile/app/**/*.{ts,tsx}'],
+    ignores: ['**/*.dev.tsx', 'apps/mobile/src/dev/**', '**/*.test.{ts,tsx}', '**/*.perf-test.tsx'],
     languageOptions: {
       parserOptions: { ecmaFeatures: { jsx: true } },
       globals: { ...globals.browser },
     },
-    plugins: { polechamp },
     rules: {
       // eslint-plugin-i18next 6.x nie raportuje pod ESLint 9 – ten sam zakaz realizuje reguła wbudowana.
       'no-restricted-syntax': [
@@ -78,8 +78,14 @@ export default tseslint.config(
           message: 'Tekst atrybutu musi pochodzić z klucza i18n (t(...)) – NFR-601.',
         },
       ],
-      'polechamp/no-raw-style-values': 'error',
     },
+  },
+  // Ekrany (src/features): style tylko z tokenów (TC-TOKENS-003); komponenty src/ui definiują wymiary.
+  {
+    files: ['apps/mobile/src/features/**/*.{ts,tsx}'],
+    ignores: ['**/*.dev.tsx', '**/*.test.{ts,tsx}'],
+    plugins: { polechamp },
+    rules: { 'polechamp/no-raw-style-values': 'error' },
   },
   // Konfiguracja Expo/Metro/Jest i config pluginy aplikacji mobilnej są w CommonJS.
   {

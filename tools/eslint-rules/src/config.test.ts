@@ -43,6 +43,15 @@ describe('eslint.config.mjs – reguły per obszar', () => {
     expect(ids).not.toContain('no-restricted-syntax');
   });
 
+  it('TC-I18N-005: zakaz obejmuje komponenty src/ui i trasy app/, nie DevCatalog src/dev', async () => {
+    const code = 'export const A = () => <Text>Zapisz</Text>;\n';
+    expect(await ruleIds(code, 'apps/mobile/src/ui/Button.tsx')).toContain('no-restricted-syntax');
+    expect(await ruleIds(code, 'apps/mobile/app/(org)/index.tsx')).toContain('no-restricted-syntax');
+    expect(await ruleIds(code, 'apps/mobile/src/dev/catalog/sections/x.catalog.tsx')).not.toContain(
+      'no-restricted-syntax',
+    );
+  });
+
   it("TC-TOKENS-003: '#fff' w ekranie jest błędem", async () => {
     const ids = await ruleIds("export const s = { color: '#fff' };\n", screen);
     expect(ids).toContain('polechamp/no-raw-style-values');
