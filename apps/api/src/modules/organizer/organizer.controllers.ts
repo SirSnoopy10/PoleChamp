@@ -267,6 +267,12 @@ export class ConfigItemsController {
     return this.entries.withdraw(userId, id);
   }
 
+  @Post('entries/:entryId/anonymize')
+  @HttpCode(200)
+  anonymize(@OrgUser() userId: string, @Param('entryId') id: string) {
+    return this.entries.anonymize(userId, id);
+  }
+
   @Post('entries/:entryId/restore')
   @HttpCode(200)
   restore(@OrgUser() userId: string, @Param('entryId') id: string) {

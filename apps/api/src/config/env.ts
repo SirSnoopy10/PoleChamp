@@ -35,6 +35,10 @@ export const EnvSchema = z.object({
     .enum(['true', 'false', '1', '0'])
     .transform((v) => v === 'true' || v === '1')
     .default(true),
+  /** Połączenie zadania retencji rolą `pc_retention` (IMP-176); brak = `DATABASE_URL`. */
+  RETENTION_DATABASE_URL: z.url().optional(),
+  /** Pseudonimizacja danych osobowych po zakończeniu turnieju (FR-905, TC-RODO-002). */
+  RETENTION_PSEUDONYMIZE_MONTHS: z.coerce.number().int().positive().default(24),
   /** Eksporty PDF (IMP-171): bucket S3; lokalnie MinIO (`S3_ENDPOINT`, styl ścieżek, klucze dev). */
   S3_BUCKET: z.string().default('exports'),
   S3_REGION: z.string().default('eu-central-1'),

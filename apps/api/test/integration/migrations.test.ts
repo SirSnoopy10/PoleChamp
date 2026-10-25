@@ -29,6 +29,7 @@ describe('migracje (IMP-103…107)', () => {
       '0008_score_sheet_judge_idx',
       '0009_domain_event_notify',
       '0010_export_format',
+      '0011_retention',
     ]);
   });
 

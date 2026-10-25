@@ -1,13 +1,19 @@
 import { type DynamicModule, Module, type INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { createTransport } from 'nodemailer';
+import { sql } from 'drizzle-orm';
 import { CommonModule } from '../common/common.module.js';
 import type { Env } from '../config/env.js';
+import { createDb, DB, type Db } from '../db/client.js';
 import { InfraModule } from '../infra/infra.module.js';
+import type { ExportStorage } from '../infra/storage.js';
+import { ChangeLogService } from '../modules/audit/audit.service.js';
 import { EmailProcessor } from '../modules/email/email.processor.js';
 import { bullConnection } from '../modules/email/email.queue.js';
 import { ExportsModule } from '../modules/exports/exports.module.js';
+import { EXPORT_STORAGE } from '../modules/exports/exports.service.js';
 import { PdfProcessor } from '../modules/exports/pdf/pdf.processor.js';
+import { RetentionJob } from './retention/retention.job.js';
 import { WorkerRuntime, type WorkerLogger, type WorkerRuntimeOptions } from './runtime.js';
 
 /** Kontekst DI workera (IMP-170): baza, Valkey i serwisy domenowe bez serwera HTTP. */
@@ -25,6 +31,7 @@ export class WorkerModule {
 export interface WorkerHandle {
   context: INestApplicationContext;
   runtime: WorkerRuntime;
+  retention: RetentionJob;
   close(): Promise<void>;
 }
 
@@ -40,6 +47,20 @@ export async function startWorker(
     createTransport(process.env.SMTP_URL ?? 'smtp://localhost:1025'),
     process.env.EMAIL_FROM ?? 'PoleChamp <no-reply@polechamp.app>',
   );
+  // Retencja w roli `pc_retention` (IMP-176) – osobna pula z wąskimi uprawnieniami.
+  const retentionDb = createDb({
+    url: env.RETENTION_DATABASE_URL ?? env.DATABASE_URL,
+    ssl: env.DATABASE_SSL,
+    max: 2,
+  });
+  const retention = new RetentionJob(
+    retentionDb.db,
+    context.get(ChangeLogService),
+    context.get<ExportStorage>(EXPORT_STORAGE),
+    logger,
+    { pseudonymizeMonths: env.RETENTION_PSEUDONYMIZE_MONTHS },
+  );
+  const appDb = context.get<Db>(DB);
   const runtime = new WorkerRuntime({
     connection: bullConnection(env.VALKEY_URL),
     logger,
@@ -47,6 +68,13 @@ export async function startWorker(
     processors: {
       pdf: (job) => pdf.process(job),
       email: (job) => email.process(job),
+      retention: async (job) => {
+        if (job.name === 'audit:partitions') {
+          await appDb.execute(sql`SELECT ensure_audit_partitions(3)`);
+          return { ok: true };
+        }
+        return retention.run();
+      },
     },
     ...overrides,
   });
@@ -54,9 +82,11 @@ export async function startWorker(
   return {
     context,
     runtime,
+    retention,
     async close() {
       await runtime.close();
       await context.close();
+      await retentionDb.pool.end();
     },
   };
 }

@@ -9,9 +9,7 @@ import { flushValkey } from '../support/http.js';
  * IMP-102 / TC-CI-002: trasy NestJS ↔ tabela tras `@polechamp/contracts` (OpenAPI).
  * Trasa bez kontraktu = błąd; kontrakt bez trasy musi być na liście zadań kolejnych epików.
  */
-const PENDING_EPICS: Record<string, string> = {
-  'POST /v1/entries/{entryId}/anonymize': 'EP-05',
-};
+const PENDING_EPICS: Record<string, string> = {};
 
 const nestRoutes = new Set<string>();
 let app: NestFastifyApplication;

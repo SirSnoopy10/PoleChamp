@@ -25,3 +25,14 @@ GRANT DELETE ON change_log, processed_mutation, idempotency_key, auth_email_toke
 GRANT UPDATE (before, after, ip) ON audit_log TO pc_retention;
 GRANT UPDATE (snapshot) ON score_sheet_revision TO pc_retention;
 GRANT UPDATE (full_name, club, birth_year, pseudonymized_at) ON athlete TO pc_retention;
+GRANT UPDATE (full_name, initials) ON judge TO pc_retention;
+GRANT DELETE ON export_job TO pc_retention;
+-- Dziennik zmian dla tabletów po pseudonimizacji (blokada i kursor turnieju) oraz audyt `SYSTEM`.
+GRANT INSERT ON change_log, domain_event, audit_log TO pc_retention;
+GRANT UPDATE (change_seq) ON tournament TO pc_retention;
+GRANT UPDATE (payload) ON domain_event TO pc_retention;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO pc_retention;
+GRANT EXECUTE ON FUNCTION drop_old_audit_partitions(date), purge_account(uuid) TO pc_retention;
+REVOKE EXECUTE ON FUNCTION drop_old_audit_partitions(date), purge_account(uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION scrub_athlete_pii(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION scrub_athlete_pii(uuid) TO pc_app;

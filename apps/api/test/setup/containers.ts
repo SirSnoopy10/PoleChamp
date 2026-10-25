@@ -9,6 +9,7 @@ import { migrate } from '../../src/db/migrate.js';
  * migracje jako superużytkownik, aplikacja łączy się rolą `pc_app` (jak w produkcji).
  */
 export const APP_PASSWORD = 'pc_app_test';
+export const RETENTION_PASSWORD = 'pc_retention_test';
 export const S3_KEY = 'polechamp';
 export const S3_SECRET = 'polechamp-test';
 
@@ -29,12 +30,18 @@ export async function setup(project: TestProject) {
   ]);
   const s3Endpoint = `http://${s3mock.getHost()}:${s3mock.getMappedPort(9090)}`;
   const adminUrl = postgres.getConnectionUri();
-  await migrate(adminUrl, { rolePasswords: { pc_app: APP_PASSWORD } });
+  await migrate(adminUrl, {
+    rolePasswords: { pc_app: APP_PASSWORD, pc_retention: RETENTION_PASSWORD },
+  });
   const appUrl = new URL(adminUrl);
   appUrl.username = 'pc_app';
   appUrl.password = APP_PASSWORD;
   project.provide('adminDatabaseUrl', adminUrl);
   project.provide('databaseUrl', appUrl.toString());
+  const retentionUrl = new URL(adminUrl);
+  retentionUrl.username = 'pc_retention';
+  retentionUrl.password = RETENTION_PASSWORD;
+  project.provide('retentionDatabaseUrl', retentionUrl.toString());
   project.provide('valkeyUrl', `redis://${valkey.getHost()}:${valkey.getMappedPort(6379)}`);
   project.provide('valkeyContainerId', valkey.getId());
   project.provide('s3Endpoint', s3Endpoint);
@@ -48,6 +55,7 @@ declare module 'vitest' {
   export interface ProvidedContext {
     adminDatabaseUrl: string;
     databaseUrl: string;
+    retentionDatabaseUrl: string;
     valkeyUrl: string;
     valkeyContainerId: string;
     s3Endpoint: string;

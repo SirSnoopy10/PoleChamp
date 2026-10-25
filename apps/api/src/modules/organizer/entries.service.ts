@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { EntryCreate, EntryPatch } from '@polechamp/contracts';
+import { pseudonymLabel } from '@polechamp/i18n';
 import { and, asc, eq, gt, ne, sql } from 'drizzle-orm';
 import type { z } from 'zod';
 import { DomainError } from '../../common/errors/domain-error.js';
@@ -270,6 +271,43 @@ export class EntriesService {
 
   restore(ownerId: string, entryId: string) {
     return this.setStatus(ownerId, entryId, 'ACTIVE');
+  }
+
+  /**
+   * „Usuń dane osobowe” (IMP-177, FR-904): dozwolone także w kategorii zablokowanej i turnieju
+   * zakończonym (wyjątek RODO – TL-17). Wynik i miejsce bez zmian; w wynikach i PDF „Zawodniczka nr {nr}”.
+   */
+  async anonymize(ownerId: string, entryId: string) {
+    return withTx(this.db, async (tx) => {
+      const {
+        category: c,
+        tournament: t,
+        entry: e,
+        athlete: a,
+      } = await this.owned.entry(tx, entryId, ownerId, true);
+      if (a.pseudonymizedAt) throw new DomainError('INVALID_STATE_TRANSITION');
+      await tx
+        .update(athlete)
+        .set({
+          fullName: pseudonymLabel(e.startNumber),
+          club: null,
+          birthYear: null,
+          pseudonymizedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(athlete.id, a.id));
+      await tx.execute(sql`SELECT scrub_athlete_pii(${a.id}::uuid)`);
+      await this.audit.record(tx, {
+        action: 'ATHLETE_ANONYMIZED',
+        tournamentId: t.id,
+        entityType: 'athlete',
+        entityId: a.id,
+        after: { startNumber: e.startNumber },
+      });
+      await this.changes.append(tx, { tournamentId: t.id, entityType: 'athlete', entityId: a.id });
+      await this.configChanged(tx, t, c, e.id);
+      return this.rowFor(tx, c, e.id);
+    });
   }
 
   /** Usunięcie tylko bez ocen (INT-06); zawodniczka bez innych startów też znika; kolejka zagęszczona. */
