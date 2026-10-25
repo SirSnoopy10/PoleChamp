@@ -18,3 +18,5 @@ allowBuilds:
   unrs-resolver: false
   # Mock expo-sqlite w testach Jest (IMP-201) – binaria w pakiecie (prebuilds/).
   better-sqlite3: false
+  # msw: postinstall kopiuje service worker dla przeglądarki – w testach Node zbędny.
+  msw: false
