@@ -62,11 +62,12 @@ export const ui = {
     exportPdf: 'Eksport PDF',
   },
   splash: {
-    tagline: 'Turnieje pole dance',
-    starting: 'Uruchamianie…',
+    taglineOrg: 'System oceniania zawodów pole dance',
+    taglineJudge: 'Panel sędziego',
     loadingTournaments: 'Wczytywanie turniejów…',
     syncingResults: 'Synchronizacja wyników…',
-    loadingCategories: 'Wczytywanie kategorii…',
+    connecting: 'Łączenie z turniejem…',
+    loadingStartLists: 'Pobieranie list startowych…',
     ready: 'Gotowe',
   },
   mode: {

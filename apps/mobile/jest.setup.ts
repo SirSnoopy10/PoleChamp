@@ -35,3 +35,18 @@ jest.mock('react-native-keyboard-controller', () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('react-native-keyboard-controller/jest'),
 );
+
+// Skia: w testach komponentów wystarczy drzewo widoków (renderer natywny nie istnieje w Node).
+jest.mock('@shopify/react-native-skia', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require('react-native');
+  return {
+    Canvas: View,
+    Image: View,
+    AlphaType: { Unpremul: 3 },
+    ColorType: { RGBA_8888: 4 },
+    FilterMode: { Nearest: 0 },
+    MipmapMode: { None: 0 },
+    Skia: { Data: { fromBytes: () => ({}) }, Image: { MakeImage: () => ({}) } },
+  };
+});
