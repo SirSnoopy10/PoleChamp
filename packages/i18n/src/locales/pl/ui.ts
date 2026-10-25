@@ -73,9 +73,9 @@ export const ui = {
   mode: {
     question: 'Jak będziesz używać tego urządzenia?',
     organizer: 'Jestem organizatorem',
-    organizerHint: 'Twórz turnieje, zarządzaj kategoriami i wynikami.',
+    organizerHint: 'Zarządzaj turniejami i wynikami.',
     judge: 'Tablet sędziowski',
-    judgeHint: 'Oceniaj występy na sparowanym tablecie.',
+    judgeHint: 'Sparuj tablet z turniejem i oceniaj występy.',
     judgeRequiresTablet: 'Panel sędziego wymaga tabletu.',
   },
   orientation: {

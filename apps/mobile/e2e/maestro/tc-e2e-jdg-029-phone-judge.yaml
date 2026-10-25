@@ -1,0 +1,11 @@
+# TC-E2E-JDG-029 – telefon nie uruchamia trybu sędziego (iPhone 12).
+appId: app.polechamp
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'Jak będziesz używać tego urządzenia?'
+    timeout: 6000
+- tapOn: 'Tablet sędziowski.*'
+- assertVisible: 'Panel sędziego wymaga tabletu.'
+- assertVisible: 'Jak będziesz używać tego urządzenia?'

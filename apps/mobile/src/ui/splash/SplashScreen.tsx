@@ -9,10 +9,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
-import { color, motion, radius } from '@polechamp/tokens';
+import { color, motion } from '@polechamp/tokens';
 import { useT } from '../../i18n';
 import type { AppMode } from '../../mode/mode';
-import { Icon } from '../Icon';
+import { Brand } from '../Brand';
 import { useReducedMotion } from '../motion';
 import { Text } from '../Text';
 import { PoleSpinner } from './PoleSpinner';
@@ -122,14 +122,7 @@ export function SplashScreen({ mode, stage, onFinish, onReady }: SplashScreenPro
         <PoleSpinner size={mode} />
       </Animated.View>
       <Animated.View entering={rise(motion.splashRise.delays[0], reduced) as never} style={styles.brand}>
-        <View style={styles.logoRow}>
-          <View style={styles.logo}>
-            <Icon name="trophy" size={20} color={color.accent} />
-          </View>
-          <Text variant="titleM" style={styles.wordmark}>
-            PoleChamp
-          </Text>
-        </View>
+        <Brand />
         <Text variant="bodyS" color={color.neutral[400]} style={styles.tagline}>
           {t(mode === 'judge' ? 'splash.taglineJudge' : 'splash.taglineOrg')}
         </Text>
@@ -166,17 +159,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   brand: { alignItems: 'center', gap: 8 },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  logo: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: color.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  wordmark: { fontSize: 30, lineHeight: 36, letterSpacing: -0.6 },
   tagline: { fontSize: 13.5 },
   progress: { alignItems: 'center', gap: 10 },
   track: { width: 160, height: 3, borderRadius: 2, backgroundColor: color.neutral[800], overflow: 'hidden' },
