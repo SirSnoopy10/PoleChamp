@@ -16,6 +16,7 @@ const TRANSFORM = [
   'react-native-svg',
   'react-native-mmkv',
   'react-native-nitro-modules',
+  'standard-navigation',
 ].join('|');
 
 /** @type {import('jest').Config} */

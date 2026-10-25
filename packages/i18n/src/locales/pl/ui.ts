@@ -55,6 +55,12 @@ export const ui = {
     resendCode: 'Wyślij kod ponownie',
   },
   nav: { back: 'Wstecz', tournaments: 'Turnieje', tournament: 'Turniej' },
+  actions: {
+    startCategory: 'Rozpocznij kategorię',
+    lockCategory: 'Zakończ i zablokuj',
+    unlockCategory: 'Odblokuj',
+    exportPdf: 'Eksport PDF',
+  },
   splash: {
     tagline: 'Turnieje pole dance',
     starting: 'Uruchamianie…',

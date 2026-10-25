@@ -7,3 +7,4 @@ import './cards.catalog';
 import './sheets.catalog';
 import './forms.catalog';
 import './feedback.catalog';
+import './layout.catalog';
