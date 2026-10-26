@@ -32,6 +32,7 @@ import { TournamentsService } from './tournaments.service.js';
   ],
   exports: [
     OwnershipRepository,
+    PinService,
     LimitsService,
     ResultsService,
     CategoryLockService,

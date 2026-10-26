@@ -1,0 +1,31 @@
+# Parowanie tabletu kodem wpisanym ręcznie (kod z API organizatora). TOURNAMENT – klucz seedu, np. t1.
+appId: app.polechamp
+env:
+  TOURNAMENT: t1
+  DEVICE_NAME: 'Tablet stół 1'
+---
+- runScript:
+    file: api.js
+    env:
+      ACTION: pairing-code
+      TOURNAMENT: ${TOURNAMENT}
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'mode-judge'
+- extendedWaitUntil:
+    visible:
+      id: 'pair-screen'
+    timeout: 8000
+- tapOn:
+    id: 'pair-code'
+- inputText: ${output.pairingCode}
+- tapOn:
+    id: 'pair-device-name'
+- inputText: ${DEVICE_NAME}
+- tapOn:
+    id: 'pair-connect'
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 20000

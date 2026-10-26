@@ -31,6 +31,7 @@
     "@polechamp/contracts": "workspace:*",
     "@polechamp/i18n": "workspace:*",
     "@polechamp/scoring": "workspace:*",
+    "@polechamp/test-fixtures": "workspace:*",
     "@polechamp/tokens": "workspace:*",
     "@socket.io/redis-adapter": "^8.3.0",
     "argon2": "0.45.1",
@@ -52,7 +53,6 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@polechamp/test-fixtures": "workspace:*",
     "@swc/core": "^1.16.20",
     "@testcontainers/postgresql": "12.2.1",
     "@types/nodemailer": "^8.0.2",

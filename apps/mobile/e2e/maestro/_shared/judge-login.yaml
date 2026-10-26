@@ -1,0 +1,15 @@
+# Logowanie sędziego PIN-em seedu (JUDGE – jA…jE). PIN-y testowe z output.pins (nie demo 1234…5678).
+appId: app.polechamp
+env:
+  JUDGE: jA
+---
+- tapOn:
+    id: 'profile-${output.ids[JUDGE]}'
+- tapOn: { id: 'pin-key-${output.pins[JUDGE].charAt(0)}' }
+- tapOn: { id: 'pin-key-${output.pins[JUDGE].charAt(1)}' }
+- tapOn: { id: 'pin-key-${output.pins[JUDGE].charAt(2)}' }
+- tapOn: { id: 'pin-key-${output.pins[JUDGE].charAt(3)}' }
+- extendedWaitUntil:
+    visible:
+      id: 'categories-screen'
+    timeout: 10000

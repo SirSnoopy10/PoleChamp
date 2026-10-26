@@ -1,0 +1,14 @@
+{
+  "name": "@polechamp/e2e-tools",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Narzędzia E2E: kontrola przepływów Maestro, orkiestrator dwóch urządzeń, sieć",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
+  }
+}

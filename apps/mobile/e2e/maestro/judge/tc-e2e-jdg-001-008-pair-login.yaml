@@ -2,6 +2,7 @@
 # Czysty tablet (Galaxy Tab A8 / iPad 9); kod parowania z TC-E2E-ORG-030 w zmiennej PAIRING_CODE.
 appId: app.polechamp
 env:
+  JUDGE_PIN: '8306' # PIN testowy jA z FX-SEED (packages/test-fixtures)
   PAIRING_CODE: 'K7QM-4ZTX'
   JUDGE_ID: 'jA'
 ---
@@ -41,10 +42,10 @@ env:
 - tapOn: { id: 'pin-key-9' }
 - tapOn: { id: 'pin-key-9' }
 - assertVisible: 'Nieprawidłowy PIN — spróbuj ponownie'
-- tapOn: { id: 'pin-key-1' }
-- tapOn: { id: 'pin-key-2' }
-- tapOn: { id: 'pin-key-3' }
-- tapOn: { id: 'pin-key-4' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(0)}' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(1)}' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(2)}' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(3)}' }
 - extendedWaitUntil:
     visible:
       id: 'categories-screen'
@@ -62,10 +63,10 @@ env:
     timeout: 5000
 - tapOn:
     id: 'profile-${JUDGE_ID}'
-- tapOn: { id: 'pin-key-1' }
-- tapOn: { id: 'pin-key-2' }
-- tapOn: { id: 'pin-key-3' }
-- tapOn: { id: 'pin-key-4' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(0)}' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(1)}' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(2)}' }
+- tapOn: { id: 'pin-key-${JUDGE_PIN.charAt(3)}' }
 - extendedWaitUntil:
     visible:
       id: 'sync-pill-offlineQueue'

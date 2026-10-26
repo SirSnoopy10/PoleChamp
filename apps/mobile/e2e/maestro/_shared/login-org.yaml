@@ -1,0 +1,19 @@
+# Logowanie organizatora kontem z _shared/seed.yaml (wymaga wcześniejszego runFlow seed).
+appId: app.polechamp
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'mode-org'
+- tapOn:
+    id: 'login-email'
+- inputText: ${output.email}
+- tapOn:
+    id: 'login-password'
+- inputText: ${output.password}
+- tapOn:
+    id: 'login-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'tournaments-screen'
+    timeout: 10000

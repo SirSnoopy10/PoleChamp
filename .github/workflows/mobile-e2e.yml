@@ -1,0 +1,106 @@
+# Nocne E2E aplikacji (IMP-454): Maestro 2.11 na buildzie `preview` – Android (emulator tablet + telefon)
+# i iOS (runner macOS). Wyłączone do czasu konfiguracji: zmienna repozytorium E2E_ENABLED=true oraz sekrety
+# EXPO_TOKEN (EAS), E2E_API_URL (API staging z E2E_HELPERS=1). Wartości poniżej są zastępcze.
+name: mobile-e2e
+
+on:
+  schedule:
+    - cron: '30 1 * * *' # 03:30 czasu polskiego (CEST)
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Tagi Maestro (--include-tags)'
+        default: 'nightly'
+
+permissions:
+  contents: read
+
+env:
+  MAESTRO_VERSION: 2.11.0
+  MAESTRO_TAGS: ${{ github.event.inputs.tags || 'nightly' }}
+
+jobs:
+  flows-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @polechamp/e2e-tools test
+
+  e2e-android:
+    if: vars.E2E_ENABLED == 'true'
+    needs: flows-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        device:
+          - { name: tablet, profile: pixel_tablet, api: 34, tags: '' }
+          - { name: phone, profile: pixel_6, api: 34, tags: '' }
+          # TC-COMPAT-001: macierz systemów – tylko zestaw dymny (Android 10 i 16).
+          - { name: phone-api29, profile: pixel_6, api: 29, tags: 'smoke' }
+          - { name: phone-api36, profile: pixel_6, api: 36, tags: 'smoke' }
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build preview (APK) z EAS – zastępczo
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          echo "TODO(IMP-023): pobranie artefaktu nocnego buildu preview z EAS (projekt EAS_PROJECT_ID)."
+          echo "Bez skonfigurowanego EAS job kończy się tutaj." && exit 1
+      - name: Maestro CLI
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | MAESTRO_VERSION=$MAESTRO_VERSION bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Emulator i przepływy
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.device.api }}
+          arch: x86_64
+          profile: ${{ matrix.device.profile }}
+          script: |
+            adb install -r build/app-preview.apk
+            adb logcat -c
+            maestro test apps/mobile/e2e/maestro --env API_URL=${{ secrets.E2E_API_URL }} --include-tags "${{ matrix.device.tags || env.MAESTRO_TAGS }}" --format junit --output reports/maestro-${{ matrix.device.name }}.xml || (adb logcat -d > reports/logcat-${{ matrix.device.name }}.txt; exit 1)
+      - name: Artefakty (wideo, zrzuty, logcat)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-android-${{ matrix.device.name }}
+          path: |
+            reports/
+            ~/.maestro/tests/
+          retention-days: 14
+
+  e2e-ios:
+    if: vars.E2E_ENABLED == 'true'
+    needs: flows-check
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build preview (symulator) z EAS – zastępczo
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          echo "TODO(IMP-023): pobranie buildu preview dla symulatora (iPad 9. gen., iPhone 15)."
+          exit 1
+      - name: Maestro CLI
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | MAESTRO_VERSION=$MAESTRO_VERSION bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Przepływy na symulatorze iPada
+        run: |
+          xcrun simctl boot "iPad (9th generation)" || true
+          xcrun simctl install booted build/PoleChamp.app
+          maestro test apps/mobile/e2e/maestro --env API_URL=${{ secrets.E2E_API_URL }} --include-tags "${{ env.MAESTRO_TAGS }}" --format junit --output reports/maestro-ios.xml || (xcrun simctl spawn booted log show --last 15m > reports/simctl.log; exit 1)
+      - name: Artefakty
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-ios
+          path: |
+            reports/
+            ~/.maestro/tests/
+          retention-days: 14

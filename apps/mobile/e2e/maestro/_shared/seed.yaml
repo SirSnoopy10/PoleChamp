@@ -1,0 +1,10 @@
+# Nowe konto z fiksturą (FX-SEED domyślnie): output.email, output.password, output.ids, output.pins.
+appId: app.polechamp
+env:
+  FIXTURE: FX-SEED
+---
+- runScript:
+    file: api.js
+    env:
+      ACTION: seed
+      FIXTURE: ${FIXTURE}

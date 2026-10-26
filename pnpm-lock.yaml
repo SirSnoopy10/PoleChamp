@@ -247,6 +247,9 @@ importers:
       '@polechamp/scoring':
         specifier: workspace:*
         version: link:../../packages/scoring
+      '@polechamp/test-fixtures':
+        specifier: workspace:*
+        version: link:../../packages/test-fixtures
       '@polechamp/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -305,9 +308,6 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
-      '@polechamp/test-fixtures':
-        specifier: workspace:*
-        version: link:../../packages/test-fixtures
       '@swc/core':
         specifier: ^1.16.20
         version: 1.16.20(@swc/helpers@0.5.23)
@@ -627,6 +627,12 @@ importers:
         version: link:../scoring
 
   packages/tokens: {}
+
+  tools/e2e:
+    devDependencies:
+      yaml:
+        specifier: 2.9.1
+        version: 2.9.1
 
   tools/eslint-rules:
     devDependencies:

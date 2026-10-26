@@ -1,0 +1,21 @@
+# Przepływ dymny (IMP-454, TC-COMPAT-001): uruchomienie, wybór trybu, logowanie organizatora.
+appId: app.polechamp
+tags:
+  - p1
+  - nightly
+  - smoke
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: 'mode-screen'
+    timeout: 10000
+- assertVisible:
+    id: 'mode-org'
+- assertVisible:
+    id: 'mode-judge'
+- runFlow: _shared/seed.yaml
+- runFlow: _shared/login-org.yaml
+- assertVisible: 'Mistrzostwa Polski Pole Sport 2026'
+- takeScreenshot: smoke-tournaments

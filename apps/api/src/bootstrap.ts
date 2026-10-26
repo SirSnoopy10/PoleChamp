@@ -38,7 +38,7 @@ export async function createApp(
       bufferLogs: false,
     },
   );
-  app.setGlobalPrefix('v1', { exclude: ['health/{*path}'] });
+  app.setGlobalPrefix('v1', { exclude: ['health/{*path}', '__e2e/{*path}'] });
   app.useWebSocketAdapter(new RealtimeAdapter(app, env.VALKEY_URL));
   app.enableShutdownHooks();
 

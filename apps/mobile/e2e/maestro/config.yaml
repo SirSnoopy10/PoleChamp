@@ -1,0 +1,14 @@
+# Maestro CLI 2.11 (IMP-454). Uruchamianie: `maestro test apps/mobile/e2e/maestro --include-tags p1`.
+# Przepływy w podkatalogach: org (telefon organizatora), judge (tablet), full (dwa urządzenia), sync (offline).
+flows:
+  - 'smoke.yaml'
+  - 'org/*'
+  - 'judge/*'
+  - 'sync/*'
+# Przepływy dwuurządzeniowe (full/) uruchamia orkiestrator `tools/e2e` – nie wchodzą do zwykłego przebiegu.
+excludeTags:
+  - manual
+  - full
+executionOrder:
+  continueOnFailure: true
+testOutputDir: ../../reports/maestro

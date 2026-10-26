@@ -64,13 +64,24 @@ export class PinService {
         .from(judge)
         .where(and(eq(judge.tournamentId, tournamentId), eq(judge.pinFingerprint, pinFingerprint)));
       if (taken) continue;
-      const pinOfflineSalt = randomBytes(16);
-      const [pinHash, pinOfflineVerifier] = await Promise.all([
-        this.passwords.hash(pin),
-        pbkdf2Async(pin, pinOfflineSalt, PIN_OFFLINE_ITERATIONS, 32, 'sha256'),
-      ]);
-      return { pin, pinHash, pinFingerprint, pinOfflineSalt, pinOfflineVerifier };
+      return this.secrets(tournamentId, pin);
     }
     throw new Error('Nie udało się wylosować unikalnego PIN-u');
+  }
+
+  /** Hash, odcisk i weryfikator offline danego PIN-u (także dane testowe E2E z PIN-ami seedu). */
+  async secrets(tournamentId: string, pin: string): Promise<GeneratedPin> {
+    const pinOfflineSalt = randomBytes(16);
+    const [pinHash, pinOfflineVerifier] = await Promise.all([
+      this.passwords.hash(pin),
+      pbkdf2Async(pin, pinOfflineSalt, PIN_OFFLINE_ITERATIONS, 32, 'sha256'),
+    ]);
+    return {
+      pin,
+      pinHash,
+      pinFingerprint: this.fingerprint(tournamentId, pin),
+      pinOfflineSalt,
+      pinOfflineVerifier,
+    };
   }
 }
