@@ -36,4 +36,6 @@ export const toasts = {
   athleteRestored: 'Przywrócono zawodniczkę',
   athleteRemoved: 'Usunięto zawodniczkę z listy',
   athleteAnonymized: 'Usunięto dane osobowe',
+  rejectedAccepted: 'Przyjęto ocenę',
+  rejectedDiscarded: 'Odrzucono ocenę',
 } as const;

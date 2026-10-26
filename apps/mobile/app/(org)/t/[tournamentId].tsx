@@ -11,8 +11,12 @@ import {
   useTournament,
   useUpdateTournament,
 } from '../../../src/data/org/tournament';
+import { useResolveRejected, useRejected } from '../../../src/data/org/rejected';
+import { useTournamentResults } from '../../../src/data/org/results';
 import { useOrgRealtime } from '../../../src/data/realtime/useOrgRealtime';
 import { CategoryFormSheet, toastSaveError } from '../../../src/features/categories/CategoryFormSheet';
+import { PdfPreviewSheet } from '../../../src/features/exports/PdfPreviewSheet';
+import { RejectedSheet } from '../../../src/features/rejected/RejectedSheet';
 import { EditTournamentSheet } from '../../../src/features/tournaments/EditTournamentSheet';
 import { FinishTournamentSheet } from '../../../src/features/tournaments/FinishTournamentSheet';
 import { TournamentDetailsScreen } from '../../../src/features/tournaments/TournamentDetailsScreen';
@@ -32,6 +36,11 @@ export default function TournamentRoute() {
   const finishSheet = useSheet();
   const editSheet = useSheet();
   const categorySheet = useSheet();
+  const pdfSheet = useSheet();
+  const rejectedSheet = useSheet();
+  const results = useTournamentResults(id, pdfSheet.visible);
+  const rejected = useRejected(id, rejectedSheet.visible);
+  const resolve = useResolveRejected(id);
   const devices = useDevices(id, finishSheet.visible);
   const start = useStartTournament(id);
   const finish = useFinishTournament(id);
@@ -80,13 +89,13 @@ export default function TournamentRoute() {
       onBack={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       onRetry={() => void query.refetch()}
       onEdit={editSheet.open}
-      onPdf={() => router.push(`/pdf/${id}`)}
+      onPdf={pdfSheet.open}
       onJudges={() => router.push(`/judges/${id}`)}
       onStart={onStart}
       onFinish={finishSheet.open}
       onAddCategory={categorySheet.open}
       onOpenCategory={(categoryId) => router.push(`/c/${categoryId}`)}
-      onRejected={() => router.push(`/rejected/${id}`)}
+      onRejected={rejectedSheet.open}
       onResendCode={() =>
         resend.mutate(undefined, {
           onSuccess: () => {
@@ -112,6 +121,18 @@ export default function TournamentRoute() {
             onSave={(body, version) => update.mutateAsync({ body, version })}
             onDelete={(version) => remove.mutateAsync({ version })}
             onDeleted={() => router.replace('/')}
+          />
+          <PdfPreviewSheet {...pdfSheet.props} tournament={tournament} results={results.data?.categories} />
+          <RejectedSheet
+            {...rejectedSheet.props}
+            items={rejected.data}
+            loading={rejected.isPending}
+            lockedCategoryIds={
+              new Set(tournament.categories.filter((c) => c.status === 'LOCKED').map((c) => c.id))
+            }
+            canWrite={canWrite}
+            onAccept={(item) => resolve.accept.mutateAsync(item)}
+            onDiscard={(item) => resolve.discard.mutateAsync(item)}
           />
           <CategoryFormSheet
             {...categorySheet.props}

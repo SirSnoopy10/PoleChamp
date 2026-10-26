@@ -29,7 +29,7 @@ export interface ButtonProps {
   fullWidth?: boolean;
   disabled?: boolean;
   loading?: boolean;
-  /** Akcja usuwająca (secondary): tekst neutral-300. */
+  /** Akcja usuwająca (secondary, ghost): tekst neutral-300. */
   destructive?: boolean;
   /** Tło `accent10OnBg` dla primary w `StickyActionBar` i stopce. */
   onBar?: boolean;
@@ -81,7 +81,7 @@ export function Button({
       ? destructive
         ? color.neutral[300]
         : color.text
-      : round && !outlined
+      : (round && !outlined) || (variant === 'ghost' && destructive)
         ? color.neutral[300]
         : color.accent;
   const iconSize = round ? Math.round(roundSize * 0.5) : 18;

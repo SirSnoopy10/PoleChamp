@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import type { CategoryDetails, EntryRow, LockWarnings } from '@polechamp/contracts';
+import type { CategoryDetails, EntryRow, LockWarnings, ResultsResponse } from '@polechamp/contracts';
 import { useCanWrite } from '../../../src/data/network/useCanWrite';
 import {
   useCategory,
@@ -12,6 +12,7 @@ import {
   useUpdateCategory,
 } from '../../../src/data/org/categories';
 import { suggestStartNumber, useEntries, useEntryMutations } from '../../../src/data/org/entries';
+import { useResolveRejected, useRejected } from '../../../src/data/org/rejected';
 import { useResults } from '../../../src/data/org/results';
 import { useTournament } from '../../../src/data/org/tournament';
 import { useOrgRealtime } from '../../../src/data/realtime/useOrgRealtime';
@@ -24,6 +25,9 @@ import { CriteriaTab } from '../../../src/features/categories/tabs/CriteriaTab';
 import { EntriesTab } from '../../../src/features/categories/tabs/EntriesTab';
 import { ResultsTab } from '../../../src/features/categories/tabs/ResultsTab';
 import { EntrySheet } from '../../../src/features/entries/EntrySheet';
+import { PdfPreviewSheet } from '../../../src/features/exports/PdfPreviewSheet';
+import { RejectedSheet } from '../../../src/features/rejected/RejectedSheet';
+import { EntryScoresSheet } from '../../../src/features/results/EntryScoresSheet';
 import type { CategoryAction } from '../../../src/features/org/CategoryActionBar';
 import { useSheet } from '../../../src/ui/sheet';
 import { toast } from '../../../src/ui/Toast';
@@ -66,7 +70,12 @@ export default function CategoryRoute() {
   const [search, setSearch] = useState('');
   const q = useDebounced(search.trim());
   const entries = useEntries(id, q);
-  const results = useResults(id, tab === 'results');
+  const pdfSheet = useSheet();
+  const rejectedSheet = useSheet();
+  const results = useResults(id, tab === 'results' || pdfSheet.visible);
+  const rejected = useRejected(tournamentId, rejectedSheet.visible);
+  const resolve = useResolveRejected(tournamentId);
+  const [scoresRow, setScoresRow] = useState<ResultsResponse['rows'][number] | null>(null);
   useOrgRealtime(category?.tournamentId);
 
   const start = useStartCategory(ref);
@@ -112,7 +121,7 @@ export default function CategoryRoute() {
     );
 
   const onAction = (action: CategoryAction) => {
-    if (action === 'exportPdf') return router.push(`/pdf/${tournamentId}?categoryId=${id}`);
+    if (action === 'exportPdf') return pdfSheet.open();
     setBusy(action);
     if (action === 'lock') return doLock(false);
     const mutation = action === 'start' ? start : unlock;
@@ -150,7 +159,7 @@ export default function CategoryRoute() {
       onRetry={() => void Promise.all([query.refetch(), tournament.refetch()])}
       onEdit={editSheet.open}
       onAction={onAction}
-      onRejected={() => router.push(`/rejected/${tournamentId}?categoryId=${id}`)}
+      onRejected={rejectedSheet.open}
       sheets={
         category ? (
           <>
@@ -190,6 +199,29 @@ export default function CategoryRoute() {
               onRestore={(e) => entryMutations.restore.mutateAsync(e.id)}
               onRemove={(e) => entryMutations.remove.mutateAsync(e.id)}
               onAnonymize={(e) => entryMutations.anonymize.mutateAsync(e.id)}
+            />
+            {tournament.data ? (
+              <PdfPreviewSheet
+                {...pdfSheet.props}
+                tournament={tournament.data}
+                categoryId={id}
+                results={results.data ? [results.data] : undefined}
+              />
+            ) : null}
+            <RejectedSheet
+              {...rejectedSheet.props}
+              items={rejected.data}
+              loading={rejected.isPending}
+              categoryId={id}
+              lockedCategoryIds={new Set(category.status === 'LOCKED' ? [id] : [])}
+              canWrite={canWrite}
+              onAccept={(item) => resolve.accept.mutateAsync(item)}
+              onDiscard={(item) => resolve.discard.mutateAsync(item)}
+            />
+            <EntryScoresSheet
+              row={scoresRow}
+              judgeCount={results.data?.judgeCount ?? category.judgeCount}
+              onClose={() => setScoresRow(null)}
             />
             <LockWarningsSheet
               warnings={lockWarnings}
@@ -250,7 +282,7 @@ export default function CategoryRoute() {
           loading={results.isPending}
           error={results.isError}
           onRetry={() => void results.refetch()}
-          onOpen={(row) => router.push(`/c/${id}/entry/${row.entryId}`)}
+          onOpen={setScoresRow}
         />
       ) : null}
     </CategoryScreen>
