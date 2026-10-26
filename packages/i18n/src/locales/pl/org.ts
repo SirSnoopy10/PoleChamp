@@ -42,4 +42,30 @@ export const org = {
     savePassword: 'Zapisz hasło',
     requestNewLink: 'Poproś o nowy link',
   },
+  /** SCR-ORG-01 – lista turniejów. */
+  tournaments: {
+    kicker: 'Panel organizatora',
+    title: 'Turnieje',
+    account: 'Konto',
+    create: 'Utwórz turniej',
+    newA11y: 'Nowy turniej',
+    active: 'Aktywne',
+    finished: 'Zakończone',
+    empty: 'Nie masz jeszcze turniejów.',
+    noActive: 'Brak aktywnych turniejów.',
+    placeTbd: 'Miejsce do ustalenia',
+    finishedRow: '{date} · {place}',
+  },
+  /** SCR-ORG-02 / SCR-ORG-20 – formularz turnieju. */
+  tournamentForm: {
+    newTitle: 'Nowy turniej',
+    name: 'Nazwa turnieju',
+    namePlaceholder: 'np. Wiosenny Puchar PoleChamp',
+    nameError: 'Podaj nazwę turnieju (min. 3 znaki).',
+    date: 'Data',
+    datePlaceholder: '12 kwietnia 2027',
+    venue: 'Miejsce',
+    venuePlaceholder: 'Poznań, Arena',
+    create: 'Utwórz turniej',
+  },
 } as const;

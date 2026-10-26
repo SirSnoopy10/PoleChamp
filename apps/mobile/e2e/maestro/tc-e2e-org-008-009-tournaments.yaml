@@ -1,0 +1,27 @@
+# TC-E2E-ORG-007/008/009 – splash, lista turniejów (FX-SEED), nowy turniej. Uruchamiane w IMP-459.
+appId: app.polechamp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: 'Wczytywanie turniejów…'
+    timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: 'tournaments-screen'
+    timeout: 6000
+- assertVisible: 'Aktywne'
+- assertVisible: '8 kategorii · 80%'
+- assertVisible: 'Zakończone'
+- tapOn:
+    id: 'tournaments-new'
+- tapOn:
+    id: 'tournament-create'
+- assertVisible: 'Podaj nazwę turnieju (min. 3 znaki).'
+- tapOn:
+    id: 'tournament-name'
+- inputText: 'Puchar Wiosny PoleChamp'
+- tapOn:
+    id: 'tournament-create'
+- assertVisible: 'Utworzono turniej'
+- assertVisible: 'Data do ustalenia'
+- assertVisible: 'Miejsce do ustalenia'

@@ -1,5 +1,5 @@
-import { useCallback, useRef, type ComponentRef, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useCallback, useRef, type ComponentRef, type ReactElement, type ReactNode } from 'react';
+import { ScrollView, StyleSheet, View, useWindowDimensions, type RefreshControlProps } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { color } from '@polechamp/tokens';
@@ -19,6 +19,8 @@ export interface ScreenContainerProps {
   /** Bez przewijania (np. ekran z własną listą). */
   scroll?: boolean;
   glow?: boolean;
+  /** Pull-to-refresh (`RefreshControl` w kolorze accent). */
+  refreshControl?: ReactElement<RefreshControlProps>;
   testID?: string;
 }
 
@@ -33,6 +35,7 @@ export function ScreenContainer({
   footerHeight = 0,
   scroll = true,
   glow = true,
+  refreshControl,
   testID = 'screen',
 }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
@@ -71,6 +74,7 @@ export function ScreenContainer({
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          refreshControl={refreshControl}
           contentContainerStyle={padding}
         >
           {column}

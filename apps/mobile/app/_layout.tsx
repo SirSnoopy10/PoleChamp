@@ -8,6 +8,7 @@ import { AppProviders } from '../src/AppProviders';
 import { onSessionExpired } from '../src/data/api';
 import { tokenStore } from '../src/data/api/tokens';
 import { useSession } from '../src/data/api/useSession';
+import { useOrgSplashStage } from '../src/features/org/bootstrap';
 import { useOrientationLock } from '../src/features/system/orientation';
 import { OrientationGuard } from '../src/features/system/OrientationGuard';
 import { UpdateRequired, useUpdateState } from '../src/features/system/UpdateRequired';
@@ -42,8 +43,9 @@ function Root() {
 
   const hideNative = useCallback(() => void NativeSplash.hideAsync(), []);
   const stages = SPLASH_STAGES[mode ?? 'org'];
-  // Etapy ładowania danych dochodzą w IMP-254 / IMP-302; tu: magazyn tokenów wczytany = gotowe.
-  const stage = session.loaded ? 'ready' : stages[0];
+  // Organizator: prefetch turniejów pod splashem (IMP-254); tablet – etapy w IMP-302.
+  const orgStage = useOrgSplashStage(session.loaded && mode === 'org', !!session.org);
+  const stage = !session.loaded ? stages[0] : mode === 'org' ? orgStage : 'ready';
 
   return (
     <OrientationGuard>

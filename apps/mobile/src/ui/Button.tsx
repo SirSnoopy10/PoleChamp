@@ -33,6 +33,8 @@ export interface ButtonProps {
   destructive?: boolean;
   /** Tło `accent10OnBg` dla primary w `StickyActionBar` i stopce. */
   onBar?: boolean;
+  /** `iconRound` z obrysem i ikoną accent, bez wypełnienia („+” na SCR-ORG-01). */
+  outlined?: boolean;
   accessibilityLabel?: string;
   accessibilityHint?: string;
   testID?: string;
@@ -62,6 +64,7 @@ export function Button({
   loading,
   destructive,
   onBar,
+  outlined,
   accessibilityLabel,
   accessibilityHint,
   testID,
@@ -78,7 +81,7 @@ export function Button({
       ? destructive
         ? color.neutral[300]
         : color.text
-      : round
+      : round && !outlined
         ? color.neutral[300]
         : color.accent;
   const iconSize = round ? Math.round(roundSize * 0.5) : 18;
@@ -103,7 +106,13 @@ export function Button({
           paddingHorizontal: 2.8,
         };
       case 'iconRound':
-        return { backgroundColor: pressed ? color.neutral[700] : color.neutral[800] };
+        return outlined
+          ? {
+              borderWidth: 1,
+              borderColor: color.accent,
+              backgroundColor: pressed ? mix.accent12OnBg : 'transparent',
+            }
+          : { backgroundColor: pressed ? color.neutral[700] : color.neutral[800] };
     }
   };
 

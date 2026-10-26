@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ComponentRef, type Ref } from 'react';
 import { TextInput, type TextInputProps } from 'react-native';
 import { color } from '@polechamp/tokens';
 import { useThemeSettings } from '../theme/ThemeProvider';
@@ -8,6 +8,8 @@ export interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   label: string;
   error?: string;
   testID?: string;
+  /** Fokus z kodu (kolejność pól „Dalej”). */
+  ref?: Ref<ComponentRef<typeof TextInput>>;
 }
 
 /** Pole tekstowe z etykietą i błędem pod polem (IMP-207, TC-UI-008). */
@@ -18,6 +20,7 @@ export function TextField({
   onFocus,
   onBlur,
   accessibilityHint,
+  ref,
   ...input
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
@@ -25,6 +28,7 @@ export function TextField({
   return (
     <FieldFrame label={label} error={error}>
       <TextInput
+        ref={ref}
         testID={testID}
         accessibilityLabel={label}
         accessibilityHint={error ?? accessibilityHint}
