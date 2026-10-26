@@ -7,3 +7,4 @@ export { useZodForm, type ZodForm } from './useZodForm';
 export { PasswordField, type PasswordFieldProps } from './PasswordField';
 export { Checkbox, type CheckboxProps } from './Checkbox';
 export { CodeInput, type CodeInputProps } from './CodeInput';
+export { SearchField, type SearchFieldProps } from './SearchField';

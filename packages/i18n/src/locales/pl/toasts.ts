@@ -32,4 +32,8 @@ export const toasts = {
   passwordChanged: 'Zmieniono hasło. Zaloguj się nowym hasłem.',
   emailVerified: 'Potwierdzono adres e-mail',
   codeResent: 'Wysłaliśmy nowy kod',
+  athleteWithdrawn: 'Wycofano zawodniczkę',
+  athleteRestored: 'Przywrócono zawodniczkę',
+  athleteRemoved: 'Usunięto zawodniczkę z listy',
+  athleteAnonymized: 'Usunięto dane osobowe',
 } as const;

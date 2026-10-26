@@ -62,6 +62,8 @@ export const EntryRow = z.object({
   startNumber: z.number().int(),
   startOrder: z.number().int().positive(),
   status: EntryStatus,
+  /** Wersja do `If-Match` przy `PATCH /v1/entries/{id}` (EP-07). */
+  version: z.number().int().positive(),
   athlete: Athlete,
   judged: z.object({ done: z.number().int().min(0), expected: z.number().int().min(0) }),
 });

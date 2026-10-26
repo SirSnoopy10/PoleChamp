@@ -17,9 +17,10 @@ export function refreshOnConflict(
 }
 
 /** `GET /v1/tournaments/{id}` – szczegóły z wersją do `If-Match` (IMP-257). */
-export function useTournament(id: string) {
+export function useTournament(id: string, enabled = true) {
   return useQuery<TournamentDetails, ApiError>({
     queryKey: queryKeys.tournament(id),
+    enabled,
     queryFn: () =>
       unwrap(api.GET('/v1/tournaments/{tournamentId}', { params: { path: { tournamentId: id } } })),
   });

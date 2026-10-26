@@ -35,6 +35,24 @@ export interface CategoryFormSheetProps {
   onDeleted?: () => void;
 }
 
+/**
+ * Błędy pól z odpowiedzi API pod polami formularza. Kody domenowe przypisane do pola
+ * (`START_NUMBER_TAKEN`, `JUDGE_NAME_TAKEN`) dostają tekst z katalogu błędów („Numer 47 jest już zajęty.”).
+ */
+export function applyFormError(
+  form: {
+    applyApiErrors: (issues: ApiError['fieldErrors']) => void;
+    setError: (name: never, error: { type: string; message: string }) => void;
+  },
+  e: ApiError,
+  t: (key: never, params?: Record<string, string | number>) => string,
+) {
+  if (e.code === 'VALIDATION_FAILED') return form.applyApiErrors(e.fieldErrors);
+  for (const issue of e.fieldErrors) {
+    form.setError(issue.field as never, { type: 'api', message: t(e.messageKey as never, e.messageParams) });
+  }
+}
+
 /** Komunikat błędu zapisu: katalog błędów API albo „Nie udało się zapisać…” (sieć). */
 export function toastSaveError(e: unknown) {
   if (e instanceof ApiError && e.status > 0) toast.error(e.messageKey, e.messageParams);

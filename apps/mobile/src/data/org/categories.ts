@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CategoryCreate, CategoryDetails } from '@polechamp/contracts';
+import type { CategoryCreate, CategoryDetails, CriterionInput, PenaltyTypeInput } from '@polechamp/contracts';
 import { api, unwrap, type ApiError } from '../api';
 import { queryKeys } from '../query/keys';
 import { ifMatch, refreshOnConflict } from './tournament';
@@ -67,4 +67,117 @@ export function useDeleteCategory(category: Pick<CategoryDetails, 'id' | 'tourna
     },
     onError: (e) => refreshOnConflict(queryClient, e, queryKeys.category(category.id)),
   });
+}
+
+function useCategoryInvalidation(category: Pick<CategoryDetails, 'id' | 'tournamentId'>) {
+  const queryClient = useQueryClient();
+  return async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.category(category.id) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.results(category.id) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament(category.tournamentId) }),
+    ]);
+  };
+}
+
+/** `POST /v1/categories/{id}/start` (IMP-261) – warunki FR-308 w `START_REQUIREMENTS_NOT_MET.detail`. */
+export function useStartCategory(category: Pick<CategoryDetails, 'id' | 'tournamentId'>) {
+  const invalidate = useCategoryInvalidation(category);
+  return useMutation<unknown, ApiError>({
+    mutationFn: async () => {
+      await unwrap(
+        api.POST('/v1/categories/{categoryId}/start', { params: { path: { categoryId: category.id } } }),
+      );
+      await invalidate();
+    },
+  });
+}
+
+/** `POST /v1/categories/{id}/lock` (IMP-261, IMP-271): `409 LOCK_WARNINGS` → arkusz SCR-ORG-18. */
+export function useLockCategory(category: Pick<CategoryDetails, 'id' | 'tournamentId'>) {
+  const invalidate = useCategoryInvalidation(category);
+  return useMutation<unknown, ApiError, { force: boolean }>({
+    mutationFn: async ({ force }) => {
+      await unwrap(
+        api.POST('/v1/categories/{categoryId}/lock', {
+          params: { path: { categoryId: category.id } },
+          body: { force },
+        }),
+      );
+      await invalidate();
+    },
+  });
+}
+
+/** `POST /v1/categories/{id}/unlock` (IMP-261). */
+export function useUnlockCategory(category: Pick<CategoryDetails, 'id' | 'tournamentId'>) {
+  const invalidate = useCategoryInvalidation(category);
+  return useMutation<unknown, ApiError>({
+    mutationFn: async () => {
+      await unwrap(
+        api.POST('/v1/categories/{categoryId}/unlock', {
+          params: { path: { categoryId: category.id } },
+          body: {},
+        }),
+      );
+      await invalidate();
+    },
+  });
+}
+
+export type CriterionBody = CriterionInput;
+export type PenaltyBody = PenaltyTypeInput;
+
+/** Kryteria i kary (IMP-263, IMP-264): każda zmiana odświeża `['category', id]`. */
+export function useCriteriaMutations(categoryId: string) {
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.category(categoryId) });
+  return {
+    createCriterion: useMutation<unknown, ApiError, CriterionBody>({
+      mutationFn: async (body) => {
+        await unwrap(
+          api.POST('/v1/categories/{categoryId}/criteria', { params: { path: { categoryId } }, body }),
+        );
+        await refresh();
+      },
+    }),
+    updateCriterion: useMutation<unknown, ApiError, { id: string; body: Partial<CriterionBody> }>({
+      mutationFn: async ({ id, body }) => {
+        await unwrap(
+          api.PATCH('/v1/criteria/{criterionId}', { params: { path: { criterionId: id } }, body }),
+        );
+        await refresh();
+      },
+    }),
+    deleteCriterion: useMutation<unknown, ApiError, string>({
+      mutationFn: async (id) => {
+        await unwrap(api.DELETE('/v1/criteria/{criterionId}', { params: { path: { criterionId: id } } }));
+        await refresh();
+      },
+    }),
+    createPenalty: useMutation<unknown, ApiError, PenaltyBody>({
+      mutationFn: async (body) => {
+        await unwrap(
+          api.POST('/v1/categories/{categoryId}/penalty-types', { params: { path: { categoryId } }, body }),
+        );
+        await refresh();
+      },
+    }),
+    updatePenalty: useMutation<unknown, ApiError, { id: string; body: Partial<PenaltyBody> }>({
+      mutationFn: async ({ id, body }) => {
+        await unwrap(
+          api.PATCH('/v1/penalty-types/{penaltyTypeId}', { params: { path: { penaltyTypeId: id } }, body }),
+        );
+        await refresh();
+      },
+    }),
+    deletePenalty: useMutation<unknown, ApiError, string>({
+      mutationFn: async (id) => {
+        await unwrap(
+          api.DELETE('/v1/penalty-types/{penaltyTypeId}', { params: { path: { penaltyTypeId: id } } }),
+        );
+        await refresh();
+      },
+    }),
+  };
 }

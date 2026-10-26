@@ -25,6 +25,13 @@ export function categoryActions(category: CategoryStatus, tournament: Tournament
   }
 }
 
+const ICON = {
+  start: 'play',
+  lock: 'lock-simple',
+  unlock: 'lock-simple-open',
+  exportPdf: 'file-pdf',
+} as const;
+
 const LABEL = {
   start: 'actions.startCategory',
   lock: 'actions.lockCategory',
@@ -38,6 +45,8 @@ export interface CategoryActionBarProps {
   onAction: (action: CategoryAction) => void;
   /** `useCanWrite()` – offline lub turniej zakończony blokuje zmiany (eksport PDF pozostaje). */
   canWrite?: boolean;
+  /** Akcja w toku – przycisk w stanie `loading`. */
+  busy?: CategoryAction | null;
 }
 
 export function CategoryActionBar({
@@ -45,6 +54,7 @@ export function CategoryActionBar({
   tournament,
   onAction,
   canWrite = true,
+  busy = null,
 }: CategoryActionBarProps) {
   const t = useT();
   const actions = categoryActions(category, tournament);
@@ -57,7 +67,9 @@ export function CategoryActionBar({
           onBar
           fullWidth
           size={48}
-          icon={action === 'exportPdf' ? 'file-pdf' : undefined}
+          testID={`category-action-${action}`}
+          icon={ICON[action]}
+          loading={busy === action}
           label={t(LABEL[action])}
           disabled={action !== 'exportPdf' && !canWrite}
           onPress={() => onAction(action)}
