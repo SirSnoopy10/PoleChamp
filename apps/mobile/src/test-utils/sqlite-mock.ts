@@ -19,8 +19,9 @@ const bind = (params: Params) =>
 export class SQLiteDatabase {
   readonly db: Database.Database;
 
+  /** Bez katalogu – baza w pamięci; z katalogiem (testy PRAGMA WAL) – plik. */
   constructor(readonly databasePath: string) {
-    this.db = new Database(':memory:');
+    this.db = new Database(/[/\\]/.test(databasePath) ? databasePath : ':memory:');
   }
 
   execSync(source: string): void {
@@ -70,5 +71,9 @@ export class SQLiteDatabase {
   }
 }
 
-export const openDatabaseSync = (name: string) => new SQLiteDatabase(name);
-export const openDatabaseAsync = async (name: string) => new SQLiteDatabase(name);
+const path = (name: string, directory?: string) => (directory ? `${directory}/${name}` : name);
+
+export const openDatabaseSync = (name: string, _options?: unknown, directory?: string) =>
+  new SQLiteDatabase(path(name, directory));
+export const openDatabaseAsync = async (name: string, _options?: unknown, directory?: string) =>
+  new SQLiteDatabase(path(name, directory));

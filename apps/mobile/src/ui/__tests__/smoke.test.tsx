@@ -1,7 +1,7 @@
 import { sheetTotal } from '@polechamp/scoring';
 import { typography } from '@polechamp/tokens';
 import { openDatabaseSync } from 'expo-sqlite';
-import { migrate, MIGRATIONS } from '../../db/migrations';
+import { migrate, MIGRATIONS } from '../../data/local/migrations';
 import { renderWithProviders, screen } from '../../test-utils/render';
 import { Text } from '../Text';
 
