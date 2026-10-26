@@ -64,6 +64,7 @@ export async function authWorld(call: Call) {
       judgeId: judge.id,
       judgePin: judge.pin,
       deviceId: tablet.deviceId,
+      judgeSessionId: session.sessionId,
       otherTournamentId: ot.id,
       otherJudgeId: otherJudge.id,
     },
