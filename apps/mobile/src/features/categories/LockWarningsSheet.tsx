@@ -2,23 +2,15 @@ import { StyleSheet, View } from 'react-native';
 import type { TFunction } from 'i18next';
 import { color, layout } from '@polechamp/tokens';
 import type { LockWarnings } from '@polechamp/contracts';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { Icon } from '../../ui/Icon';
 import { ConfirmContent, Sheet } from '../../ui/sheet';
 import { Text } from '../../ui/Text';
+import { sinceText } from '../org/time';
 
 type T = TFunction<['ui', 'org']>;
-
-/** „5 min” / „2 godz.” / „3 dni” od chwili `iso` (SCR-ORG-14, SCR-ORG-18). */
-export function sinceText(t: T, iso: string | null, now = Date.now()): string {
-  if (!iso) return t('org:since.now');
-  const minutes = Math.max(0, Math.floor((now - Date.parse(iso)) / 60_000));
-  if (minutes < 1) return t('org:since.now');
-  if (minutes < 60) return t('org:since.minutes', { n: minutes });
-  if (minutes < 24 * 60) return t('org:since.hours', { n: Math.floor(minutes / 60) });
-  return t('org:since.days', { n: Math.floor(minutes / (24 * 60)) });
-}
 
 /** Treść SCR-ORG-18 z odpowiedzi `409 LOCK_WARNINGS` (TC-STATE-013). */
 export function lockWarningsModel(t: T, warnings: LockWarnings, now = Date.now()) {
@@ -45,6 +37,7 @@ export interface LockWarningsSheetProps {
 /** SCR-ORG-18 – „Zablokować kategorię?” (IMP-271): „Zablokuj mimo to” wysyła `force: true`. */
 export function LockWarningsSheet({ warnings, onClose, busy, onForce }: LockWarningsSheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const model = warnings ? lockWarningsModel(t, warnings) : null;
   return (
     <Sheet
@@ -81,6 +74,7 @@ export function LockWarningsSheet({ warnings, onClose, busy, onForce }: LockWarn
               fullWidth
               loading={busy}
               onPress={onForce}
+              disabled={offline}
             />
             <Button variant="secondary" label={t('common:cancel')} size={48} fullWidth onPress={onClose} />
           </>

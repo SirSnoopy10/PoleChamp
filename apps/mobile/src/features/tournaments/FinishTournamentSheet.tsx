@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { color, layout } from '@polechamp/tokens';
 import type { DeviceRow, TournamentDetails } from '@polechamp/contracts';
 import type { TFunction } from 'i18next';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { Icon } from '../../ui/Icon';
@@ -59,6 +60,7 @@ export function FinishTournamentSheet({
   onConfirm,
 }: FinishTournamentSheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const model = finishModel(t, tournament, devices);
   return (
     <Sheet
@@ -95,6 +97,7 @@ export function FinishTournamentSheet({
               fullWidth
               loading={busy}
               onPress={onConfirm}
+              disabled={offline}
             />
             <Button variant="secondary" label={t('common:cancel')} size={48} fullWidth onPress={onClose} />
           </>

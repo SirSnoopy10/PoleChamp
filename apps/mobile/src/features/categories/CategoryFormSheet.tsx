@@ -6,6 +6,7 @@ import { CategoryCreate, Level, Style, type CategoryDetails } from '@polechamp/c
 import { uuidv7 } from '../../data/api';
 import { ApiError } from '../../data/api/errors';
 import type { CategoryPatchBody } from '../../data/org/categories';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { ChoiceChipGroup, TextField, useZodForm } from '../../ui/form';
@@ -74,6 +75,7 @@ export function CategoryFormSheet({
   onDeleted,
 }: CategoryFormSheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const initial: CategoryValues = category
     ? { name: category.name, style: category.style, level: category.level, ageGroup: category.ageGroup }
     : NEW;
@@ -235,6 +237,7 @@ export function CategoryFormSheet({
                   size={48}
                   fullWidth
                   onPress={() => void remove()}
+                  disabled={offline}
                 />
                 <Button
                   variant="ghost"

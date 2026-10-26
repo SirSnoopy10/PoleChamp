@@ -4,6 +4,7 @@ import { layout } from '@polechamp/tokens';
 import { TournamentCreate } from '@polechamp/contracts';
 import { uuidv7 } from '../../data/api';
 import { ApiError } from '../../data/api/errors';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { useZodForm } from '../../ui/form';
@@ -26,6 +27,7 @@ export interface NewTournamentSheetProps {
  */
 export function NewTournamentSheet({ visible, onClose, onCreate, onCreated }: NewTournamentSheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const form = useZodForm<typeof TournamentCreate>(TournamentCreate, {
     defaultValues: emptyTournament,
     errorParams: { venue: { max: 120 } },
@@ -62,6 +64,7 @@ export function NewTournamentSheet({ visible, onClose, onCreate, onCreated }: Ne
           fullWidth
           loading={form.formState.isSubmitting}
           onPress={() => void submit()}
+          disabled={offline}
         />
       </View>
     </Sheet>

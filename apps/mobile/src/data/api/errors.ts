@@ -66,7 +66,7 @@ export class ApiError extends Error {
 /** Pole formularza dla błędów domenowych bez `errors[]` (np. zajęty numer startowy). */
 const CODE_FIELD: Partial<Record<ErrorCode, { field: string; code: FieldErrorCode }>> = {
   START_NUMBER_TAKEN: { field: 'startNumber', code: 'INVALID_FORMAT' },
-  JUDGE_NAME_TAKEN: { field: 'name', code: 'INVALID_FORMAT' },
+  JUDGE_NAME_TAKEN: { field: 'fullName', code: 'INVALID_FORMAT' },
 };
 
 function retryAfter(response: Response, problem: Problem | null): number | null {

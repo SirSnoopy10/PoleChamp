@@ -11,3 +11,4 @@ import './layout.catalog';
 import './splash.catalog';
 import './auth.catalog';
 import './tournaments.catalog';
+import './org.catalog';

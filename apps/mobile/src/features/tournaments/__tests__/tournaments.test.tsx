@@ -6,7 +6,7 @@ import TournamentRoute from '../../../../app/(org)/t/[tournamentId]';
 import { groupTournaments } from '../../../data/org/tournaments';
 import { network } from '../../../data/network/online';
 import { bootstrapOrg } from '../../org/bootstrap';
-import { createTestQueryClient, fireEvent, screen, waitFor, within } from '../../../test-utils/render';
+import { act, createTestQueryClient, fireEvent, screen, waitFor, within } from '../../../test-utils/render';
 import { API, problem, setupOrgServer, startOrg } from '../../../test-utils/org';
 
 const { server, state } = setupOrgServer();
@@ -168,7 +168,9 @@ describe('SCR-ORG-02 nowy turniej (IMP-256)', () => {
     await fireEvent.press(screen.getByTestId('tournament-create'));
     expect(await screen.findByText('Nie udało się zapisać. Spróbuj ponownie.')).toBeOnTheScreen();
     expect(screen.getByTestId('tournament-name').props.value).toBe('Puchar');
-    network.reset();
+    // Bez sieci zapis jest niedostępny (IMP-278); po powrocie łączności – ponowienie z tym samym kluczem.
+    expect(screen.getByTestId('tournament-create')).toBeDisabled();
+    await act(async () => network.reportHttpSuccess());
     await fireEvent.press(screen.getByTestId('tournament-create'));
     await waitFor(() => expect(r.getPathname()).toBe('/t/t9'));
     expect(keys).toHaveLength(2);

@@ -4,6 +4,7 @@ import { layout } from '@polechamp/tokens';
 import { TournamentCreate, type TournamentDetails } from '@polechamp/contracts';
 import { ApiError } from '../../data/api/errors';
 import type { TournamentPatchBody } from '../../data/org/tournament';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { useZodForm } from '../../ui/form';
@@ -51,6 +52,7 @@ export function EditTournamentSheet({
   onDeleted,
 }: EditTournamentSheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const form = useZodForm<typeof TournamentCreate>(TournamentCreate, {
     defaultValues: valuesOf(tournament),
     errorParams: { venue: { max: 120 } },
@@ -107,6 +109,7 @@ export function EditTournamentSheet({
               fullWidth
               loading={form.formState.isSubmitting}
               onPress={() => void save()}
+              disabled={offline}
             />
             {tournament.status === 'DRAFT' ? (
               <Button
@@ -118,6 +121,7 @@ export function EditTournamentSheet({
                 size={48}
                 fullWidth
                 onPress={() => setStep('delete')}
+                disabled={offline}
               />
             ) : null}
           </View>
@@ -135,6 +139,7 @@ export function EditTournamentSheet({
                   size={48}
                   fullWidth
                   onPress={() => void remove()}
+                  disabled={offline}
                 />
                 <Button
                   variant="ghost"

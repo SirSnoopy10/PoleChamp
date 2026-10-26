@@ -6,6 +6,7 @@ import { EntryCreate, type EntryRow } from '@polechamp/contracts';
 import { uuidv7 } from '../../data/api';
 import { ApiError } from '../../data/api/errors';
 import type { EntryPatchBody } from '../../data/org/entries';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { Checkbox, NumberField, TextField, useZodForm } from '../../ui/form';
@@ -65,6 +66,7 @@ export function EntrySheet({
   onAnonymize,
 }: EntrySheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const form = useZodForm(EntryCreate, {
     errorParams: {
       startNumber: { min: 1, max: 9999 },
@@ -283,7 +285,7 @@ export function EntrySheet({
               label={t(entry ? 'org:entryForm.save' : 'org:entryForm.add')}
               size={48}
               fullWidth
-              disabled={!entry && !canChangeList}
+              disabled={offline || (!entry && !canChangeList)}
               loading={form.formState.isSubmitting}
               onPress={() => void save(false)()}
             />
@@ -293,7 +295,7 @@ export function EntrySheet({
                 variant="ghost"
                 size={44}
                 label={t('org:entryForm.addAnother')}
-                disabled={!canChangeList}
+                disabled={offline || !canChangeList}
                 onPress={() => void save(true)()}
                 style={styles.center}
               />
@@ -310,6 +312,7 @@ export function EntrySheet({
                       size={48}
                       fullWidth
                       onPress={() => setStep('withdraw')}
+                      disabled={offline}
                     />
                   ) : (
                     <Button
@@ -319,6 +322,7 @@ export function EntrySheet({
                       size={48}
                       fullWidth
                       onPress={() => void run(onRestore, 'toasts:athleteRestored')}
+                      disabled={offline}
                     />
                   )
                 ) : null}
@@ -330,6 +334,7 @@ export function EntrySheet({
                     label={t('org:entryForm.anonymize')}
                     onPress={() => setStep('anonymize')}
                     style={styles.center}
+                    disabled={offline}
                   />
                 ) : canChangeList ? (
                   <Button
@@ -339,6 +344,7 @@ export function EntrySheet({
                     label={t('org:entryForm.remove')}
                     onPress={() => setStep('remove')}
                     style={styles.center}
+                    disabled={offline}
                   />
                 ) : null}
               </>
@@ -358,6 +364,7 @@ export function EntrySheet({
                   size={48}
                   fullWidth
                   onPress={confirm[step].onPress}
+                  disabled={offline}
                 />
                 <Button
                   variant="ghost"

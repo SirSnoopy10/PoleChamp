@@ -101,3 +101,31 @@ export function useAppConfig() {
     staleTime: 60 * 60 * 1000,
   });
 }
+
+/**
+ * Wylogowanie (IMP-277): `POST /v1/auth/logout` (błąd sieci nie blokuje – sesja lokalna i tak znika),
+ * potem tokeny z SecureStore i cache zapytań (pamięć + MMKV). Strażnik przechodzi do SCR-ORG-13.
+ */
+export function useLogout() {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, ApiError>({
+    mutationFn: async () => {
+      try {
+        await unwrap(api.POST('/v1/auth/logout'));
+      } finally {
+        await orgSession.clear(queryClient);
+      }
+    },
+  });
+}
+
+/** `DELETE /v1/me` (IMP-277, TL-22): po sukcesie wylogowanie jak wyżej. */
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, ApiError>({
+    mutationFn: async () => {
+      await unwrap(api.DELETE('/v1/me'));
+      await orgSession.clear(queryClient);
+    },
+  });
+}

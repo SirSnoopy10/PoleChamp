@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { layout } from '@polechamp/tokens';
 import { PenaltyTypeInput, type CategoryDetails } from '@polechamp/contracts';
 import type { PenaltyBody } from '../../data/org/categories';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { NumberField, TextField, useZodForm } from '../../ui/form';
@@ -26,6 +27,7 @@ export interface PenaltySheetProps {
 /** SCR-ORG-10 – nowa / edycja / usunięcie kary (IMP-264). */
 export function PenaltySheet({ visible, onClose, penalty, onCreate, onUpdate, onDelete }: PenaltySheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const form = useZodForm(PenaltyTypeInput, { defaultValues: NEW });
   const { step, setStep, reset } = useSheetStep<'form' | 'delete'>('form');
 
@@ -133,6 +135,7 @@ export function PenaltySheet({ visible, onClose, penalty, onCreate, onUpdate, on
               fullWidth
               loading={form.formState.isSubmitting}
               onPress={() => void submit()}
+              disabled={offline}
             />
             {penalty ? (
               <Button
@@ -144,6 +147,7 @@ export function PenaltySheet({ visible, onClose, penalty, onCreate, onUpdate, on
                 size={48}
                 fullWidth
                 onPress={() => setStep('delete')}
+                disabled={offline}
               />
             ) : null}
           </View>
@@ -159,6 +163,7 @@ export function PenaltySheet({ visible, onClose, penalty, onCreate, onUpdate, on
                   size={48}
                   fullWidth
                   onPress={() => void remove()}
+                  disabled={offline}
                 />
                 <Button
                   variant="secondary"

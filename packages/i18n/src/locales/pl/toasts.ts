@@ -38,4 +38,8 @@ export const toasts = {
   athleteAnonymized: 'Usunięto dane osobowe',
   rejectedAccepted: 'Przyjęto ocenę',
   rejectedDiscarded: 'Odrzucono ocenę',
+  judgeAdded: 'Dodano sędziego',
+  judgeDeleted: 'Usunięto sędziego',
+  deviceRevoked: 'Odłączono urządzenie',
+  accountDeleted: 'Konto zostanie usunięte po 30 dniach.',
 } as const;

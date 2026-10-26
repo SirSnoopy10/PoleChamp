@@ -15,13 +15,17 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
   return failureCount < 2;
 }
 
-/** QueryClient organizatora (IMP-215): `staleTime` 30 s, `gcTime` 24 h. */
+/**
+ * QueryClient organizatora (IMP-215): `staleTime` 30 s, `gcTime` 24 h. `networkMode: 'always'` – stan
+ * „online” (TL-45) wynika z odpowiedzi HTTP, więc żądania nie mogą czekać na „online” (zakleszczenie
+ * przy zimnym starcie); brak sieci kończy się błędem `NETWORK`, a ekrany pokazują cache z banerem.
+ */
 export function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
-      queries: { staleTime: STALE_TIME_MS, gcTime: GC_TIME_MS, retry: shouldRetry },
+      queries: { staleTime: STALE_TIME_MS, gcTime: GC_TIME_MS, retry: shouldRetry, networkMode: 'always' },
       // Zapisy nie są ponawiane automatycznie – organizator widzi błąd i decyduje (FR-807).
-      mutations: { retry: false },
+      mutations: { retry: false, networkMode: 'always' },
     },
   });
 }

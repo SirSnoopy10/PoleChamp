@@ -17,6 +17,8 @@ export const JudgeRow = z.object({
   isActive: z.boolean(),
   pinLocked: z.boolean(),
   sheetCount: z.number().int().min(0),
+  /** Wersja do `If-Match` przy `PATCH /v1/judges/{id}` (EP-07). */
+  version: z.number().int().positive(),
 });
 
 /** Odpowiedź utworzenia sędziego / resetu PIN – PIN zwracany jednorazowo. */

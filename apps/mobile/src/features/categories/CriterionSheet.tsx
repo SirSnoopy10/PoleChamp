@@ -5,6 +5,7 @@ import { layout } from '@polechamp/tokens';
 import { CriterionInput, type CategoryDetails } from '@polechamp/contracts';
 import { ApiError } from '../../data/api/errors';
 import type { CriterionBody } from '../../data/org/categories';
+import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { NumberField, TextField, useZodForm } from '../../ui/form';
@@ -44,6 +45,7 @@ export function CriterionSheet({
   onDelete,
 }: CriterionSheetProps) {
   const t = useT();
+  const offline = !useOnline();
   const form = useZodForm(CriterionInput, { defaultValues: NEW as never });
   const { step, setStep, reset } = useSheetStep<'form' | 'delete'>('form');
 
@@ -174,6 +176,7 @@ export function CriterionSheet({
               fullWidth
               loading={form.formState.isSubmitting}
               onPress={() => void submit()}
+              disabled={offline}
             />
             {criterion ? (
               <Button
@@ -185,6 +188,7 @@ export function CriterionSheet({
                 size={48}
                 fullWidth
                 onPress={() => setStep('delete')}
+                disabled={offline}
               />
             ) : null}
           </View>
@@ -200,6 +204,7 @@ export function CriterionSheet({
                   size={48}
                   fullWidth
                   onPress={() => void remove()}
+                  disabled={offline}
                 />
                 <Button
                   variant="secondary"
