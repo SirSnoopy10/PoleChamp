@@ -20,11 +20,20 @@ export function onSessionExpired(listener: Listener): () => void {
   return () => expiredListeners.delete(listener);
 }
 
-/** Klient API aplikacji: limit czasu 15 s i middleware uwierzytelniania (IMP-214). */
+const revokedListeners = new Set<Listener>();
+
+/** Subskrypcja odłączenia tabletu przez organizatora (`401 DEVICE_REVOKED` – IMP-356). */
+export function onDeviceRevoked(listener: Listener): () => void {
+  revokedListeners.add(listener);
+  return () => revokedListeners.delete(listener);
+}
+
+/** Klient API aplikacji: limit czasu (domyślnie 15 s) i middleware uwierzytelniania (IMP-214). */
 export function createAppApiClient(
   fetch: typeof globalThis.fetch = (i, init) => globalThis.fetch(i, init),
+  timeoutMs: number = env.requestTimeoutMs,
 ): ApiClient {
-  const timed = fetchWithTimeout(env.requestTimeoutMs, fetch);
+  const timed = fetchWithTimeout(timeoutMs, fetch);
   return createApiClient({
     baseUrl: env.apiUrl,
     fetch: timed,
@@ -35,6 +44,7 @@ export function createAppApiClient(
         getToken: () => tokenStore.current(readStoredMode()),
         canRefresh: () => readStoredMode() === 'org',
         onSessionExpired: () => expiredListeners.forEach((l) => l()),
+        onDeviceRevoked: () => revokedListeners.forEach((l) => l()),
       }),
     ],
   });

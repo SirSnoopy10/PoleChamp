@@ -174,3 +174,66 @@ export function fxMaxSnapshot(): Snapshot {
   }));
   return snapshotFixture({ judges, categories });
 }
+
+type PushMutation = { mutationId: string; type: string; payload: Record<string, unknown> };
+
+/**
+ * Atrapa `POST /v1/sync/push` z idempotencją (`mutationId` → zapisany wynik) i rewizjami arkuszy
+ * (`baseRevision` ≠ bieżąca → `STALE_REVISION`). `failAfter` – zerwanie połączenia po n mutacjach.
+ */
+export function fakeSyncServer() {
+  const processed = new Map<string, { scoreSheetId?: string; revision?: number; serverTotal?: number }>();
+  const sheets = new Map<string, number>();
+  const state = {
+    processed,
+    sheets,
+    cursor: 10,
+    applied: 0,
+    failAfter: null as number | null,
+    reject: new Map<string, string>(),
+  };
+  const handler: Handler = async (req) => {
+    const body = (await req.json()) as { mutations: PushMutation[] };
+    const results: unknown[] = [];
+    let n = 0;
+    for (const m of body.mutations) {
+      if (state.failAfter !== null && n >= state.failAfter) {
+        state.failAfter = null;
+        throw new TypeError('Network request failed');
+      }
+      n += 1;
+      const done = processed.get(m.mutationId);
+      if (done) {
+        results.push({ mutationId: m.mutationId, status: 'DUPLICATE', ...done });
+        continue;
+      }
+      const code = state.reject.get(m.mutationId);
+      if (code) {
+        results.push({ mutationId: m.mutationId, status: 'REJECTED', code });
+        continue;
+      }
+      if (m.type !== 'SUBMIT_SCORE_SHEET') {
+        processed.set(m.mutationId, {});
+        results.push({ mutationId: m.mutationId, status: 'APPLIED' });
+        continue;
+      }
+      const p = m.payload as { scoreSheetId: string; baseRevision: number; clientTotal: number };
+      const current = sheets.get(p.scoreSheetId) ?? 0;
+      if (p.baseRevision !== current) {
+        results.push({ mutationId: m.mutationId, status: 'REJECTED', code: 'STALE_REVISION' });
+        continue;
+      }
+      sheets.set(p.scoreSheetId, current + 1);
+      state.applied += 1;
+      state.cursor += 1;
+      const result = { scoreSheetId: p.scoreSheetId, revision: current + 1, serverTotal: p.clientTotal };
+      processed.set(m.mutationId, result);
+      results.push({ mutationId: m.mutationId, status: 'APPLIED', ...result });
+    }
+    return new Response(JSON.stringify({ results, cursor: state.cursor }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', Date: 'Mon, 26 Oct 2026 10:00:03 GMT' },
+    });
+  };
+  return { state, handler };
+}

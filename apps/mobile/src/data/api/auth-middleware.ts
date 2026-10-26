@@ -12,6 +12,8 @@ export interface AuthMiddlewareOptions {
   canRefresh: () => boolean;
   /** Sesja nie do odzyskania (`TOKEN_REUSED`, nieudane odświeżenie) – wylogowanie i SCR-ORG-13. */
   onSessionExpired: () => void;
+  /** `401 DEVICE_REVOKED` z dowolnego żądania tabletu – zatrzymanie synchronizacji i SCR-JDG-10 (IMP-356). */
+  onDeviceRevoked?: () => void;
   fetch?: typeof globalThis.fetch;
 }
 
@@ -81,13 +83,16 @@ export function createAuthMiddleware(options: AuthMiddlewareOptions): Middleware
       network.reportHttpSuccess();
       const minApp = response.headers.get('X-Min-App-Version');
       if (minApp) updateSignal.report({ minAppVersion: minApp });
-      if (response.status !== 401 || !original || NO_REFRESH.test(new URL(request.url).pathname))
-        return response;
-
+      if (response.status !== 401) return response;
       const problem = (await response
         .clone()
         .json()
         .catch(() => null)) as { code?: string } | null;
+      if (problem?.code === 'DEVICE_REVOKED') {
+        options.onDeviceRevoked?.();
+        return response;
+      }
+      if (!original || NO_REFRESH.test(new URL(request.url).pathname)) return response;
       if (problem?.code === 'TOKEN_REUSED' || !options.canRefresh()) {
         if (options.canRefresh()) await expire();
         return response;

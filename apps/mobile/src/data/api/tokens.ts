@@ -43,8 +43,14 @@ const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
 };
 
-const write = (kind: TokenKind, value: string | null) =>
-  value === null ? secure.deleteItemAsync(KEY[kind]) : secure.setItemAsync(KEY[kind], value, SECURE_OPTIONS);
+/** Bezpieczny magazyn aplikacji (tokeny, sekret i pepper urządzenia – nigdy SQLite/MMKV na urządzeniu). */
+export const secureStorage = {
+  get: (key: string) => secure.getItemAsync(key),
+  set: (key: string, value: string | null) =>
+    value === null ? secure.deleteItemAsync(key) : secure.setItemAsync(key, value, SECURE_OPTIONS),
+};
+
+const write = (kind: TokenKind, value: string | null) => secureStorage.set(KEY[kind], value);
 
 /**
  * Magazyn tokenów (IMP-214): `org` w SecureStore; `device` i `judge` w pamięci (szybki odczyt

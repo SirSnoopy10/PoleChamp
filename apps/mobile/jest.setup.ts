@@ -18,6 +18,14 @@ jest.mock('expo-secure-store', () => {
   };
 });
 
+// Losowość z Node (natywny moduł expo-crypto w Jest nie wypełnia tablicy – UUIDv7 byłyby równe).
+jest.mock('expo-crypto', () => ({
+  ...jest.requireActual('expo-crypto'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  getRandomValues: <T extends ArrayBufferView>(array: T) =>
+    require('node:crypto').webcrypto.getRandomValues(array),
+}));
+
 // MMKV 4 importuje Nitro przy ładowaniu modułu; instancje w testach i tak są mockiem (isTest()).
 jest.mock('react-native-nitro-modules', () => ({
   NitroModules: { createHybridObject: jest.fn() },
