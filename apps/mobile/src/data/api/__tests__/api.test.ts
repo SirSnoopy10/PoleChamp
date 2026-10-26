@@ -4,6 +4,7 @@ import { i18n } from '../../../i18n';
 import { updateSignal } from '../app-version';
 import { createAuthMiddleware } from '../auth-middleware';
 import { createApiClient } from '../client';
+import { network } from '../../network/online';
 import { ApiError, unwrap } from '../errors';
 import { fetchWithTimeout } from '../timeout';
 import { tokenStore } from '../tokens';
@@ -17,6 +18,8 @@ afterEach(() => {
   server.resetHandlers();
   tokenStore.reset();
   updateSignal.reset();
+  // Odpowiedź HTTP uzbraja 60-sekundowy timer stanu „online” – bez resetu Jest się nie kończy.
+  network.reset();
   refreshCalls = 0;
 });
 afterAll(() => server.close());

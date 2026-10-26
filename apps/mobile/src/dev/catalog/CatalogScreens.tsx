@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { color, radius } from '@polechamp/tokens';
 import { Text } from '../../ui/Text';
 import { caseTestId, catalogSection, catalogSections } from './registry';
-import { useCatalogSettings, type CatalogSettings } from './settings';
+import { useCatalogSettings, type CatalogSettings } from './provider';
+export { CatalogSettingsProvider } from './provider';
 import './sections';
 
 /* Ekrany narzędziowe zespołu – teksty po polsku bez kluczy i18n (poza src/features). */

@@ -1,4 +1,6 @@
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { storage } from '../../storage/mmkv';
 
 export type TokenKind = 'org' | 'device' | 'judge';
 
@@ -25,8 +27,18 @@ function emit(next: Partial<TokenState>) {
   listeners.forEach((l) => l());
 }
 
+/** SecureStore (Keychain/Keystore); Expo web (DevCatalog, podgląd) nie ma bezpiecznego magazynu – MMKV. */
+const secure =
+  Platform.OS === 'web'
+    ? {
+        getItemAsync: async (key: string) => storage.getString(key) ?? null,
+        setItemAsync: async (key: string, value: string) => storage.set(key, value),
+        deleteItemAsync: async (key: string) => void storage.remove(key),
+      }
+    : SecureStore;
+
 const write = (kind: TokenKind, value: string | null) =>
-  value === null ? SecureStore.deleteItemAsync(KEY[kind]) : SecureStore.setItemAsync(KEY[kind], value);
+  value === null ? secure.deleteItemAsync(KEY[kind]) : secure.setItemAsync(KEY[kind], value);
 
 /**
  * Magazyn tokenów (IMP-214): `org` w SecureStore; `device` i `judge` w pamięci (szybki odczyt
@@ -39,12 +51,17 @@ export const tokenStore = {
     return () => listeners.delete(listener);
   },
   async load(): Promise<void> {
-    const [org, device, judge] = await Promise.all([
-      SecureStore.getItemAsync(KEY.org),
-      SecureStore.getItemAsync(KEY.device),
-      SecureStore.getItemAsync(KEY.judge),
-    ]);
-    emit({ org: org ? (JSON.parse(org) as OrgTokens) : null, device, judge, loaded: true });
+    try {
+      const [org, device, judge] = await Promise.all([
+        secure.getItemAsync(KEY.org),
+        secure.getItemAsync(KEY.device),
+        secure.getItemAsync(KEY.judge),
+      ]);
+      emit({ org: org ? (JSON.parse(org) as OrgTokens) : null, device, judge, loaded: true });
+    } catch {
+      // Uszkodzony lub niedostępny magazyn – start bez sesji (logowanie / parowanie od nowa).
+      emit({ org: null, device: null, judge: null, loaded: true });
+    }
   },
   async setOrg(tokens: OrgTokens | null): Promise<void> {
     emit({ org: tokens });

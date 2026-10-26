@@ -10,5 +10,5 @@
     "allowJs": false,
     "types": ["jest", "node"]
   },
-  "include": ["app", "src", "*.ts", "expo-env.d.ts", ".expo/types/**/*.ts"]
+  "include": ["app", "src", "*.ts"]
 }

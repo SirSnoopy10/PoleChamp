@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
+  FadeInUp,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -37,20 +38,9 @@ export interface SplashScreenProps {
   onReady?: () => void;
 }
 
+/** Wejście elementów 2–4: uniesienie z przenikaniem 0,6 s z opóźnieniem (motion.splashRise). */
 const rise = (delay: number, reduced: boolean) =>
-  reduced
-    ? undefined
-    : () => {
-        'worklet';
-        return {
-          initialValues: { opacity: 0, transform: [{ translateY: 10 }] },
-          animations: {
-            opacity: withTiming(1, { duration: motion.splashRise.duration }),
-            transform: [{ translateY: withTiming(0, { duration: motion.splashRise.duration }) }],
-          },
-          delay,
-        };
-      };
+  reduced ? undefined : FadeInUp.duration(motion.splashRise.duration).delay(delay);
 
 /** SCR-ORG-00 / SCR-JDG-00 – animowany splash (IMP-211). */
 export function SplashScreen({ mode, stage, onFinish, onReady }: SplashScreenProps) {
@@ -121,13 +111,13 @@ export function SplashScreen({ mode, stage, onFinish, onReady }: SplashScreenPro
       <Animated.View entering={reduced ? undefined : FadeIn.duration(900)}>
         <PoleSpinner size={mode} />
       </Animated.View>
-      <Animated.View entering={rise(motion.splashRise.delays[0], reduced) as never} style={styles.brand}>
+      <Animated.View entering={rise(motion.splashRise.delays[0], reduced)} style={styles.brand}>
         <Brand />
         <Text variant="bodyS" color={color.neutral[400]} style={styles.tagline}>
           {t(mode === 'judge' ? 'splash.taglineJudge' : 'splash.taglineOrg')}
         </Text>
       </Animated.View>
-      <Animated.View entering={rise(motion.splashRise.delays[1], reduced) as never} style={styles.progress}>
+      <Animated.View entering={rise(motion.splashRise.delays[1], reduced)} style={styles.progress}>
         <View
           style={styles.track}
           accessibilityElementsHidden

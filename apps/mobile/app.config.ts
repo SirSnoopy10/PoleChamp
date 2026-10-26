@@ -38,10 +38,23 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     ...(process.env.APPLE_TEAM_ID ? { appleTeamId: process.env.APPLE_TEAM_ID } : {}),
     infoPlist: { ITSAppUsesNonExemptEncryption: false },
+    // Linki uniwersalne /reset i /pair (apple-app-site-association w apps/site, IMP-179).
+    associatedDomains: ['applinks:polechamp.app'],
   },
   android: {
     package: 'app.polechamp',
     adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundColor: BG },
+    intentFilters: [
+      {
+        action: 'VIEW',
+        autoVerify: true,
+        data: [
+          { scheme: 'https', host: 'polechamp.app', pathPrefix: '/reset' },
+          { scheme: 'https', host: 'polechamp.app', pathPrefix: '/pair' },
+        ],
+        category: ['BROWSABLE', 'DEFAULT'],
+      },
+    ],
     blockedPermissions: [
       'android.permission.RECORD_AUDIO',
       'android.permission.ACCESS_FINE_LOCATION',
@@ -77,7 +90,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     './plugins/with-android-resizability.js',
     ...(SENTRY ? [SENTRY] : []),
   ],
-  experiments: { typedRoutes: true },
   extra: {
     eas: { projectId: EAS_PROJECT_ID ?? '00000000-0000-0000-0000-000000000000' },
   },

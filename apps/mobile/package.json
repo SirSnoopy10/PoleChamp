@@ -11,7 +11,8 @@
     "ios": "expo run:ios",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest",
-    "perf:test": "reassure"
+    "perf:test": "reassure",
+    "check:prod-bundle": "node scripts/check-prod-bundle.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "0.4.2",
