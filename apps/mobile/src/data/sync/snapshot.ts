@@ -16,7 +16,7 @@ import {
   TOURNAMENT_COLUMNS,
   tournamentRow,
 } from './apply';
-import type { SyncClock } from './clock';
+import { syncMark, type SyncClock } from './clock';
 import type { SyncEvent } from './events';
 import { readMeta, serverOffset, writeMeta } from './meta';
 
@@ -84,7 +84,7 @@ export async function applySnapshot(
       lastFullSnapshotAt: nowIso,
       lastPullAt: nowIso,
       lastSyncServerTime: snap.serverTime,
-      lastSyncMonotonicMs: clock.monotonicMs(),
+      ...syncMark(clock),
       serverTimeOffsetMs: serverOffset(snap.serverTime, deviceNow),
       schemaVersion: SCHEMA_VERSION,
       tournamentFinishedAt: finishedAt(db, snap.tournament.status, nowIso),

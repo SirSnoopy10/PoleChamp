@@ -1,6 +1,6 @@
-import { RoutePlaceholder } from '../../src/features/system/RoutePlaceholder';
+import { RevokedScreen } from '../../src/features/judge/RevokedScreen';
 
-/** SCR-JDG-10 urządzenie odłączone – ekran w EP-08. */
+/** SCR-JDG-10 urządzenie odłączone (IMP-318). */
 export default function RevokedRoute() {
-  return <RoutePlaceholder screen="SCR-JDG-10" area="judge" />;
+  return <RevokedScreen />;
 }

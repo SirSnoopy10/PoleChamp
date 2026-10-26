@@ -19,7 +19,7 @@ import {
   type ServerSheet,
   type TournamentData,
 } from './apply';
-import type { SyncClock } from './clock';
+import { syncMark, type SyncClock } from './clock';
 import { syncEvents, type SyncEvent } from './events';
 import { readMeta, writeMeta } from './meta';
 import { applySnapshot, fetchSnapshot, finishedAt } from './snapshot';
@@ -178,7 +178,7 @@ export async function pull(deps: SyncDeps): Promise<void> {
     const now = new Date(deps.clock.now()).toISOString();
     const events = await deps.local.tx((db) => {
       const out = applyChanges(db, page, now);
-      writeMeta(db, { cursor: page.cursor, lastPullAt: now, lastSyncMonotonicMs: deps.clock.monotonicMs() });
+      writeMeta(db, { cursor: page.cursor, lastPullAt: now, ...syncMark(deps.clock) });
       return out;
     });
     syncEvents.emit(events);

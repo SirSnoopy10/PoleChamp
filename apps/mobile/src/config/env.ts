@@ -19,6 +19,10 @@ export const env = {
     android:
       process.env.EXPO_PUBLIC_PLAY_STORE_URL ?? 'https://play.google.com/store/apps/details?id=app.polechamp',
   },
+  /** Build demo (G-17): podpowiedź PIN-ów na SCR-JDG-02 – nigdy w buildach produkcyjnych. */
+  demoBuild: process.env.EXPO_PUBLIC_DEMO_BUILD === '1',
+  /** Tekst podpowiedzi demo, np. „Katarzyna 1234, Michał 5678”. */
+  demoPins: process.env.EXPO_PUBLIC_DEMO_PINS ?? '',
   /** Limit czasu żądania HTTP (IMP-214). */
   requestTimeoutMs: 15_000,
 } as const;

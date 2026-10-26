@@ -47,5 +47,6 @@ module.exports = {
   transformIgnorePatterns: [`node_modules/(?!(\\.pnpm/[^/]+/node_modules/)?(${TRANSFORM}))`],
   moduleNameMapper: {
     '^expo-sqlite$': '<rootDir>/src/test-utils/sqlite-mock.ts',
+    '^react-native-quick-crypto$': '<rootDir>/src/test-utils/quick-crypto-mock.ts',
   },
 };

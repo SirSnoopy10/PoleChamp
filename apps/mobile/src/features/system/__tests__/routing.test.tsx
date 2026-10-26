@@ -74,7 +74,7 @@ describe('struktura tras i strażniki (IMP-220)', () => {
     const r = await start('/pair?c=ABCD-1234&t=t1', 'judge');
     expect(r.getPathname()).toBe('/pair');
     expect(r.getSearchParams()).toEqual({ c: 'ABCD-1234', t: 't1' });
-    expect(r.getByText('SCR-JDG-06 · ABCD-1234 · t1')).toBeOnTheScreen();
+    expect(r.getByTestId('pair-code')).toHaveDisplayValue('ABCD-1234');
   });
 
   it('link resetu hasła działa bez sesji', async () => {

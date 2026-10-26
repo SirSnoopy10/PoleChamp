@@ -9,6 +9,9 @@ export interface SyncMeta {
   lastPullAt: string | null;
   lastSyncServerTime: string | null;
   lastSyncMonotonicMs: number | null;
+  /** Uruchomienie, w którym zapisano `lastSyncMonotonicMs` (TL-21). */
+  lastSyncBootId: string | null;
+  lastSyncWallMs: number | null;
   serverTimeOffsetMs: number;
   schemaVersion: number | null;
   tournamentFinishedAt: string | null;
@@ -22,6 +25,8 @@ const COLUMN: Record<keyof SyncMeta, string> = {
   lastPullAt: 'last_pull_at',
   lastSyncServerTime: 'last_sync_server_time',
   lastSyncMonotonicMs: 'last_sync_monotonic_ms',
+  lastSyncBootId: 'last_sync_boot_id',
+  lastSyncWallMs: 'last_sync_wall_ms',
   serverTimeOffsetMs: 'server_time_offset_ms',
   schemaVersion: 'schema_version',
   tournamentFinishedAt: 'tournament_finished_at',

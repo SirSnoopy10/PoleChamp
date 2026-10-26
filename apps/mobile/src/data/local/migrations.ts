@@ -158,10 +158,20 @@ CREATE TABLE outbox (
 CREATE INDEX outbox_state_seq ON outbox (state, seq);
 `;
 
+/**
+ * Okno logowania offline (TL-21, IMP-305): identyfikator uruchomienia (licznik monotoniczny jest ważny
+ * tylko w nim) i zegar ścienny ostatniej synchronizacji (po restarcie i przy cofnięciu zegara).
+ */
+const SCHEMA_V3 = `
+ALTER TABLE sync_meta ADD COLUMN last_sync_boot_id TEXT;
+ALTER TABLE sync_meta ADD COLUMN last_sync_wall_ms INTEGER;
+`;
+
 /** Migracje lokalnej bazy tabletu (`PRAGMA user_version`); każda wersja w jednej transakcji. */
 export const MIGRATIONS: readonly string[] = [
   `CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);`,
   SCHEMA_V2,
+  SCHEMA_V3,
 ];
 
 /** Wersja schematu danych offline (`sync_meta.schema_version`, IMP-352 krok 3). */

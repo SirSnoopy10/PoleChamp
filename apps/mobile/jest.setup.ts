@@ -44,6 +44,34 @@ jest.mock('react-native-keyboard-controller', () =>
   require('react-native-keyboard-controller/jest'),
 );
 
+// Kamera parowania (SCR-JDG-06): zgoda sterowana z testu (`__setPermission`), podgląd jako widok.
+jest.mock('expo-camera', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { View } = require('react-native');
+  let permission: { granted: boolean; canAskAgain: boolean } | null = { granted: true, canAskAgain: true };
+  return {
+    CameraView: View,
+    useCameraPermissions: () => [permission, jest.fn(async () => permission)],
+    __setPermission: (p: typeof permission) => {
+      permission = p;
+    },
+  };
+});
+
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(async () => undefined),
+  impactAsync: jest.fn(async () => undefined),
+  ImpactFeedbackStyle: { Light: 'light' },
+}));
+
+jest.mock('expo-battery', () => ({ getBatteryLevelAsync: jest.fn(async () => 0.8) }));
+
+jest.mock('expo-keep-awake', () => ({
+  useKeepAwake: jest.fn(),
+  activateKeepAwakeAsync: jest.fn(async () => undefined),
+  deactivateKeepAwake: jest.fn(),
+}));
+
 // Skia: w testach komponentów wystarczy drzewo widoków (renderer natywny nie istnieje w Node).
 jest.mock('@shopify/react-native-skia', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

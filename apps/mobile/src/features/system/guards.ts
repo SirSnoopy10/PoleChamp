@@ -24,15 +24,24 @@ export function orgRedirect({ mode, session, pathname }: GuardInput): string | n
 /** Ekrany tabletu bez zalogowanego sędziego. */
 const DEVICE_ONLY = new Set(['/splash', '/profiles', '/revoked']);
 
+interface JudgeGuardInput extends GuardInput {
+  /** Urządzenie odłączone przez organizatora (SCR-JDG-10). */
+  revoked?: boolean;
+}
+
 /**
- * Strażnik grupy `(judge)`: bez tokenu urządzenia → parowanie (SCR-JDG-06); urządzenie bez
- * sesji sędziego → wybór profilu (SCR-JDG-01) lub PIN. Link parowania ustawia tryb sędziego.
+ * Strażnik grupy `(judge)`: bez tokenu urządzenia → parowanie (SCR-JDG-06); urządzenie odłączone →
+ * SCR-JDG-10; bez sesji sędziego → wybór profilu (SCR-JDG-01) lub PIN; zalogowany – kategorie.
+ * `session.judge` = zalogowany sędzia (online lub offline). Link parowania ustawia tryb.
  */
-export function judgeRedirect({ mode, session, pathname }: GuardInput): string | null {
+export function judgeRedirect({ mode, session, pathname, revoked = false }: JudgeGuardInput): string | null {
   if (mode === 'org') return '/';
   if (mode === null) return pathname === '/pair' ? null : '/mode';
   if (!session.device) return pathname === '/pair' ? null : '/pair';
+  if (revoked) return pathname === '/revoked' ? null : '/revoked';
+  if (pathname === '/revoked') return '/profiles';
   if (pathname === '/pair') return session.judge ? '/categories' : '/profiles';
+  if (session.judge && (pathname === '/profiles' || pathname.startsWith('/pin/'))) return '/categories';
   if (!session.judge && !DEVICE_ONLY.has(pathname) && !pathname.startsWith('/pin/')) return '/profiles';
   return null;
 }

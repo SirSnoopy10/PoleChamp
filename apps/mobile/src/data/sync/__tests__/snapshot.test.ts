@@ -1,5 +1,6 @@
 import { upsertScoreSheet } from '../../local/scoreSheets';
 import type { LocalDb } from '../../local/LocalDb';
+import { SCHEMA_VERSION } from '../../local/migrations';
 import { syncEvents, type SyncEvent } from '../events';
 import { readMeta } from '../meta';
 import { syncSnapshot } from '../pull';
@@ -51,7 +52,9 @@ describe('migawka (IMP-351)', () => {
       lastSyncServerTime: '2026-10-26T10:00:05.000Z',
       lastSyncMonotonicMs: 1000,
       serverTimeOffsetMs: 5000,
-      schemaVersion: 2,
+      schemaVersion: SCHEMA_VERSION,
+      lastSyncBootId: 'boot-1',
+      lastSyncWallMs: Date.parse('2026-10-26T10:00:00.000Z'),
     });
     expect(events).toContainEqual({ type: 'snapshotApplied' });
   });

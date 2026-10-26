@@ -1,6 +1,8 @@
-import { RoutePlaceholder } from '../../../src/features/system/RoutePlaceholder';
+import { useLocalSearchParams } from 'expo-router';
+import { PinScreen } from '../../../src/features/judge/PinScreen';
 
-/** SCR-JDG-02 PIN – ekran w EP-08. */
+/** SCR-JDG-02 PIN (IMP-304/305); ponowne uwierzytelnienie – nakładka w `JudgeShell`. */
 export default function PinRoute() {
-  return <RoutePlaceholder screen="SCR-JDG-02" area="judge" />;
+  const { judgeId } = useLocalSearchParams<{ judgeId: string }>();
+  return <PinScreen key={judgeId} judgeId={judgeId} />;
 }

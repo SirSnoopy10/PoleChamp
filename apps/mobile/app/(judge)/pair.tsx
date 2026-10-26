@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
-import { RoutePlaceholder } from '../../src/features/system/RoutePlaceholder';
+import { PairScreen } from '../../src/features/pairing/PairScreen';
 
 /**
- * SCR-JDG-06 parowanie – ekran w EP-08. Link `polechamp://pair?c=…&t=…` (i `https://polechamp.app/pair`)
- * przekazuje kod i turniej w parametrach (`c`, `t`) do wypełnienia formularza.
+ * SCR-JDG-06 parowanie (IMP-301). Link `polechamp://pair?c=…&t=…` (i `https://polechamp.app/pair`)
+ * przekazuje kod w parametrze `c` – formularz wypełniony, połączenie bez skanu.
  */
 export default function PairRoute() {
-  const { c, t } = useLocalSearchParams<{ c?: string; t?: string }>();
-  return <RoutePlaceholder screen={`SCR-JDG-06${c ? ` · ${c}` : ''}${t ? ` · ${t}` : ''}`} area="judge" />;
+  const { c } = useLocalSearchParams<{ c?: string }>();
+  return <PairScreen initialCode={c} />;
 }

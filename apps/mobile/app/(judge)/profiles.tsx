@@ -1,6 +1,6 @@
-import { RoutePlaceholder } from '../../src/features/system/RoutePlaceholder';
+import { ProfilePicker } from '../../src/features/judge/ProfilePicker';
 
-/** SCR-JDG-01 wybór profilu – ekran w EP-08. */
+/** SCR-JDG-01 wybór profilu (IMP-303). */
 export default function ProfilesRoute() {
-  return <RoutePlaceholder screen="SCR-JDG-01" area="judge" />;
+  return <ProfilePicker />;
 }

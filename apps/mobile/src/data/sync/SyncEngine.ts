@@ -57,6 +57,7 @@ export class SyncEngine implements SyncEngineHooks {
 
   /** Start aplikacji / trybu sędziego: odtworzenie kolejki (TL-20), retencja, wyzwalacze i timery. */
   async start(): Promise<void> {
+    if (this.unsubscribers.length) return void this.syncNow();
     await outbox.recoverInFlight(this.deps.local);
     const meta = readMeta(this.deps.local.read);
     await outbox.cleanup(this.deps.local, this.deps.clock.now(), meta.tournamentFinishedAt !== null);
@@ -143,6 +144,16 @@ export class SyncEngine implements SyncEngineHooks {
     syncEvents.emit([{ type: 'sheetsChanged', judgeIds: [judgeId] }]);
     this.refresh();
     return items.length;
+  }
+
+  /** `DEVICE_REVOKED` spoza przebiegu synchronizacji (np. token przy rozruchu, logowanie PIN-em). */
+  revoke(): Promise<void> {
+    return this.handleRevoked();
+  }
+
+  /** Zakończenie bieżącego przebiegu (rozruch tabletu czeka na pierwszy push/pull – IMP-302). */
+  whenIdle(): Promise<void> {
+    return this.current ?? Promise.resolve();
   }
 
   isRevoked(): boolean {

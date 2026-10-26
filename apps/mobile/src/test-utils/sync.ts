@@ -41,15 +41,28 @@ export function fakeApi(handler: Handler) {
 
 export function testClock(start = Date.parse('2026-10-26T10:00:00.000Z')): SyncClock & {
   advance(ms: number): void;
+  /** Przestawienie zegara ściennego (licznik monotoniczny bez zmian). */
+  setWall(ms: number): void;
+  /** Restart urządzenia: nowy identyfikator uruchomienia, licznik od zera. */
+  restart(): void;
 } {
   let t = start;
   let mono = 1_000;
+  let boot = 1;
   return {
     now: () => t,
     monotonicMs: () => mono,
+    bootId: () => `boot-${boot}`,
     advance(ms: number) {
       t += ms;
       mono += ms;
+    },
+    setWall(ms: number) {
+      t = ms;
+    },
+    restart() {
+      boot += 1;
+      mono = 0;
     },
   };
 }

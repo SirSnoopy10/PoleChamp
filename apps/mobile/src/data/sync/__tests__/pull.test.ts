@@ -1,4 +1,5 @@
 import type { LocalDb } from '../../local/LocalDb';
+import { SCHEMA_VERSION } from '../../local/migrations';
 import { ScoreSheetRepo, upsertScoreSheet } from '../../local/scoreSheets';
 import { syncEvents, type SyncEvent } from '../events';
 import { readMeta, writeMeta } from '../meta';
@@ -214,7 +215,7 @@ describe('pobieranie zmian (IMP-352)', () => {
     await local.tx((db) => writeMeta(db, { schemaVersion: 1 }));
     const calls = await run(() => json(snapshotFixture({ cursor: 50 })));
     expect(calls.map((c) => c.path)).toEqual(['/v1/sync/snapshot']);
-    expect(readMeta(local.read)).toMatchObject({ cursor: 50, schemaVersion: 2 });
+    expect(readMeta(local.read)).toMatchObject({ cursor: 50, schemaVersion: SCHEMA_VERSION });
   });
 
   it('TC-SYNC-029: odblokowanie kategorii zmienia lokalny status bez restartu', async () => {
