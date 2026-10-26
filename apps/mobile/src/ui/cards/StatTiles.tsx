@@ -1,7 +1,8 @@
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { color, radius, shadow } from '@polechamp/tokens';
 import { useT } from '../../i18n';
+import { Icon } from '../Icon';
 import { ProgressBar } from '../ProgressBar';
 import { Text } from '../Text';
 import { Card, PRESSED_OVERLAY } from './Card';
@@ -24,9 +25,12 @@ export function StatTiles({ tiles }: { tiles: readonly StatTile[] }) {
             <Text variant="numL" tabular>
               {tile.value}
             </Text>
-            <Text variant="caption" color={color.neutral[400]} numberOfLines={1}>
-              {tile.label}
-            </Text>
+            <View style={styles.label}>
+              <Text variant="caption" color={color.neutral[400]} numberOfLines={1}>
+                {tile.label}
+              </Text>
+              {tile.onPress ? <Icon name="caret-right" size={12} color={color.neutral[500]} /> : null}
+            </View>
           </View>
         );
         return (
@@ -58,10 +62,19 @@ export function StatTiles({ tiles }: { tiles: readonly StatTile[] }) {
 }
 
 /** Karta „Postęp oceniania” (SCR-ORG-02): pasek 6 dp i podsumowanie. */
-export function ProgressCard({ pct, summary }: { pct: number; summary: string }) {
+export function ProgressCard({
+  pct,
+  summary,
+  action,
+}: {
+  pct: number;
+  summary: string;
+  /** Przycisk statusu turnieju (44 dp) – brak w turnieju Zakończona (UI-02). */
+  action?: ReactNode;
+}) {
   const t = useT();
   return (
-    <Card testID="progress-card" padding={16}>
+    <Card testID="progress-card" padding={16} style={styles.progressCard}>
       <View style={styles.progressHead}>
         <Text variant="subhead">{t('card.progressTitle')}</Text>
         <Text variant="numM" tabular color={color.accentRamp[200]}>
@@ -74,6 +87,7 @@ export function ProgressCard({ pct, summary }: { pct: number; summary: string })
           {summary}
         </Text>
       </View>
+      {action}
     </Card>
   );
 }
@@ -89,5 +103,7 @@ const styles = StyleSheet.create({
   cell: { flex: 1 },
   tile: { paddingVertical: 12, paddingHorizontal: 10, alignItems: 'center', gap: 2 },
   separator: { width: 1, backgroundColor: color.divider },
+  label: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  progressCard: { gap: 10 },
   progressHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
 });

@@ -1,0 +1,45 @@
+# TC-E2E-ORG-010…014 – szczegóły turnieju, start/zakończenie, edycja, kategoria (FX-SEED, turniej DRAFT
+# „Puchar Wiosny PoleChamp”). Uruchamiane w IMP-459.
+appId: app.polechamp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: 'Puchar Wiosny PoleChamp'
+    timeout: 8000
+- tapOn: 'Puchar Wiosny PoleChamp'
+- assertVisible: 'Brak rozpoczętych kategorii'
+# TC-E2E-ORG-013 – kategoria z szablonu
+- tapOn: 'Dodaj'
+- tapOn:
+    id: 'category-name'
+- inputText: 'Exotic Pro'
+- tapOn: 'Exotic'
+- tapOn: 'Pro'
+- tapOn:
+    id: 'category-submit'
+- assertVisible: 'Dodano kategorię'
+# TC-E2E-ORG-012 – edycja miejsca
+- tapOn:
+    id: 'tournament-edit'
+- tapOn:
+    id: 'tournament-venue'
+- eraseText
+- inputText: 'Poznań, Arena'
+- tapOn:
+    id: 'tournament-save'
+- assertVisible: 'Zapisano zmiany'
+# TC-E2E-ORG-011 – start i zakończenie
+- tapOn:
+    id: 'tournament-start'
+- assertVisible: 'Turniej rozpoczęty'
+- tapOn:
+    id: 'tournament-finish'
+- tapOn: 'Anuluj'
+- tapOn:
+    id: 'tournament-finish'
+- tapOn:
+    id: 'finish-confirm'
+- assertVisible: 'Turniej zakończony'
+- assertNotVisible:
+    id: 'tournament-finish'
+- assertNotVisible: 'Dodaj'
