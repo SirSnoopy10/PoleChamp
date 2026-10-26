@@ -1,0 +1,23 @@
+# TC-E2E-ORG-004 – logowanie i sesja po restarcie (konto zweryfikowane z seeda: E2E_EMAIL / E2E_PASSWORD).
+# Wylogowanie (SCR-ORG-21) – IMP-277. Uruchamiane w IMP-459.
+appId: app.polechamp
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Jestem organizatorem'
+- tapOn:
+    id: 'login-email'
+- inputText: ${E2E_EMAIL}
+- tapOn:
+    id: 'login-password'
+- inputText: ${E2E_PASSWORD}
+- tapOn:
+    id: 'login-submit'
+- extendedWaitUntil:
+    notVisible:
+      id: 'login-screen'
+    timeout: 8000
+- stopApp
+- launchApp
+- assertNotVisible:
+    id: 'login-screen'

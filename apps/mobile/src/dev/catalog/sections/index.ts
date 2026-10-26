@@ -9,3 +9,4 @@ import './forms.catalog';
 import './feedback.catalog';
 import './layout.catalog';
 import './splash.catalog';
+import './auth.catalog';

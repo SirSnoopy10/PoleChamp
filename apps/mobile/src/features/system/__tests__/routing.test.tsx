@@ -67,7 +67,7 @@ describe('struktura tras i strażniki (IMP-220)', () => {
     await first.unmount();
     const org = await start('/', 'org');
     expect(org.getPathname()).toBe('/login');
-    expect(org.getByTestId('route-SCR-ORG-13')).toBeOnTheScreen();
+    expect(org.getByTestId('login-screen')).toBeOnTheScreen();
   });
 
   it('TC-COMPAT-008: deep link polechamp://pair?c=…&t=… otwiera SCR-JDG-06 z kodem', async () => {

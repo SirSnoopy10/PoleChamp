@@ -32,13 +32,19 @@ const secure =
   Platform.OS === 'web'
     ? {
         getItemAsync: async (key: string) => storage.getString(key) ?? null,
-        setItemAsync: async (key: string, value: string) => storage.set(key, value),
+        setItemAsync: async (key: string, value: string, _options?: SecureStore.SecureStoreOptions) =>
+          storage.set(key, value),
         deleteItemAsync: async (key: string) => void storage.remove(key),
       }
     : SecureStore;
 
+/** Dostęp po pierwszym odblokowaniu, bez kopii w iCloud/kopiach zapasowych (IMP-250 krok 4). */
+const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
+  keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+};
+
 const write = (kind: TokenKind, value: string | null) =>
-  value === null ? secure.deleteItemAsync(KEY[kind]) : secure.setItemAsync(KEY[kind], value);
+  value === null ? secure.deleteItemAsync(KEY[kind]) : secure.setItemAsync(KEY[kind], value, SECURE_OPTIONS);
 
 /**
  * Magazyn tokenów (IMP-214): `org` w SecureStore; `device` i `judge` w pamięci (szybki odczyt

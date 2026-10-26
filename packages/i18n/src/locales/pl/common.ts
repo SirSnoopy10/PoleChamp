@@ -12,14 +12,6 @@ export const common = {
   dateTbd: 'Data do ustalenia',
 } as const;
 
-/** Panel organizatora (05-ekrany-organizatora) – teksty potrzebne pakietom współdzielonym. */
-export const org = {
-  rankingFormula: 'Wynik = średnia sędziów z (kryterium × waga − kary). {tieBreak}',
-  noStartedCategories: 'Brak rozpoczętych kategorii',
-  progressSummary: '{done} z {expected} ocen w rozpoczętych kategoriach',
-  maxJudgeScore: 'Maksymalny wynik sędziego: {max} pkt',
-} as const;
-
 /** PDF z wynikami (ADR-009). */
 export const pdf = {
   footer: 'Wersja wyników {version} · suma kontrolna {hash}',

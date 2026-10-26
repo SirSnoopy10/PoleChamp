@@ -1,6 +1,18 @@
-import { RoutePlaceholder } from '../../src/features/system/RoutePlaceholder';
+import { router } from 'expo-router';
+import { useLogin } from '../../src/data/auth/orgSession';
+import { LoginForm } from '../../src/features/auth/LoginForm';
+import { ScreenContainer } from '../../src/ui/layout/ScreenContainer';
 
-/** SCR-ORG-13 logowanie / rejestracja – ekran w EP-07. */
+/** SCR-ORG-13 – logowanie organizatora (IMP-250). Po zapisie sesji strażnik `(org)` przechodzi do SCR-ORG-01. */
 export default function LoginRoute() {
-  return <RoutePlaceholder screen="SCR-ORG-13" area="org" />;
+  const login = useLogin();
+  return (
+    <ScreenContainer testID="login-screen">
+      <LoginForm
+        onSubmit={(values) => login.mutateAsync(values)}
+        onForgotPassword={() => router.push('/forgot-password')}
+        onRegister={() => router.push('/register')}
+      />
+    </ScreenContainer>
+  );
 }

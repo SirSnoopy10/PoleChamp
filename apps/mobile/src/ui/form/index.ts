@@ -4,3 +4,6 @@ export { TextArea, type TextAreaProps } from './TextArea';
 export { ChoiceChipGroup, type ChoiceOption } from './ChoiceChipGroup';
 export { DateRangeField, toIsoDate, type DateRange } from './DateRangeField';
 export { useZodForm, type ZodForm } from './useZodForm';
+export { PasswordField, type PasswordFieldProps } from './PasswordField';
+export { Checkbox, type CheckboxProps } from './Checkbox';
+export { CodeInput, type CodeInputProps } from './CodeInput';

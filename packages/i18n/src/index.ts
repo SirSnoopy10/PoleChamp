@@ -1,7 +1,8 @@
 import { createInstance, type i18n as I18n } from 'i18next';
-import { common, email, org, pdf } from './locales/pl/common.js';
+import { common, email, pdf } from './locales/pl/common.js';
 import { errors } from './locales/pl/errors.js';
 import { judge } from './locales/pl/judge.js';
+import { org } from './locales/pl/org.js';
 import { toasts } from './locales/pl/toasts.js';
 import { ui } from './locales/pl/ui.js';
 import { pseudoDictionary } from './pseudo.js';

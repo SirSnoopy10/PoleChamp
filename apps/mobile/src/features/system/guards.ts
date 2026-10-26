@@ -7,15 +7,17 @@ interface GuardInput {
   pathname: string;
 }
 
-/** Trasy organizatora dostępne bez sesji (logowanie, nowe hasło z linku). */
-const ORG_PUBLIC = new Set(['/login', '/reset']);
+/** Trasy organizatora dostępne bez sesji (logowanie, rejestracja, reset hasła, nowe hasło z linku). */
+const ORG_PUBLIC = new Set(['/login', '/register', '/forgot-password', '/reset']);
+/** Trasy wyłącznie dla niezalogowanych (rejestracja sama przechodzi do weryfikacji e-maila). */
+const ORG_GUEST_ONLY = new Set(['/login', '/forgot-password']);
 
 /** Strażnik grupy `(org)` (IMP-220): tryb → sesja `org` → SCR-ORG-13. `null` = zostań. */
 export function orgRedirect({ mode, session, pathname }: GuardInput): string | null {
   if (mode === null) return '/mode';
   if (mode === 'judge') return '/categories';
   if (!session.org && !ORG_PUBLIC.has(pathname)) return '/login';
-  if (session.org && pathname === '/login') return '/';
+  if (session.org && ORG_GUEST_ONLY.has(pathname)) return '/';
   return null;
 }
 

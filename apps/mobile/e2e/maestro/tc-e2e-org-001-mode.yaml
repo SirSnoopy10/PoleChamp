@@ -9,7 +9,7 @@ appId: app.polechamp
 - assertVisible: 'Panel sędziego wymaga tabletu.'
 - tapOn: 'Jestem organizatorem'
 - assertVisible:
-    id: 'route-SCR-ORG-13'
+    id: 'login-screen'
 - stopApp
 - launchApp
 - assertNotVisible: 'Jak będziesz używać tego urządzenia?'

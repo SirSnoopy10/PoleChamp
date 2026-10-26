@@ -1,0 +1,26 @@
+# TC-E2E-ORG-005 – 5 × złe hasło, 6. próba → blokada. Uruchamiane w IMP-459.
+appId: app.polechamp
+---
+- launchApp:
+    clearState: true
+- tapOn: 'Jestem organizatorem'
+- tapOn:
+    id: 'login-email'
+- inputText: ${E2E_EMAIL}
+- repeat:
+    times: 5
+    commands:
+      - tapOn:
+          id: 'login-password'
+      - eraseText
+      - inputText: 'zle-haslo'
+      - tapOn:
+          id: 'login-submit'
+      - extendedWaitUntil:
+          visible: 'Nieprawidłowy e-mail lub hasło.'
+          timeout: 5000
+- tapOn:
+    id: 'login-submit'
+- extendedWaitUntil:
+    visible: 'Za dużo prób. Spróbuj za chwilę.'
+    timeout: 5000

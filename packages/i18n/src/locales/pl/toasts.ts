@@ -28,4 +28,8 @@ export const toasts = {
   },
   sessionReplaced: 'Zalogowano Cię na innym urządzeniu.',
   pinCopied: 'Skopiowano PIN',
+  /** Teksty SCR-ORG-13…22 do akceptacji projektanta (IMP-650). */
+  passwordChanged: 'Zmieniono hasło. Zaloguj się nowym hasłem.',
+  emailVerified: 'Potwierdzono adres e-mail',
+  codeResent: 'Wysłaliśmy nowy kod',
 } as const;
