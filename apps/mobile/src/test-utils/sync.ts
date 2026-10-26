@@ -1,6 +1,7 @@
 // Helpery testów synchronizacji tabletu (EP-09): baza na better-sqlite3 z migracjami aplikacji,
 // atrapa API (fetch → handler), zegar testowy i dane migawki (prototyp + FX-MAX).
 import type { Snapshot } from '@polechamp/contracts';
+import { fxMax, toSnapshot } from '@polechamp/test-fixtures';
 import { createApiClient } from '../data/api/client';
 import { LocalDb } from '../data/local/LocalDb';
 import type { SyncClock } from '../data/sync/clock';
@@ -143,49 +144,14 @@ export function snapshotFixture(over: Partial<Snapshot> = {}): Snapshot {
 
 /** FX-MAX (NFR-801): 60 kategorii, 1 500 startów (300 w pierwszej), 30 sędziów, 12 kryteriów i 10 kar. */
 export function fxMaxSnapshot(): Snapshot {
-  const judges = Array.from({ length: 30 }, (_, i) => judge(`j${i + 1}`, i + 1));
-  const sizes = [300, ...Array.from({ length: 59 }, (_, i) => (i < 20 ? 21 : 20))];
-  let n = 0;
-  const categories = sizes.map((size, c) => ({
-    id: `c${c + 1}`,
-    name: `Kategoria ${c + 1}`,
-    style: 'POLE_SPORT' as const,
-    level: 'PRO' as const,
-    ageGroup: 'SENIOR',
-    position: c + 1,
-    status: 'IN_PROGRESS' as const,
-    aggregationMethod: 'MEAN' as const,
-    tieBreakCriterionId: null,
-    panelJudgeIds: judges.slice(0, 5).map((j) => j.id),
-    criteria: Array.from({ length: 12 }, (_, k) => ({
-      id: `c${c + 1}_k${k + 1}`,
-      name: `Kryterium ${k + 1}`,
-      description: 'Opis kryterium oceny',
-      scaleMax: 10,
-      step: 0.5 as const,
-      weight: 1,
-      position: k + 1,
-    })),
-    penaltyTypes: Array.from({ length: 10 }, (_, p) => ({
-      id: `c${c + 1}_p${p + 1}`,
-      name: `Kara ${p + 1}`,
-      points: 0.5,
-      maxOccurrences: 3,
-      position: p + 1,
-    })),
-    entries: Array.from({ length: size }, (_, e) => {
-      n += 1;
-      return {
-        id: `e${n}`,
-        startNumber: n,
-        startOrder: e + 1,
-        fullName: `Zawodniczka Testowa ${n}`,
-        club: 'Klub Sportowy',
-        status: 'ACTIVE' as const,
-      };
-    }),
-  }));
-  return snapshotFixture({ judges, categories });
+  const fx = fxMax();
+  const panel = fx.judges.slice(0, 5).map((j) => j.id);
+  return toSnapshot(fx, 'd1', {
+    cursor: 10,
+    serverTime: '2026-10-26T10:00:05.000Z',
+    pinVerifier: () => verifier,
+    panelJudgeIds: () => panel,
+  });
 }
 
 type PushMutation = { mutationId: string; type: string; payload: Record<string, unknown> };

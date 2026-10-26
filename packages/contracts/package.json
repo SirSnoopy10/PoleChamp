@@ -26,6 +26,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",
     "openapi": "node dist/openapi/build.js",
+    "history:save": "node scripts/save-history.mjs",
     "gen:client": "openapi-typescript dist/openapi.json -o dist/api-types.d.ts"
   },
   "dependencies": {

@@ -3,6 +3,7 @@ import { asc, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { DbHandle } from '../../src/db/client.js';
 import * as s from '../../src/db/schema.js';
+import { seedJudgeTotals } from '@polechamp/test-fixtures';
 import { startApp } from '../support/app.js';
 import { testDb } from '../support/db.js';
 import { type Call, client, flushValkey, registerAndLogin } from '../support/http.js';
@@ -82,18 +83,8 @@ describe('przeliczanie wyników (IMP-150)', () => {
   });
 });
 
-/** Kategoria c3 z prototypu (03-analiza-designu §8.6): wyniki sędziów w setnych, J = 5. */
-const C3: [number, number[]][] = [
-  [41, [5400, 5050, 5500, 5350, 5025]],
-  [42, [5100, 5375, 5100, 5250, 5525]],
-  [43, [5525, 5625, 5525, 5300, 5400]],
-  [44, [4800, 4800, 4800, 4800, 4800]],
-  [45, [5450, 5425, 5275, 5525, 5475]],
-  [46, [5400, 5625]],
-  [47, [5475, 5600, 5575]],
-  [48, []],
-  [49, []],
-];
+/** Kategoria c3 z seedu prototypu (FX-T1C3, 03-analiza-designu §8.6): wyniki sędziów w setnych, J = 5. */
+const C3 = seedJudgeTotals('c3');
 
 /** Noty Pole Sport (wagi 2; 1,5; 1; 1; 1, krok 0,5) dające zadany wynik sędziego w setnych. */
 function notesFor(totalHundredths: number): number[] {

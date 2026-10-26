@@ -82,6 +82,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
+    "@polechamp/test-fixtures": "workspace:*",
     "@testing-library/react-native": "^14.1.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/jest": "^30.0.0",

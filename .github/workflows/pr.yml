@@ -108,6 +108,7 @@ jobs:
               - 'packages/contracts/**'
               - 'packages/scoring/**'
               - 'packages/i18n/**'
+              - 'packages/test-fixtures/**'
       - if: steps.changes.outputs.api == 'true' || github.event_name == 'push'
         uses: ./.github/actions/setup
       - if: steps.changes.outputs.api == 'true' || github.event_name == 'push'

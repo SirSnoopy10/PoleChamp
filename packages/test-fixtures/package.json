@@ -20,5 +20,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@polechamp/contracts": "workspace:*",
+    "@polechamp/scoring": "workspace:*"
+  }
 }

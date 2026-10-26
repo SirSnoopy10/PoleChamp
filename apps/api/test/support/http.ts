@@ -2,6 +2,7 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Queue } from 'bullmq';
 import Valkey from 'iovalkey';
 import { inject } from 'vitest';
+import { assertContract } from './contract.js';
 import { bullConnection, EMAIL_QUEUE_NAME, type EmailJob } from '../../src/modules/email/email.queue.js';
 
 export interface CallOptions {
@@ -29,6 +30,7 @@ export function client(app: NestFastifyApplication) {
       ...(options.body !== undefined ? { payload: options.body as object } : {}),
     });
     const body = res.body ? (JSON.parse(res.body) as Record<string, unknown>) : undefined;
+    assertContract(method, url, res.statusCode, body);
     return { status: res.statusCode, headers: res.headers, body: body as Record<string, any> };
   };
 }

@@ -37,6 +37,7 @@ export function organizer(call: Call, token: string) {
     call(method, url, { token, body, headers });
   return {
     req,
+    token,
     async tournament(body: Record<string, unknown> = {}) {
       const res = await req('POST', '/v1/tournaments', {
         name: 'Mistrzostwa Polski Pole Sport 2026',

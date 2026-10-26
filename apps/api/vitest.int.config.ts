@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
-    include: ['test/integration/**/*.test.ts'],
+    include: ['test/integration/**/*.test.ts', 'test/authz/**/*.test.ts', 'test/contract/**/*.test.ts'],
     globalSetup: ['test/setup/containers.ts'],
     testTimeout: 30_000,
     hookTimeout: 120_000,
