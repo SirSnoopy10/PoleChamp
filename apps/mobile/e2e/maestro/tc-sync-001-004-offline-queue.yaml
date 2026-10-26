@@ -1,37 +1,50 @@
 # TC-SYNC-001 / TC-SYNC-004 – oceny offline, pigułka synchronizacji i zabicie aplikacji po toaście.
-# Wymaga sparowanego tabletu (FX-TABLET-JA) i ekranów sędziego (EP-08); sieć przełączana przez
-# `adb shell svc wifi disable|enable` (Android) – kroki `runScript` uzupełnić po buildzie dev client.
+# Wymaga sparowanego tabletu (FX-TABLET-JA): Katarzyna Nowak (jA, PIN 1234) w panelu kategorii c3.
+# testID zgodne z ekranami EP-08 (profile-<judgeId>, pin-key-<cyfra>, queue-row-<entryId>, score-submit,
+# sync-pill-<stan>). Sieć: `setAirplaneMode` (Android; na iOS – ręcznie).
 appId: app.polechamp
 env:
-  PIN: '1234'
+  JUDGE_ID: 'jA'
 ---
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: 'jdg-profiles'
+      id: 'profiles-screen'
     timeout: 10000
 - tapOn:
-    id: 'jdg-profile-jA'
-- inputText: ${PIN}
+    id: 'profile-${JUDGE_ID}'
+- tapOn: { id: 'pin-key-1' }
+- tapOn: { id: 'pin-key-2' }
+- tapOn: { id: 'pin-key-3' }
+- tapOn: { id: 'pin-key-4' }
 - extendedWaitUntil:
     visible:
-      id: 'jdg-queue'
+      id: 'categories-screen'
     timeout: 6000
-# Utrata sieci w trakcie oceniania.
+- tapOn: 'Pole Sport Advanced'
+- extendedWaitUntil:
+    visible:
+      id: 'queue-panel'
+    timeout: 3000
+# Utrata sieci w trakcie oceniania; „Zatwierdź i dalej” przechodzi do następnej nieocenionej.
 - setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-.*'
+    index: 0
 - repeat:
     times: 3
     commands:
       - tapOn:
-          id: 'jdg-queue-next'
-      - tapOn:
-          id: 'jdg-form-submit'
+          id: 'score-submit'
       - assertVisible: 'Zapisano ocenę.*'
+- assertVisible:
+    id: 'sync-pill-offlineQueue'
 - assertVisible: 'Offline · 3 w kolejce'
 # Zabicie aplikacji tuż po toaście (TC-SYNC-004) – ocena musi przetrwać.
 - stopApp
 - launchApp
 - setAirplaneMode: disabled
 - extendedWaitUntil:
-    visible: 'Zsynchronizowano'
+    visible:
+      id: 'sync-pill-synced'
     timeout: 30000

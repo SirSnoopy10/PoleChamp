@@ -5,6 +5,7 @@ import { loadDeviceCredentials } from '../../data/auth/deviceAuth';
 import { judgeRuntime, type JudgeRuntime } from '../../data/judge/runtime';
 import { restoreJudgeSession } from '../../data/judge/session';
 import { readMeta } from '../../data/sync/meta';
+import { Sentry } from '../../observability/sentry';
 import type { SplashStage } from '../../ui/splash/SplashScreen';
 import { TabletDataLifecycle } from './TabletDataLifecycle';
 
@@ -48,8 +49,18 @@ export function useJudgeSplashStage(active: boolean): JudgeStage {
   useEffect(() => {
     if (!active) return;
     let cancelled = false;
-    const rt = judgeRuntime();
-    void bootstrapJudge(rt, (next) => !cancelled && setStage(next));
+    let rt: JudgeRuntime;
+    try {
+      rt = judgeRuntime();
+    } catch (error) {
+      // Baza niedostępna (np. podgląd Expo web bez SQLite) – splash się kończy, błąd do Sentry.
+      Sentry.captureException(error);
+      setStage('ready');
+      return;
+    }
+    void bootstrapJudge(rt, (next) => !cancelled && setStage(next)).catch((error: unknown) =>
+      Sentry.captureException(error),
+    );
     // Retencja po zakończeniu turnieju także przy powrocie na pierwszy plan (IMP-319 krok 3).
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') void TabletDataLifecycle.autoWipe(rt.local, rt.clock.now());

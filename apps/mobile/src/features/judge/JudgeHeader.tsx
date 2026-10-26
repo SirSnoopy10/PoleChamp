@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { color, layout, radius, shadow } from '@polechamp/tokens';
 import { readTournament } from '../../data/judge/queries';
@@ -12,14 +13,34 @@ import { Text } from '../../ui/Text';
 import { SyncPill } from '../sync/SyncPill';
 import { MEDIUM } from './styles';
 
+/** Nagłówek zalogowanego sędziego: turniej z lokalnej bazy, sesja i pigułka synchronizacji. */
+export function JudgeHeader({ onLogout }: { onLogout: () => void }) {
+  const judge = useJudgeSession((s) => s.active);
+  const tournament = useLocalQuery(readTournament, [], (e) => e.type === 'snapshotApplied');
+  return (
+    <JudgeHeaderView
+      tournamentName={tournament?.name ?? ''}
+      judge={judge}
+      pill={<SyncPill />}
+      onLogout={onLogout}
+    />
+  );
+}
+
+export interface JudgeHeaderViewProps {
+  tournamentName: string;
+  judge: { fullName: string; initials: string } | null;
+  /** Slot pigułki synchronizacji (`SyncPill`; w DevCatalog – `StatusPill` w danym stanie). */
+  pill: ReactNode;
+  onLogout: () => void;
+}
+
 /**
  * Nagłówek trybu sędziego (06-ekrany-sedziego §0, IMP-300): 60 dp, `gavel` w kwadracie 30 dp,
  * „Panel sędziego” + nazwa turnieju (wielokropek), pigułka synchronizacji, chip sędziego, wylogowanie.
  */
-export function JudgeHeader({ onLogout }: { onLogout: () => void }) {
+export function JudgeHeaderView({ tournamentName, judge, pill, onLogout }: JudgeHeaderViewProps) {
   const t = useT();
-  const judge = useJudgeSession((s) => s.active);
-  const tournament = useLocalQuery(readTournament, [], (e) => e.type === 'snapshotApplied');
   return (
     <View testID="judge-header" style={styles.header}>
       <View style={styles.gavel}>
@@ -30,10 +51,10 @@ export function JudgeHeader({ onLogout }: { onLogout: () => void }) {
           {t('judge:header.panel')}
         </Text>
         <Text variant="bodyS" numberOfLines={1} style={MEDIUM} testID="judge-header-tournament">
-          {tournament?.name ?? ''}
+          {tournamentName}
         </Text>
       </View>
-      <SyncPill />
+      {pill}
       {judge ? (
         <View testID="judge-chip" style={[styles.chip, shadow.sm]}>
           <Avatar name={judge.fullName} initials={judge.initials} size={28} />
@@ -73,13 +94,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  titles: { flex: 1, minWidth: 0 },
+  titles: { flex: 1, minWidth: 160 },
   panel: { textTransform: 'none', letterSpacing: 0 },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: layout[8],
     maxWidth: 260,
+    flexShrink: 1,
+    minWidth: 0,
     paddingTop: layout[4],
     paddingBottom: layout[4],
     paddingLeft: layout[4],

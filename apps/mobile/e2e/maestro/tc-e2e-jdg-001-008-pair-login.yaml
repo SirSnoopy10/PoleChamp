@@ -1,0 +1,73 @@
+# TC-E2E-JDG-001…008 – parowanie tabletu, splash, wybór profilu i logowanie PIN-em (online / offline).
+# Czysty tablet (Galaxy Tab A8 / iPad 9); kod parowania z TC-E2E-ORG-030 w zmiennej PAIRING_CODE.
+appId: app.polechamp
+env:
+  PAIRING_CODE: 'K7QM-4ZTX'
+  JUDGE_ID: 'jA'
+---
+- clearState
+- launchApp
+- tapOn:
+    id: 'mode-judge'
+# TC-E2E-JDG-002: kod ręcznie (małe litery bez myślnika – normalizacja do „XXXX-XXXX”).
+- extendedWaitUntil:
+    visible:
+      id: 'pair-screen'
+    timeout: 6000
+- tapOn:
+    id: 'pair-code'
+- inputText: 'k7qm4zty'
+- tapOn:
+    id: 'pair-connect'
+- assertVisible: 'Kod jest nieprawidłowy lub wygasł.'
+- clearText
+- inputText: ${PAIRING_CODE}
+- tapOn:
+    id: 'pair-device-name'
+- inputText: 'Tablet stół 1'
+- tapOn:
+    id: 'pair-connect'
+- assertVisible: 'Łączenie z turniejem…'
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 20000
+- assertVisible: 'Wybierz swój profil'
+# TC-E2E-JDG-005: zły PIN, poprawny PIN.
+- tapOn:
+    id: 'profile-${JUDGE_ID}'
+- tapOn: { id: 'pin-key-9' }
+- tapOn: { id: 'pin-key-9' }
+- tapOn: { id: 'pin-key-9' }
+- tapOn: { id: 'pin-key-9' }
+- assertVisible: 'Nieprawidłowy PIN — spróbuj ponownie'
+- tapOn: { id: 'pin-key-1' }
+- tapOn: { id: 'pin-key-2' }
+- tapOn: { id: 'pin-key-3' }
+- tapOn: { id: 'pin-key-4' }
+- extendedWaitUntil:
+    visible:
+      id: 'categories-screen'
+    timeout: 6000
+- assertVisible: 'Dzień dobry, Katarzyna'
+# TC-E2E-JDG-003 / 008: zimny start offline – wybór profilu ≤ 4,3 s i logowanie weryfikatorem lokalnym.
+- tapOn:
+    id: 'judge-logout'
+- setAirplaneMode: enabled
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 5000
+- tapOn:
+    id: 'profile-${JUDGE_ID}'
+- tapOn: { id: 'pin-key-1' }
+- tapOn: { id: 'pin-key-2' }
+- tapOn: { id: 'pin-key-3' }
+- tapOn: { id: 'pin-key-4' }
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-offlineQueue'
+    timeout: 6000
+- setAirplaneMode: disabled

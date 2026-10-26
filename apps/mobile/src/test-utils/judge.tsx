@@ -32,6 +32,7 @@ import { syncEvents } from '../data/sync/events';
 import { applySnapshot } from '../data/sync/snapshot';
 import { refreshFromDb, resetSyncStore, syncStore } from '../data/sync/syncStore';
 import { pairingStore } from '../features/pairing/pairing';
+import { OrientationGuard } from '../features/system/OrientationGuard';
 import { syncPopover } from '../features/sync/SyncPill';
 import { toast } from '../ui/Toast';
 import { act, createTestQueryClient, Providers } from './render';
@@ -237,13 +238,13 @@ export async function signIn(
 }
 
 /** Trasy Expo Router w trybie sędziego (tablet). */
-export async function startJudge(routes: Routes, url: string) {
+export async function startJudge(routes: Routes, url: string, { orientation = false } = {}) {
   const client = createTestQueryClient();
   const result = await renderRouter(routes, {
     initialUrl: url,
     wrapper: ({ children }) => (
       <Providers mode="judge" queryClient={client}>
-        {children}
+        {orientation ? <OrientationGuard>{children}</OrientationGuard> : children}
       </Providers>
     ),
   });

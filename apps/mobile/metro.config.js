@@ -15,5 +15,13 @@ config.resolver.nodeModulesPaths = [
 ];
 // Pakiety workspace są ESM z importami `./x.js` (kompilowane przez tsc do dist).
 config.resolver.unstable_enablePackageExports = true;
+// expo-sqlite na web (podgląd trybu sędziego): wa-sqlite jako zasób `.wasm`, SharedArrayBuffer
+// wymaga izolacji cross-origin serwera deweloperskiego.
+config.resolver.assetExts.push('wasm');
+config.server.enhanceMiddleware = (middleware) => (req, res, next) => {
+  res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  return middleware(req, res, next);
+};
 
 module.exports = config;
