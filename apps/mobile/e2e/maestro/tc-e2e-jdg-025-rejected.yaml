@@ -1,0 +1,15 @@
+# TC-E2E-JDG-025 / TC-SYNC-007 – odrzucone oceny na tablecie (kategoria zablokowana podczas offline).
+# Stan wstępny przygotowuje organizator (blokada c3 przy tablecie offline z 3 ocenami w kolejce).
+appId: app.polechamp
+---
+- launchApp
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible: '3 oceny nie zostały przyjęte – kategoria zablokowana'
+    timeout: 30000
+- assertVisible:
+    id: 'jdg-queue-row-warning'
+- tapOn:
+    id: 'jdg-sync-pill'
+- assertVisible: 'Wymaga uwagi'
+- assertVisible: 'Organizator zdecyduje o ich uwzględnieniu.'

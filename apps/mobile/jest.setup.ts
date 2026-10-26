@@ -21,8 +21,8 @@ jest.mock('expo-secure-store', () => {
 // Losowość z Node (natywny moduł expo-crypto w Jest nie wypełnia tablicy – UUIDv7 byłyby równe).
 jest.mock('expo-crypto', () => ({
   ...jest.requireActual('expo-crypto'),
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   getRandomValues: <T extends ArrayBufferView>(array: T) =>
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('node:crypto').webcrypto.getRandomValues(array),
 }));
 

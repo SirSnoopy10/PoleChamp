@@ -1,0 +1,37 @@
+# TC-SYNC-001 / TC-SYNC-004 – oceny offline, pigułka synchronizacji i zabicie aplikacji po toaście.
+# Wymaga sparowanego tabletu (FX-TABLET-JA) i ekranów sędziego (EP-08); sieć przełączana przez
+# `adb shell svc wifi disable|enable` (Android) – kroki `runScript` uzupełnić po buildzie dev client.
+appId: app.polechamp
+env:
+  PIN: '1234'
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'jdg-profiles'
+    timeout: 10000
+- tapOn:
+    id: 'jdg-profile-jA'
+- inputText: ${PIN}
+- extendedWaitUntil:
+    visible:
+      id: 'jdg-queue'
+    timeout: 6000
+# Utrata sieci w trakcie oceniania.
+- setAirplaneMode: enabled
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: 'jdg-queue-next'
+      - tapOn:
+          id: 'jdg-form-submit'
+      - assertVisible: 'Zapisano ocenę.*'
+- assertVisible: 'Offline · 3 w kolejce'
+# Zabicie aplikacji tuż po toaście (TC-SYNC-004) – ocena musi przetrwać.
+- stopApp
+- launchApp
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible: 'Zsynchronizowano'
+    timeout: 30000

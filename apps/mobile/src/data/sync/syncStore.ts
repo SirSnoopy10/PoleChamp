@@ -3,6 +3,7 @@ import { network } from '../network/online';
 import type { Db } from '../local/LocalDb';
 import type { SheetSyncState } from '../local/scoreSheets';
 import { ATTENTION_ATTEMPTS, outbox } from '../outbox/outbox';
+import { diagLog } from './diagLog';
 
 /** Stan synchronizacji tabletu (IMP-358) – jedno źródło dla `SyncPill`, `QueuePanel` i `LogoutDialog`. */
 export interface SyncState {
@@ -37,7 +38,17 @@ const initial = (): SyncState => ({
 
 export const syncStore = createStore<SyncState>()(() => initial());
 
-network.subscribe(() => syncStore.setState({ online: network.isOnline() }));
+network.subscribe(() => {
+  const online = network.isOnline();
+  if (online !== syncStore.getState().online) {
+    diagLog.add({
+      event: online ? 'online' : 'offline',
+      status: 'changed',
+      pending: syncStore.getState().pending,
+    });
+  }
+  syncStore.setState({ online });
+});
 
 /** Odczyt liczników outboxu i stanów arkuszy sędziego z bazy (po każdym przebiegu i zatwierdzeniu). */
 export function refreshFromDb(db: Db, judgeId: string | null = null): void {

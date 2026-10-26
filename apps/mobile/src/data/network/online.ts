@@ -38,6 +38,8 @@ function update(patch: Partial<NetworkState>) {
  */
 export const network = {
   isOnline: () => online,
+  /** Połączony WebSocket (timer synchronizacji działa, gdy go brak – 06-offline §3.1). */
+  isWsConnected: () => state.wsConnected,
   subscribe(listener: () => void) {
     listeners.add(listener);
     return () => listeners.delete(listener);
