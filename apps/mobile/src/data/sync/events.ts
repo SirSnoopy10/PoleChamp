@@ -46,6 +46,10 @@ export const syncEvents = {
   emit(events: readonly SyncEvent[]): void {
     for (const e of events) listeners.forEach((l) => l(e));
   },
+  /** Liczba subskrybentów – kontrola wycieków (IMP-503, TC-PERF-014). */
+  listenerCount(): number {
+    return listeners.size;
+  },
   /** Tylko testy. */
   reset() {
     listeners.clear();

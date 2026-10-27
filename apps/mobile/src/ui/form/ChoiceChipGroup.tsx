@@ -60,7 +60,11 @@ export function ChoiceChipGroup<V extends string>({
                   : { backgroundColor: color.bg, borderColor: color.divider },
               ]}
             >
-              <Text variant="meta" color={selected ? color.accentRamp[200] : color.neutral[300]}>
+              <Text
+                variant="meta"
+                numberOfLines={1}
+                color={selected ? color.accentRamp[200] : color.neutral[300]}
+              >
                 {option.label}
               </Text>
             </Pressable>

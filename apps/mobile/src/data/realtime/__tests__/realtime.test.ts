@@ -5,7 +5,7 @@ import { network } from '../../network/online';
 import { queryKeys } from '../../query/keys';
 import { bindJudgeEvents, type SyncEngineHooks } from '../judgeBindings';
 import { bindOrgEvents } from '../orgBindings';
-import { createRealtimeClient, FALLBACK_AFTER_MS, type RtSocket } from '../socket';
+import { createRealtimeClient, FALLBACK_AFTER_MS, RECONNECT, type RtSocket } from '../socket';
 
 /** Atrapa gniazda Socket.IO: `serverEmit` symuluje zdarzenie serwera. */
 class FakeSocket extends EventEmitter {
@@ -105,6 +105,59 @@ describe('klient realtime (IMP-216)', () => {
     expect(socket.connect).toHaveBeenCalled();
     foreground();
     expect(onResync).toHaveBeenCalled();
+    client.close();
+  });
+
+  it('TC-REL-005 (klient): ponowne połączenie po wygaszeniu API → resync; backoff 0,5–5 s', () => {
+    const { socket, onResync, client } = setup();
+    socket.serverEmit('connect');
+    expect(onResync).not.toHaveBeenCalled();
+    socket.serverEmit('server.restarting', { reconnectInMs: [500, 5000] });
+    expect(network.isWsConnected()).toBe(false);
+    socket.serverEmit('disconnect');
+    socket.serverEmit('connect');
+    expect(onResync).toHaveBeenCalledTimes(1);
+    expect(socket.emitted.filter(([e]) => e === 'subscribe')).toHaveLength(2);
+    // Pierwsza próba: delay × (1 ± rozrzut) = 0,5–5 s (socket.io Backoff).
+    expect(RECONNECT.delay * (1 - RECONNECT.randomization)).toBeCloseTo(500, -1);
+    expect(RECONNECT.delay * (1 + RECONNECT.randomization)).toBeCloseTo(5000, -1);
+    client.close();
+  });
+
+  it('TC-PERF-015: w tle WebSocket rozłączony bez odpytywania, po powrocie jedno odświeżenie', () => {
+    let listener: ((s: string) => void) | null = null;
+    const socket = new FakeSocket();
+    const onPollingChange = jest.fn();
+    const onResync = jest.fn();
+    const client = createRealtimeClient({
+      url: 'http://api.test',
+      tournamentId: 't1',
+      getToken: () => 'tok',
+      refreshToken: async () => undefined,
+      onPollingChange,
+      onResync,
+      connect: (() => socket) as never,
+      appState: {
+        addEventListener: (_e: string, l: (s: string) => void) => {
+          listener = l;
+          return { remove: () => undefined };
+        },
+      } as never,
+    });
+    socket.serverEmit('connect');
+    socket.disconnect.mockImplementation(() => {
+      socket.serverEmit('disconnect');
+      return socket;
+    });
+    listener!('background');
+    expect(socket.disconnect).toHaveBeenCalled();
+    jest.advanceTimersByTime(FALLBACK_AFTER_MS * 3);
+    expect(onPollingChange).not.toHaveBeenCalled();
+
+    listener!('active');
+    expect(socket.connect).toHaveBeenCalled();
+    socket.serverEmit('connect');
+    expect(onResync).toHaveBeenCalledTimes(1);
     client.close();
   });
 

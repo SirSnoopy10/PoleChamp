@@ -9,6 +9,7 @@ import { formModel, perfJudge } from './perf.fixtures';
 
 // Reassure (IMP-500): baza regresji formularza oceny – `pnpm --filter @polechamp/mobile perf:test`,
 // próg w CI: scripts/reassure-gate.mjs (renderów nie więcej, czas ≤ +10% – TC-PERF-004).
+jest.mock('../../../data/judge/runtime', () => ({ judgeRuntime: () => ({ local: {} }) }));
 jest.mock('../draft', () => ({
   DRAFT_DEBOUNCE_MS: 300,
   attachDraftAutosave: () => ({

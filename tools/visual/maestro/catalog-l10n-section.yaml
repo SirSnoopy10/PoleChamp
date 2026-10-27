@@ -1,0 +1,8 @@
+# Jedna sekcja DevCatalog z włączonymi „Pseudo” i „Aa 130%” → `<SECTION>__pseudo130__<DEVICE>.png`.
+# Ustawienia katalogu są wspólne dla sekcji (provider), więc przełączniki klika tylko catalog-l10n.yaml.
+appId: app.polechamp
+---
+- openLink: 'polechamp://catalog/${SECTION}'
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: '${SECTION}__pseudo130__${DEVICE}'

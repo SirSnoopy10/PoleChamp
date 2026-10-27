@@ -25,6 +25,8 @@ function Toggle<K extends keyof CatalogSettings>({
   const active = settings[field] === value;
   return (
     <Pressable
+      // Przepływy wizualne (IMP-504): `catalog-toggle-pseudo`, `catalog-toggle-fontScale-1.3`.
+      testID={`catalog-toggle-${field}${typeof value === 'boolean' ? '' : `-${String(value)}`}`}
       accessibilityRole="switch"
       accessibilityState={{ checked: active }}
       onPress={() => settings.update({ [field]: value } as Partial<CatalogSettings>)}

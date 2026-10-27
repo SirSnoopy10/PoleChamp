@@ -3,11 +3,23 @@ import { io, type Socket } from 'socket.io-client';
 import type { ClientToServerEvents, ServerToClientEvents } from '@polechamp/contracts';
 import { network } from '../network/online';
 
-export type RtSocket = Socket<ServerToClientEvents & { 'auth.expired': () => void }, ClientToServerEvents>;
+/** Zdarzenia transportu spoza kontraktu domenowego: wygaśnięcie tokenu, wygaszanie instancji API (IMP-505). */
+type TransportEvents = {
+  'auth.expired': () => void;
+  'server.restarting': (payload: { reconnectInMs?: readonly number[] }) => void;
+};
+
+export type RtSocket = Socket<ServerToClientEvents & TransportEvents, ClientToServerEvents>;
 export type ServerEvent = keyof ServerToClientEvents;
 
 /** Bez połączenia WebSocket przez 20 s → odpytywanie (IMP-216 krok 6, NFR-303). */
 export const FALLBACK_AFTER_MS = 20_000;
+
+/**
+ * Backoff ponownego połączenia (IMP-505, NFR-803): pierwsza próba losowo w 0,5–5 s
+ * (2 750 ms ± 82%), kolejne podwajane do 10 s – po wdrożeniu klienci nie łączą się naraz.
+ */
+export const RECONNECT = { delay: 2_750, randomization: 0.818, max: 10_000 } as const;
 
 export interface RealtimeOptions {
   url: string;
@@ -39,9 +51,9 @@ export function createRealtimeClient(options: RealtimeOptions): RealtimeClient {
   const socket: RtSocket = connect(`${options.url}/rt`, {
     transports: ['websocket'],
     auth: (cb) => cb({ token: options.getToken() }),
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 10_000,
-    randomizationFactor: 0.5,
+    reconnectionDelay: RECONNECT.delay,
+    reconnectionDelayMax: RECONNECT.max,
+    randomizationFactor: RECONNECT.randomization,
   });
 
   let polling = false;
@@ -64,18 +76,25 @@ export function createRealtimeClient(options: RealtimeOptions): RealtimeClient {
   };
 
   armFallback();
+  let connectedBefore = false;
+  let backgrounded = false;
   socket.on('connect', () => {
     network.setWsConnected(true);
     disarmFallback();
     socket.emit('subscribe', { tournamentId: options.tournamentId });
-    if (polling) {
-      setPolling(false);
-      options.onResync?.();
-    }
+    const wasPolling = polling;
+    if (polling) setPolling(false);
+    // Każde ponowne połączenie (wdrożenie API, zerwana sieć) i koniec odpytywania → pull /
+    // unieważnienie zapytań: zdarzenia z przerwy nie przychodzą przez WS (IMP-505).
+    if (connectedBefore || wasPolling) options.onResync?.();
+    connectedBefore = true;
   });
+  // Wygaszanie instancji API: serwer zaraz rozłączy – ponowne połączenie wg backoffu z rozrzutem.
+  socket.on('server.restarting', () => network.setWsConnected(false));
   socket.on('disconnect', () => {
     network.setWsConnected(false);
-    armFallback();
+    // Rozłączenie w tle jest zamierzone – bez przełączania na odpytywanie.
+    if (!backgrounded) armFallback();
   });
   socket.on('connect_error', () => {
     network.setWsConnected(false);
@@ -91,8 +110,20 @@ export function createRealtimeClient(options: RealtimeOptions): RealtimeClient {
 
   const appState = options.appState ?? AppState;
   const sub = appState.addEventListener('change', (status: AppStateStatus) => {
+    // W tle bez WebSocketu (IMP-503): brak pingów co 25 s i wybudzeń radia; po powrocie resync.
+    if (status === 'background') {
+      backgrounded = true;
+      disarmFallback();
+      socket.disconnect();
+      return;
+    }
     if (status !== 'active') return;
     if (!socket.connected) socket.connect();
+    if (backgrounded) {
+      backgrounded = false;
+      // `connect` po powrocie z tła zrobi resync – bez podwójnego pull.
+      connectedBefore = false;
+    }
     options.onResync?.();
   });
 

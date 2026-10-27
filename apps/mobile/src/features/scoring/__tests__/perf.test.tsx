@@ -46,6 +46,8 @@ jest.mock('../../../ui/Button', () => {
 });
 
 // Autozapis szkicu wymaga bazy tabletu – tutaj niepotrzebny.
+// Bez środowiska tabletu (baza, silnik synchronizacji) – formularz potrzebuje tylko `local` dla szkicu.
+jest.mock('../../../data/judge/runtime', () => ({ judgeRuntime: () => ({ local: {} }) }));
 jest.mock('../draft', () => ({
   DRAFT_DEBOUNCE_MS: 300,
   attachDraftAutosave: () => ({

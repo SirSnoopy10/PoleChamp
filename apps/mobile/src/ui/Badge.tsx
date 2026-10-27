@@ -37,6 +37,7 @@ export function Badge(props: BadgeProps) {
           <Text
             variant="caption"
             tabular
+            numberOfLines={1}
             color={weight ? color.accentRamp[300] : color.neutral[200]}
             style={{ fontSize: props.compact ? 11 : 12, lineHeight: props.compact ? 14 : 16 }}
           >
@@ -66,6 +67,7 @@ export function Badge(props: BadgeProps) {
           <Text
             variant={size === 56 ? 'numL' : 'subhead'}
             tabular
+            numberOfLines={1}
             color={accent ? color.accentRamp[200] : color.neutral[200]}
           >
             {props.value}
@@ -81,7 +83,7 @@ export function Badge(props: BadgeProps) {
           style={[styles.chip, styles.scored, { backgroundColor: color.accentRamp[900] }]}
         >
           <Icon name="check-circle" weight="fill" size={13} color={color.accentRamp[300]} />
-          <Text variant="caption" color={color.accentRamp[300]} style={{ lineHeight: 16 }}>
+          <Text variant="caption" color={color.accentRamp[300]} numberOfLines={1} style={{ lineHeight: 16 }}>
             {t('badge.scored')}
           </Text>
         </View>

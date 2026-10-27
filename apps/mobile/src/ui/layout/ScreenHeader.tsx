@@ -25,7 +25,12 @@ export function BackLink({ label, onPress }: BackLinkProps) {
       style={({ pressed }) => [styles.back, pressed && { backgroundColor: 'rgba(145,132,217,0.10)' }]}
     >
       <Icon name="caret-left" size={tablet ? 16 : 20} color={color.accent} />
-      <Text variant="body" color={color.accent} style={{ fontSize: tablet ? 13.5 : 15 }}>
+      <Text
+        variant="body"
+        color={color.accent}
+        numberOfLines={1}
+        style={[styles.backLabel, { fontSize: tablet ? 13.5 : 15 }]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -63,6 +68,9 @@ const styles = StyleSheet.create({
     padding: 6,
     marginLeft: -6,
     borderRadius: radius.md,
+    // Długa nazwa poprzedniego ekranu (turniej) – wielokropek zamiast wypychania akcji (UI-05, IMP-504).
+    flexShrink: 1,
   },
+  backLabel: { flexShrink: 1 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 });

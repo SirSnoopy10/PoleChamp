@@ -5,6 +5,7 @@ Zrzuty z Maestro (build `preview`, telefon 390×844 i tablet 1180×820) porówny
 | Plik | Zakres | TC |
 |---|---|---|
 | `maestro/catalog.yaml` | sekcje DevCatalog (`polechamp://catalog/<sekcja>`) | TC-DESIGN-023 |
+| `maestro/catalog-l10n.yaml` | sekcje DevCatalog z pseudolokalizacją i czcionką 130% (`<sekcja>__pseudo130__<urządzenie>.png`) | TC-L10N-002, TC-A11Y-007/008 (IMP-504) |
 | `maestro/screens.yaml` | ekrany SCR-ORG (telefon) i SCR-JDG (tablet) na FX-SEED | TC-DESIGN-016…020 |
 
 Nazwy zrzutów: `<sekcja>__<przypadek>__<phone|tablet>.png` (np. `buttons__default__phone.png`, `scr-org-08__seed__phone.png`).

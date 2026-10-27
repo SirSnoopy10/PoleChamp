@@ -132,4 +132,26 @@ export class RealtimeGateway
   get connections(): number {
     return this.nsp.sockets.size;
   }
+
+  /**
+   * Wygaszanie przy wdrożeniu (IMP-505, ADR-003): `server.restarting` do połączeń tego procesu
+   * (`local` – nie przez adapter do innych zadań), potem rozłączanie paczkami po `batch` co
+   * `intervalMs`. Klienci łączą się ponownie z losowym opóźnieniem 0,5–5 s i robią `pull`,
+   * więc nowe zadania nie dostają lawiny połączeń, a zdarzenia z przerwy wracają z `sync/changes`.
+   */
+  async drain({ batch = DRAIN_BATCH, intervalMs = DRAIN_INTERVAL_MS } = {}): Promise<number> {
+    const sockets = [...this.nsp.sockets.values()];
+    this.nsp.local.emit('server.restarting' as ServerEventName, { reconnectInMs: RECONNECT_JITTER_MS });
+    for (let i = 0; i < sockets.length; i += batch) {
+      if (i > 0) await new Promise((resolve) => setTimeout(resolve, intervalMs));
+      for (const socket of sockets.slice(i, i + batch)) socket.disconnect(true);
+    }
+    if (sockets.length) this.logger.log({ closed: sockets.length }, 'WS wygaszone przed zamknięciem');
+    return sockets.length;
+  }
 }
+
+export const DRAIN_BATCH = 50;
+export const DRAIN_INTERVAL_MS = 1_000;
+/** Zakres losowego opóźnienia ponownego połączenia klienta (ms) – informacyjnie w `server.restarting`. */
+export const RECONNECT_JITTER_MS = [500, 5_000] as const;

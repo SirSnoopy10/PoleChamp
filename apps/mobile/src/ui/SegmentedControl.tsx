@@ -57,6 +57,7 @@ export function SegmentedControl<K extends string>({
                 testID={`segment-${segment.key}-count`}
                 variant="micro"
                 tabular
+                numberOfLines={1}
                 color={active ? color.accentRamp[200] : color.neutral[300]}
                 style={styles.count}
               >

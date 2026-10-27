@@ -4,11 +4,13 @@ import { Logger, type Type } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module.js';
+import { safeError } from './common/errors/safe-error.js';
 import { uuidv7, UUID_RE } from './common/ids.js';
 import { requestContext, SYSTEM_ACTOR } from './common/request-context.js';
 import type { Env } from './config/env.js';
 import { Readiness } from './health/health.controller.js';
 import { RealtimeAdapter } from './modules/realtime/adapter.js';
+import { RealtimeGateway } from './modules/realtime/gateway.js';
 
 type RawRequest = { headers: Record<string, string | string[] | undefined> };
 
@@ -60,7 +62,10 @@ export async function createApp(
   return app;
 }
 
-/** Łagodne zamknięcie (IMP-100 krok 5): `ready` → 503, odczekanie na deregistrację ALB, zamknięcie. */
+/**
+ * Łagodne zamknięcie (IMP-100 krok 5, IMP-505): `ready` → 503, odczekanie na deregistrację ALB
+ * (`SHUTDOWN_DELAY_MS`, w ECS = `deregistration_delay` 30 s), wygaszenie WebSocketów paczkami, zamknięcie.
+ */
 export function installShutdown(app: NestFastifyApplication, env: Env): void {
   const logger = new Logger('Shutdown');
   let closing = false;
@@ -70,6 +75,11 @@ export function installShutdown(app: NestFastifyApplication, env: Env): void {
     logger.log(`${signal}: przestaję przyjmować ruch`);
     app.get(Readiness).shuttingDown = true;
     await new Promise((resolve) => setTimeout(resolve, env.SHUTDOWN_DELAY_MS));
+    try {
+      await app.get(RealtimeGateway, { strict: false }).drain();
+    } catch (error) {
+      logger.warn(safeError(error), 'Wygaszanie WS nieudane');
+    }
     await app.close();
     process.exit(0);
   };

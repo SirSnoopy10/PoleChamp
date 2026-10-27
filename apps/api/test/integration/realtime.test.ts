@@ -6,6 +6,7 @@ import type { Env } from '../../src/config/env.js';
 import type { DbHandle } from '../../src/db/client.js';
 import * as s from '../../src/db/schema.js';
 import { AUDIENCE } from '../../src/modules/auth/jwt.service.js';
+import { RealtimeGateway } from '../../src/modules/realtime/gateway.js';
 import { EventPublisher } from '../../src/modules/realtime/publisher.js';
 import { startApp } from '../support/app.js';
 import { testDb } from '../support/db.js';
@@ -104,14 +105,12 @@ describe('gateway realtime (IMP-154)', () => {
 
   it('heartbeat przez WebSocket aktualizuje stan tabletu; organizator nie może wysłać heartbeat', async () => {
     const { tablet, tabletRt, orgRt } = await connected();
-    const ack = await tabletRt.socket
-      .timeout(3_000)
-      .emitWithAck('heartbeat', {
-        pendingMutations: 4,
-        lastSyncCursor: 10,
-        batteryLevel: 0.5,
-        activeJudgeId: null,
-      });
+    const ack = await tabletRt.socket.timeout(3_000).emitWithAck('heartbeat', {
+      pendingMutations: 4,
+      lastSyncCursor: 10,
+      batteryLevel: 0.5,
+      activeJudgeId: null,
+    });
     expect(ack.ok).toBe(true);
     const [d] = await handle.db.select().from(s.device).where(eq(s.device.id, tablet.deviceId));
     expect([d!.pendingMutations, d!.batteryLevel]).toEqual([4, 50]);
@@ -411,5 +410,56 @@ describe('zdarzenia komend (IMP-156)', () => {
     await revoked('TOURNAMENT_FINISHED', jD!.id);
     await org.req('DELETE', `/v1/devices/${tablet.deviceId}`);
     await revoked('DEVICE_REVOKED');
+  });
+});
+
+describe('wdrożenie z połączeniami WS (IMP-505)', () => {
+  it('TC-REL-005: SIGTERM – server.restarting, rozłączanie paczkami, druga instancja bez zmian, zmiany z przerwy w sync/changes', async () => {
+    const second = await startApp({ env });
+    const secondUrl = await listen(second.app);
+    try {
+      const { t, c, tablet } = await runningCategory(call, org);
+      const since = (await call('GET', '/v1/sync/snapshot', { token: tablet.token })).body.cursor as number;
+      // 120 połączeń na instancji wygaszanej (A) i 2 na instancji B.
+      const onA: RtClient[] = [];
+      for (let i = 0; i < 120; i++) onA.push(await open(orgToken));
+      const tabletOnA = await open(tablet.token);
+      expect((await tabletOnA.subscribe(t.id)).ok).toBe(true);
+      const onB = [await open(orgToken, secondUrl), await open(tablet.token, secondUrl)];
+      const closedAt: number[] = [];
+      for (const rt of [...onA, tabletOnA]) rt.socket.on('disconnect', () => closedAt.push(Date.now()));
+
+      const gateway = app.get(RealtimeGateway, { strict: false });
+      const started = Date.now();
+      // Na A są też połączenia z wcześniejszych testów pliku – wygaszane wszystkie.
+      expect(await gateway.drain({ batch: 50, intervalMs: 300 })).toBeGreaterThanOrEqual(121);
+      await vi.waitFor(() => expect(closedAt).toHaveLength(121), { timeout: 3_000 });
+
+      for (const rt of [...onA, tabletOnA]) {
+        expect(rt.events.some((e) => e.type === 'server.restarting')).toBe(true);
+      }
+      // Paczki po 50 co 300 ms: ≥ 121 połączeń → ≥ 3 paczki, ostatnia ≥ 600 ms po starcie.
+      const batches = new Set(closedAt.map((at) => Math.round((at - started) / 300)));
+      expect(batches.size).toBeGreaterThanOrEqual(3);
+      expect(Math.max(...closedAt) - started).toBeGreaterThanOrEqual(550);
+      // Instancja B: połączenia nietknięte, bez `server.restarting`.
+      for (const rt of onB) {
+        expect(rt.socket.connected).toBe(true);
+        expect(rt.events.some((e) => e.type === 'server.restarting')).toBe(false);
+      }
+
+      // Zdarzenie w trakcie przerwy (tablet rozłączony) – po ponownym połączeniu klient robi pull.
+      await org.req('POST', `/v1/categories/${c.id}/lock`, { force: true });
+      const pulled = await call('GET', `/v1/sync/changes?since=${since}`, { token: tablet.token });
+      expect(pulled.body.changes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ entityType: 'category', entity: expect.objectContaining({ id: c.id }) }),
+        ]),
+      );
+      const back = await open(tablet.token, secondUrl);
+      expect((await back.subscribe(t.id)).ok).toBe(true);
+    } finally {
+      await second.app.close();
+    }
   });
 });
