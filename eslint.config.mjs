@@ -18,6 +18,11 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.strict,
+  // Skrypty k6 (IMP-461): zmienne globalne środowiska k6.
+  {
+    files: ['tools/k6/**/*.js'],
+    languageOptions: { globals: { __ENV: 'readonly', __VU: 'readonly', __ITER: 'readonly' } },
+  },
   {
     languageOptions: { globals: { ...globals.node } },
     linterOptions: { reportUnusedDisableDirectives: 'error' },
