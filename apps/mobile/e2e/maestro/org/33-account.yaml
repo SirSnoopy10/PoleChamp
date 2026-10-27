@@ -1,0 +1,36 @@
+# TC-E2E-ORG-033 – konto: dokumenty; usunięcie z turniejem Trwa (odmowa) i bez turniejów (wylogowanie).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournaments-account'
+- assertVisible:
+    id: 'account-docs'
+- tapOn:
+    id: 'account-delete'
+- tapOn:
+    id: 'delete-word'
+- inputText: 'USUŃ'
+- tapOn:
+    id: 'delete-confirm'
+- assertVisible: 'Najpierw zakończ trwający turniej.'
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-EMPTY
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournaments-account'
+- tapOn:
+    id: 'account-delete'
+- tapOn:
+    id: 'delete-word'
+- inputText: 'USUŃ'
+- tapOn:
+    id: 'delete-confirm'
+- extendedWaitUntil:
+    visible:
+      id: 'login-screen'
+    timeout: 8000

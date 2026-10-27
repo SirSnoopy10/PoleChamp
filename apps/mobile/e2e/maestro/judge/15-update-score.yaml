@@ -1,0 +1,16 @@
+# TC-E2E-JDG-015 – poprawa własnej oceny (nr 41, ocenione przez jA w seedzie) – „Zaktualizuj ocenę”.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u20}'
+- tapOn: { id: 'criterion-${output.ids.c3_k1}-plus' }
+- tapOn:
+    id: 'score-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'queue-state-synced'
+    timeout: 5000

@@ -1,0 +1,26 @@
+# TC-E2E-ORG-031 – stan urządzeń: tablet syntetyczny bez heartbeat od 5 min → „Offline od 5 min”.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runScript:
+    file: ../_shared/api.js
+    env:
+      {
+        ACTION: submit,
+        TOURNAMENT: t1,
+        CATEGORY: c3,
+        ENTRY: u27,
+        JUDGE: jB,
+        NOTE: '8',
+        DEVICE_NAME: 'Tablet stół 2',
+      }
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn: 'Sędziowie'
+- tapOn:
+    id: 'judges-tabs'
+- assertVisible:
+    id: 'devices-list'
+- assertVisible: 'Tablet stół 2'

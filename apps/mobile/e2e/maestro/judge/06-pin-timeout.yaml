@@ -1,0 +1,36 @@
+# TC-E2E-JDG-006 – blokada czasowa 30 s po 5 złych PIN-ach, trwa po restarcie; druga seria 60 s.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- tapOn:
+    id: 'profile-${output.ids.jB}'
+- repeat:
+    times: 5
+    commands:
+      - repeat:
+          times: 4
+          commands:
+            - tapOn: { id: 'pin-key-0' }
+- assertVisible:
+    id: 'pin-locked-icon'
+- stopApp
+- launchApp
+- tapOn:
+    id: 'profile-${output.ids.jB}'
+- assertVisible:
+    id: 'pin-locked-icon'
+- extendedWaitUntil:
+    notVisible:
+      id: 'pin-locked-icon'
+    timeout: 35000
+- repeat:
+    times: 5
+    commands:
+      - repeat:
+          times: 4
+          commands:
+            - tapOn: { id: 'pin-key-0' }
+- assertVisible:
+    id: 'pin-locked-icon'

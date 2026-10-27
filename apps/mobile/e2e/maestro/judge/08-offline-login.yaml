@@ -1,0 +1,12 @@
+# TC-E2E-JDG-008 – logowanie offline weryfikatorem lokalnym (synchronizacja < 24 h).
+# Wariant 25 h wymaga przestawienia zegara urządzenia (adb shell date / simctl) – tag manual w 08b.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- setAirplaneMode: enabled
+- runFlow: ../_shared/judge-login.yaml
+- assertVisible:
+    id: 'sync-pill-offline'
+- setAirplaneMode: disabled

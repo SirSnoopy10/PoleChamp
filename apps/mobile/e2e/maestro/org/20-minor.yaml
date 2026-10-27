@@ -1,0 +1,27 @@
+# TC-E2E-ORG-020 – zawodniczka niepełnoletnia: zgoda opiekuna wymagana.
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c4}'
+- tapOn:
+    id: 'entries-tab'
+- tapOn: 'Dodaj'
+- tapOn:
+    id: 'entry-name'
+- inputText: 'Iga Baran'
+- tapOn:
+    id: 'entry-birth-year'
+- inputText: '2010'
+- tapOn:
+    id: 'entry-save'
+- assertVisible: 'Potwierdź zgodę opiekuna.'
+- tapOn:
+    id: 'entry-consent'
+- tapOn:
+    id: 'entry-save'
+- assertVisible: 'Dodano zawodniczkę'

@@ -1,0 +1,6 @@
+# FX-TABLET-JA: FX-SEED, tablet „Tablet stół 1” sparowany z t1, zalogowana online Katarzyna Nowak (jA).
+appId: app.polechamp
+---
+- runFlow: seed.yaml
+- runFlow: pair-tablet.yaml
+- runFlow: judge-login.yaml

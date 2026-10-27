@@ -1,0 +1,18 @@
+# TC-E2E-JDG-028 – obrót do pionu w trakcie oceniania: nakładka, po powrocie te same wartości (emulator API 36, sw ≥ 600 dp).
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn: { id: 'criterion-${output.ids.c3_k1}-plus' }
+- setOrientation: PORTRAIT
+- assertVisible:
+    id: 'orientation-overlay'
+- assertVisible: 'Obróć tablet do pozycji poziomej.'
+- setOrientation: LANDSCAPE_LEFT
+- assertNotVisible:
+    id: 'orientation-overlay'
+- assertVisible: '33,5'

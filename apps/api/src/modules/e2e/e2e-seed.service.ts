@@ -167,6 +167,9 @@ export class E2eSeedService {
         ageGroup: c.ageGroup,
       });
       out.ids[c.id] = created.id;
+      // Kryteria i kary w kolejności szablonu = kolejność seedu (`c3_k1`, `c7_k6`, `c3_p1`).
+      c.criteria.forEach((k, i) => (out.ids[k.id] = need(created.criteria[i], k.id).id));
+      c.penalties.forEach((p, i) => (out.ids[p.id] = need(created.penaltyTypes[i], p.id).id));
       for (const pid of c.participantIds) {
         const p = need(data.participants[pid], pid);
         const e = await this.entries.create(

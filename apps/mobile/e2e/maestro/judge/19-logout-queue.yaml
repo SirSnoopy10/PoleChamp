@@ -1,0 +1,32 @@
+# TC-E2E-JDG-019 – wylogowanie z 2 niewysłanymi ocenami (offline): dialog, „Anuluj”, „Wyloguj”, wysyłka po sieci.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- tapOn:
+    id: 'score-submit'
+- tapOn:
+    id: 'judge-logout'
+- assertVisible:
+    id: 'logout-dialog'
+- tapOn: 'Anuluj'
+- assertVisible:
+    id: 'queue-panel'
+- tapOn:
+    id: 'judge-logout'
+- tapOn:
+    id: 'logout-confirm'
+- assertVisible:
+    id: 'profiles-screen'
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-synced'
+    timeout: 20000

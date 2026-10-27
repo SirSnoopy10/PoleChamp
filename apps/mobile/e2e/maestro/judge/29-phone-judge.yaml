@@ -1,5 +1,6 @@
 # TC-E2E-JDG-029 – telefon nie uruchamia trybu sędziego (iPhone 12).
 appId: app.polechamp
+tags: [nightly, judge]
 ---
 - launchApp:
     clearState: true

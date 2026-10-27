@@ -1,0 +1,21 @@
+# TC-E2E-ORG-024 – oceny zawodniczki nr 43 (Amelia Król, 5 arkuszy) i historia zmian.
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'results-tab'
+- tapOn: 'Amelia Król'
+- extendedWaitUntil:
+    visible:
+      id: 'scores-sheet'
+    timeout: 5000
+- assertVisible:
+    id: 'scores-summary'
+- assertVisible: 'Katarzyna Nowak'
+- assertVisible: 'Joanna Wrona'

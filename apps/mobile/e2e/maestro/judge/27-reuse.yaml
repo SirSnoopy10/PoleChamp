@@ -1,0 +1,25 @@
+# TC-E2E-JDG-027 – ponowne użycie tabletu po zakończeniu turnieju (pusta kolejka) → „Sparuj z nowym turniejem”.
+appId: app.polechamp
+tags: [nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: finish-tournament
+      TOURNAMENT: t1
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-finished'
+    timeout: 10000
+- tapOn:
+    id: 'pair-new'
+- tapOn:
+    id: 'pair-new-confirm'
+- extendedWaitUntil:
+    visible:
+      id: 'pair-screen'
+    timeout: 8000

@@ -1,0 +1,13 @@
+# TC-E2E-JDG-004 – wybór profilu: 5 sędziów t1 z seedu (blokada i dezaktywacja – TC-E2E-JDG-007, org/29).
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- assertVisible: 'Mistrzostwa Polski Pole Sport 2026'
+- assertVisible:
+    id: 'profile-${output.ids.jA}'
+- assertVisible:
+    id: 'profile-${output.ids.jE}'
+- assertVisible: 'Katarzyna Nowak'
+- assertVisible: 'Joanna Wrona'

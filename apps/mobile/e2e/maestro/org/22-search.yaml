@@ -1,0 +1,30 @@
+# TC-E2E-ORG-022 – wyszukiwanie na liście startowej (≥ 15 zawodniczek: c3 + dodane przez API nie jest potrzebne – c2 ma 10,
+# więc dodajemy 5 w przepływie). Wyszukiwanie bez diakrytyków: „krol” → „Król”.
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'entries-tab'
+- repeat:
+    times: 6
+    commands:
+      - tapOn: 'Dodaj'
+      - tapOn:
+          id: 'entry-name'
+      - inputText: 'Ewa Testowa'
+      - tapOn:
+          id: 'entry-save'
+- assertVisible:
+    id: 'entries-search'
+- tapOn:
+    id: 'entries-search'
+- inputText: 'krol'
+- assertVisible: 'Amelia Król'
+- assertVisible: 'Zuzanna Król'
+- assertNotVisible: 'Natalia Sikora'

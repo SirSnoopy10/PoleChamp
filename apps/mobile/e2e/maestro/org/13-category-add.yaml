@@ -1,0 +1,28 @@
+# TC-E2E-ORG-013 – kategoria z szablonu Exotic Pro (6 kryteriów, 2 kary) w turnieju DRAFT (FX-DRAFT-CAT).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-DRAFT-CAT
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t}'
+- tapOn: 'Dodaj'
+- tapOn:
+    id: 'category-submit'
+- assertVisible:
+    id: 'category-name'
+- tapOn:
+    id: 'category-name'
+- inputText: 'Exotic Pro'
+- tapOn: 'Exotic'
+- tapOn: 'Pro'
+- tapOn:
+    id: 'category-submit'
+- assertVisible: 'Dodano kategorię'
+- tapOn: 'Exotic Pro'
+- assertVisible: 'Praca na podłodze'
+- assertVisible:
+    id: 'segment-criteria-count'

@@ -1,0 +1,14 @@
+# TC-E2E-JDG-011 – formularz: wartości domyślne 5,0 i „Twój wynik 32,5 / 65” (nr 48 bez ocen).
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- assertVisible:
+    id: 'score-form'
+- assertVisible: '32,5'
+- assertNotVisible:
+    id: 'penalty-chip'

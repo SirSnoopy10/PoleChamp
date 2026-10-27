@@ -1,0 +1,37 @@
+# TC-E2E-JDG-026 – urządzenie odłączone z 2 niewysłanymi ocenami: ekran odłączenia, eksport, wyczyszczenie.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: revoke-device
+      TOURNAMENT: t1
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'revoked-screen'
+    timeout: 20000
+- assertVisible:
+    id: 'revoked-pending'
+- tapOn:
+    id: 'revoked-export'
+- back
+- tapOn:
+    id: 'revoked-wipe'
+- tapOn:
+    id: 'wipe-confirm'
+- extendedWaitUntil:
+    visible:
+      id: 'pair-screen'
+    timeout: 8000

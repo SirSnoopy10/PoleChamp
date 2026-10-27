@@ -1,0 +1,43 @@
+# TC-E2E-ORG-027 – odrzucone oceny: c3 zablokowana przez API, oceny z tabletu syntetycznego → CATEGORY_LOCKED;
+# „Przyjmij” przy blokadzie, odblokowanie, przyjęcie i odrzucenie.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: lock
+      CATEGORY: c3
+- runScript:
+    file: ../_shared/api.js
+    env: { ACTION: submit, TOURNAMENT: t1, CATEGORY: c3, ENTRY: u27, JUDGE: jA, NOTE: '8' }
+- runScript:
+    file: ../_shared/api.js
+    env: { ACTION: submit, TOURNAMENT: t1, CATEGORY: c3, ENTRY: u28, JUDGE: jA, NOTE: '7' }
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'sync-rejected'
+- assertVisible:
+    id: 'rejected-sheet'
+- tapOn: 'Przyjmij'
+- assertVisible:
+    id: 'rejected-confirm'
+- back
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: unlock
+      CATEGORY: c3
+- tapOn:
+    id: 'sync-rejected'
+- tapOn: 'Przyjmij'
+- tapOn:
+    id: 'rejected-confirm'
+- tapOn: 'Odrzuć'
+- tapOn:
+    id: 'rejected-confirm'
+- assertNotVisible:
+    id: 'sync-rejected'

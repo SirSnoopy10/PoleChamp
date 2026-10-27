@@ -1,0 +1,30 @@
+# TC-E2E-JDG-025 – odrzucone oceny: oceny offline, blokada c3 przez API, synchronizacja → baner i lista odrzuconych.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: lock
+      CATEGORY: c3
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'queue-rejected-banner'
+    timeout: 20000
+- assertVisible:
+    id: 'queue-state-rejected'
+- tapOn:
+    id: 'sync-pill'
+- assertVisible:
+    id: 'sync-rejected'

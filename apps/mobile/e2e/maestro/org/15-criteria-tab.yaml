@@ -1,0 +1,23 @@
+# TC-E2E-ORG-015 – zakładka Kryteria w kategorii DRAFT (c6) i Trwa (c3).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c6}'
+- tapOn:
+    id: 'criteria-tab'
+- assertVisible: 'Maksymalny wynik sędziego: 65 pkt'
+- assertVisible: '×2'
+- assertVisible: '−2 pkt'
+- back
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'criteria-tab'
+- assertVisible:
+    id: 'criteria-locked'
+- assertVisible: 'Kryteria są zablokowane po rozpoczęciu kategorii.'

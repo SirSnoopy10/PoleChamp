@@ -1,0 +1,24 @@
+# TC-E2E-JDG-012 – przyciski −/+ (8,5 / 8,5 / 8 / 8 / 8,5 → 54,3), Upadek ×2 → 50,3 i chip kar, limit +.
+# Suwak (gest) – IMP-456 krok 5: `swipe` ze współrzędnymi względnymi, stabilizowany przy uruchomieniu.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- repeat:
+    times: 7
+    commands:
+      - tapOn: { id: 'criterion-${output.ids.c3_k1}-plus' }
+- assertVisible: '54,3'
+- repeat:
+    times: 3
+    commands:
+      - tapOn: { id: 'penalty-${output.ids.c3_p1}-plus' }
+- assertVisible:
+    id: 'penalty-chip'
+- tapOn:
+    id: 'score-comment'
+- inputText: 'Bardzo pewny występ.'

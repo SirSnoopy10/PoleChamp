@@ -1,0 +1,17 @@
+# TC-E2E-JDG-010 – kolejka c3: nagłówek, stany ikon, pusty prawy panel.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- extendedWaitUntil:
+    visible:
+      id: 'queue-panel'
+    timeout: 5000
+- assertVisible: 'Pole Sport Advanced'
+- assertVisible:
+    id: 'queue-row-${output.ids.u20}'
+- assertVisible:
+    id: 'queue-state-synced'
+- assertVisible: 'Wybierz zawodniczkę z listy, aby ją ocenić.'

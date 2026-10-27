@@ -1,0 +1,37 @@
+# TC-E2E-ORG-028 – sędziowie t2: dodanie, PIN jednorazowo, kopiowanie, duplikat nazwiska.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-DRAFT-CAT
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t}'
+- tapOn: 'Sędziowie'
+- extendedWaitUntil:
+    visible:
+      id: 'judges-screen'
+    timeout: 5000
+- tapOn: 'Dodaj'
+- tapOn:
+    id: 'judge-name'
+- inputText: 'Katarzyna Nowak'
+- tapOn:
+    id: 'judge-save'
+- assertVisible:
+    id: 'pin-step'
+- assertVisible: 'Zapisz PIN – nie będzie można go ponownie wyświetlić.'
+- tapOn:
+    id: 'pin-copy'
+- assertVisible: 'Skopiowano PIN'
+- tapOn:
+    id: 'pin-done'
+- tapOn: 'Dodaj'
+- tapOn:
+    id: 'judge-name'
+- inputText: 'Katarzyna Nowak'
+- tapOn:
+    id: 'judge-save'
+- assertVisible: 'Sędzia o tym imieniu i nazwisku już istnieje.'

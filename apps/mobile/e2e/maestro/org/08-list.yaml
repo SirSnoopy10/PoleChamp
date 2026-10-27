@@ -1,0 +1,22 @@
+# TC-E2E-ORG-008 – lista turniejów: sekcje i stany (FX-SEED, potem konto puste).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- assertVisible: 'Mistrzostwa Polski Pole Sport 2026'
+- assertVisible: 'Puchar Wiosny PoleChamp'
+- assertVisible: '8 kategorii · 80%'
+- scrollUntilVisible:
+    element:
+      id: 'tournaments-finished'
+- assertVisible: 'Zimowy Puchar PoleChamp'
+- assertVisible: 'Otwarte Mistrzostwa Śląska'
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-EMPTY
+- runFlow: ../_shared/login-org.yaml
+- assertVisible:
+    id: 'tournaments-empty'
+- assertVisible: 'Nie masz jeszcze turniejów.'

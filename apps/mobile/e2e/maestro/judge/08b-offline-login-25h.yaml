@@ -1,0 +1,8 @@
+# TC-E2E-JDG-008 (wariant 25 h) – procedura ręczna: zegar urządzenia +25 h (Android: `adb shell su 0 date`,
+# iOS: tylko urządzenie fizyczne), tryb samolotowy, poprawny PIN → komunikat o konieczności połączenia.
+appId: app.polechamp
+tags: [manual, judge]
+---
+- setAirplaneMode: enabled
+- runFlow: ../_shared/judge-login.yaml
+- assertVisible: 'Połącz tablet z internetem, aby się zalogować.'

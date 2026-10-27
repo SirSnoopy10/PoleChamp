@@ -1,0 +1,14 @@
+# TC-E2E-JDG-030 (ręczny) – ekran nie gaśnie w kolejce/formularzu przez 5 min przy blokadzie systemu 2 min;
+# na liście kategorii gaśnie. Przebieg na urządzeniu (Galaxy Tab A8 / iPad 9) – IMP-463.
+appId: app.polechamp
+tags: [manual, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- waitForAnimationToEnd:
+    timeout: 300000
+- assertVisible:
+    id: 'score-form'

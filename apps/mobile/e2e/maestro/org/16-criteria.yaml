@@ -1,0 +1,41 @@
+# TC-E2E-ORG-016 – kryteria: dodanie „Flow” ×1,5, błędna waga 0,3, usunięcie „Technika” z potwierdzeniem.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-DRAFT-CAT
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t}'
+- tapOn:
+    id: 'category-${output.ids.c}'
+- tapOn:
+    id: 'criteria-tab'
+- tapOn: 'Dodaj'
+- tapOn:
+    id: 'criterion-name'
+- inputText: 'Flow'
+- tapOn:
+    id: 'criterion-weight'
+- eraseText
+- inputText: '0,3'
+- tapOn:
+    id: 'criterion-save'
+- assertVisible: 'Waga od 0,5 do 5 (co 0,5).'
+- tapOn:
+    id: 'criterion-weight'
+- eraseText
+- inputText: '1,5'
+- tapOn:
+    id: 'criterion-save'
+- assertVisible: 'Dodano kryterium'
+- assertVisible: 'Maksymalny wynik sędziego: 80 pkt'
+- tapOn: 'Technika'
+- tapOn:
+    id: 'criterion-delete'
+- assertVisible: 'Usunąć kryterium „Technika”?'
+- tapOn:
+    id: 'criterion-delete-confirm'
+- assertVisible: 'Usunięto kryterium'

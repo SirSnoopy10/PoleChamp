@@ -30,6 +30,7 @@ describe('helpery E2E (IMP-454)', () => {
       pins: Record<string, string>;
     };
     expect(pins).toEqual(SEED_PINS);
+    expect(ids.c7_k6).toMatch(/^[0-9a-f-]{36}$/);
     const login = await call('POST', '/v1/auth/login', { body: { email, password } });
     const org = organizer(call, login.body.accessToken as string);
 

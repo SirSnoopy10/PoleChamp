@@ -1,0 +1,49 @@
+# TC-E2E-ORG-017 – kary: dodanie „Wulgarne elementy” 5 pkt maks. 1, błąd maks. 11, usunięcie.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-DRAFT-CAT
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t}'
+- tapOn:
+    id: 'category-${output.ids.c}'
+- tapOn:
+    id: 'criteria-tab'
+- scrollUntilVisible:
+    element:
+      id: 'penalties-list'
+- tapOn:
+    id: 'penalties-list'
+- tapOn: 'Dodaj karę'
+- tapOn:
+    id: 'penalty-name'
+- inputText: 'Wulgarne elementy'
+- tapOn:
+    id: 'penalty-points'
+- eraseText
+- inputText: '5'
+- tapOn:
+    id: 'penalty-max'
+- eraseText
+- inputText: '11'
+- tapOn:
+    id: 'penalty-save'
+- assertVisible: 'Od 1 do 10.'
+- tapOn:
+    id: 'penalty-max'
+- eraseText
+- inputText: '1'
+- tapOn:
+    id: 'penalty-save'
+- assertVisible: 'Dodano karę'
+- assertVisible: 'maks. 1× na występ'
+- tapOn: 'Wulgarne elementy'
+- tapOn:
+    id: 'penalty-delete'
+- tapOn:
+    id: 'penalty-delete-confirm'
+- assertNotVisible: 'Wulgarne elementy'

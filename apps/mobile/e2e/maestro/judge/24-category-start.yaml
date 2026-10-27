@@ -1,0 +1,17 @@
+# TC-E2E-JDG-024 – organizator rozpoczyna c6 → karta na tablecie aktywna ≤ 3 s.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: start-category
+      CATEGORY: c6
+- extendedWaitUntil:
+    visible: 'Trwa'
+    timeout: 3000
+- tapOn:
+    id: 'category-${output.ids.c6}'
+- assertVisible:
+    id: 'queue-panel'

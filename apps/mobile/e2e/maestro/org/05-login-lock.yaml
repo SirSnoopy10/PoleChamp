@@ -1,0 +1,28 @@
+# TC-E2E-ORG-005 – 5 błędnych haseł, 6. próba → blokada.
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-EMPTY
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'mode-org'
+- tapOn:
+    id: 'login-email'
+- inputText: ${output.email}
+- repeat:
+    times: 5
+    commands:
+      - tapOn:
+          id: 'login-password'
+      - eraseText
+      - inputText: 'Zle-Haslo-2026'
+      - tapOn:
+          id: 'login-submit'
+      - assertVisible: 'Nieprawidłowy e-mail lub hasło.'
+- tapOn:
+    id: 'login-submit'
+- assertVisible: 'Za dużo prób. Spróbuj za chwilę.'

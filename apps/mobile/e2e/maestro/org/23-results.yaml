@@ -1,0 +1,29 @@
+# TC-E2E-ORG-023 – ranking c3 na żywo: wiersze jak TC-API-090, ocena nr 48 z tabletu syntetycznego (jA) ≤ 2 s.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'results-tab'
+- assertVisible: '55,5'
+- assertVisible: '52,70'
+- assertVisible: '52,65'
+- assertVisible:
+    id: 'result-${output.ids.u27}'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: submit
+      TOURNAMENT: t1
+      CATEGORY: c3
+      ENTRY: u27
+      JUDGE: jA
+      NOTE: '8'
+- extendedWaitUntil:
+    visible: '1/5 sędziów'
+    timeout: 2000

@@ -1,0 +1,27 @@
+# TC-E2E-JDG-005 – PIN: kropki, backspace, zły PIN, poprawny PIN seedu, „Zmień sędziego”.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- tapOn:
+    id: 'profile-${output.ids.jA}'
+- tapOn: { id: 'pin-key-1' }
+- tapOn: { id: 'pin-key-0' }
+- assertVisible:
+    id: 'pin-dot-filled'
+- tapOn: { id: 'pin-key-back' }
+- tapOn: { id: 'pin-key-back' }
+- assertNotVisible:
+    id: 'pin-dot-filled'
+- repeat:
+    times: 4
+    commands:
+      - tapOn: { id: 'pin-key-0' }
+- assertVisible: 'Nieprawidłowy PIN — spróbuj ponownie'
+- tapOn:
+    id: 'pin-logout'
+- assertVisible:
+    id: 'profiles-screen'
+- runFlow: ../_shared/judge-login.yaml
+- assertVisible: 'Dzień dobry, Katarzyna'

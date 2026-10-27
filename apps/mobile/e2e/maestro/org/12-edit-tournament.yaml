@@ -1,0 +1,34 @@
+# TC-E2E-ORG-012 – edycja miejsca (t2), usunięcie turnieju DRAFT; w turnieju Trwa (t1) brak „Usuń turniej”.
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t2}'
+- tapOn:
+    id: 'tournament-edit'
+- tapOn:
+    id: 'tournament-venue'
+- eraseText
+- inputText: 'Poznań, Arena'
+- tapOn:
+    id: 'tournament-save'
+- assertVisible: 'Zapisano zmiany'
+- tapOn:
+    id: 'tournament-edit'
+- tapOn:
+    id: 'tournament-delete'
+- tapOn:
+    id: 'tournament-delete-confirm'
+- extendedWaitUntil:
+    visible:
+      id: 'tournaments-screen'
+    timeout: 6000
+- assertNotVisible: 'Puchar Wiosny PoleChamp'
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'tournament-edit'
+- assertNotVisible:
+    id: 'tournament-delete'

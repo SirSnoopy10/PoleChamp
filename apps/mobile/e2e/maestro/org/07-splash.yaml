@@ -1,0 +1,18 @@
+# TC-E2E-ORG-007 – splash organizatora przy zimnym starcie (FX-SEED). Pomiar 1,2–4,3 s i „Ogranicz ruch” – ręcznie.
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'splash'
+    timeout: 2000
+- assertVisible:
+    id: 'splash-message'
+- extendedWaitUntil:
+    visible:
+      id: 'tournaments-screen'
+    timeout: 5000

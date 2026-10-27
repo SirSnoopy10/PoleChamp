@@ -1,0 +1,32 @@
+# TC-E2E-ORG-014 – edycja poziomu (DRAFT), zablokowane chipy w kategorii Trwa (c3), usunięcie kategorii DRAFT.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c6}'
+- tapOn:
+    id: 'category-edit'
+- tapOn: 'Elite'
+- tapOn:
+    id: 'category-submit'
+- assertVisible: 'Zapisano zmiany'
+- tapOn:
+    id: 'category-edit'
+- tapOn:
+    id: 'category-delete'
+- tapOn:
+    id: 'category-delete-confirm'
+- extendedWaitUntil:
+    visible:
+      id: 'tournament-screen'
+    timeout: 6000
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'category-edit'
+- assertNotVisible:
+    id: 'category-delete'

@@ -1,17 +1,12 @@
-# TC-E2E-ORG-007/008/009 – splash, lista turniejów (FX-SEED), nowy turniej. Uruchamiane w IMP-459.
+# TC-E2E-ORG-009 – utworzenie turnieju z walidacją nazwy.
 appId: app.polechamp
+tags: [p1, nightly, org]
 ---
-- launchApp
-- extendedWaitUntil:
-    visible: 'Wczytywanie turniejów…'
-    timeout: 3000
-- extendedWaitUntil:
-    visible:
-      id: 'tournaments-screen'
-    timeout: 6000
-- assertVisible: 'Aktywne'
-- assertVisible: '8 kategorii · 80%'
-- assertVisible: 'Zakończone'
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-EMPTY
+- runFlow: ../_shared/login-org.yaml
 - tapOn:
     id: 'tournaments-new'
 - tapOn:

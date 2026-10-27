@@ -1,0 +1,37 @@
+# TC-E2E-JDG-007 – PIN zablokowany do resetu (10 błędów globalnie), reset przez organizatora, logowanie nowym PIN-em.
+# 9 błędów „globalnie” – z drugiego tabletu przez API nie da się (limit lokalny 5) – sesje po 5 prób z odczekaniem blokady.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- tapOn:
+    id: 'profile-${output.ids.jC}'
+- repeat:
+    times: 2
+    commands:
+      - repeat:
+          times: 5
+          commands:
+            - repeat:
+                times: 4
+                commands:
+                  - tapOn: { id: 'pin-key-0' }
+      - extendedWaitUntil:
+          notVisible:
+            id: 'pin-locked-icon'
+          timeout: 65000
+- assertVisible: 'PIN zablokowany. Poproś organizatora o reset.'
+- assertNotVisible:
+    id: 'pin-pad'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: reset-pin
+      JUDGE: jC
+- tapOn:
+    id: 'pin-logout'
+- runFlow:
+    file: ../_shared/judge-login.yaml
+    env:
+      JUDGE: jC

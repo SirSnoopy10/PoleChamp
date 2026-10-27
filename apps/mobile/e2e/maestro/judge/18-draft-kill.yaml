@@ -1,0 +1,19 @@
+# TC-E2E-JDG-018 – szkic po zabiciu aplikacji: zmiana noty, killApp, PIN → ta sama wartość (33,5 zamiast 32,5).
+appId: app.polechamp
+tags: [nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn: { id: 'criterion-${output.ids.c3_k1}-plus' }
+- assertVisible: '33,5'
+- killApp
+- launchApp
+- runFlow: ../_shared/judge-login.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- assertVisible: '33,5'

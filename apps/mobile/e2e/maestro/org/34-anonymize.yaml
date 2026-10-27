@@ -1,0 +1,27 @@
+# TC-E2E-ORG-034 – „Usuń dane osobowe” startu z ocenami w turnieju zakończonym (FX-FINISHED, t3 c13 nr 241).
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-FINISHED
+- runFlow: ../_shared/login-org.yaml
+- scrollUntilVisible:
+    element:
+      id: 'tournament-${output.ids.t3}'
+- tapOn:
+    id: 'tournament-${output.ids.t3}'
+- tapOn:
+    id: 'category-${output.ids.c13}'
+- tapOn:
+    id: 'entries-tab'
+- tapOn:
+    id: 'entry-${output.ids.u92}'
+- tapOn:
+    id: 'entry-anonymize'
+- tapOn:
+    id: 'entry-confirm'
+- tapOn:
+    id: 'results-tab'
+- assertVisible: 'Zawodniczka nr 241'

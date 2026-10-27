@@ -1,0 +1,18 @@
+# TC-E2E-ORG-003 – „Pomiń na razie”: baner weryfikacji, start turnieju zablokowany (FX-UNVERIFIED).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-UNVERIFIED
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'verify-skip'
+- tapOn: 'Turniej testowy'
+- assertVisible: 'Potwierdź adres e-mail, aby rozpocząć turniej.'
+- tapOn:
+    id: 'tournament-start'
+- assertVisible: 'Potwierdź adres e-mail, aby rozpocząć turniej.'
+- assertVisible:
+    id: 'tournament-start'

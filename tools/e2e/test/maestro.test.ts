@@ -1,7 +1,8 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildSeed } from '@polechamp/test-fixtures';
 import { describe, expect, it } from 'vitest';
-import { checkFlows, collectTestIds, idKnown } from '../src/maestro.ts';
+import { checkFlows, collectTestIds, collectTexts, idKnown, textKnown } from '../src/maestro.ts';
 
 const mobile = resolve(dirname(fileURLToPath(import.meta.url)), '../../../apps/mobile');
 
@@ -16,6 +17,17 @@ describe('przepływy Maestro (IMP-454)', () => {
   });
 
   it('wszystkie przepływy są poprawne i używają istniejących testID', () => {
-    expect(checkFlows(resolve(mobile, 'e2e/maestro'), ids)).toEqual([]);
+    const texts = collectTexts(
+      resolve(mobile, '../../packages/i18n/src/locales/pl'),
+      [
+        resolve(mobile, '../../packages/test-fixtures/src/seed.ts'),
+        resolve(mobile, '../api/src/modules/e2e/e2e-seed.service.ts'),
+        resolve(mobile, 'e2e/maestro/_shared/api.js'),
+      ],
+      Object.values(buildSeed().participants).map((p) => p.name),
+    );
+    expect(textKnown('Turniej rozpoczęty', texts)).toBe(true);
+    expect(textKnown('Tekst spoza aplikacji', texts)).toBe(false);
+    expect(checkFlows(resolve(mobile, 'e2e/maestro'), ids, texts)).toEqual([]);
   });
 });

@@ -630,6 +630,12 @@ importers:
 
   tools/e2e:
     devDependencies:
+      '@polechamp/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@polechamp/test-fixtures':
+        specifier: workspace:*
+        version: link:../../packages/test-fixtures
       yaml:
         specifier: 2.9.1
         version: 2.9.1

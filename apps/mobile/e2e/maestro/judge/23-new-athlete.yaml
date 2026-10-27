@@ -1,0 +1,17 @@
+# TC-E2E-JDG-023 – organizator dodaje nr 50 do c3 → ≤ 3 s na końcu kolejki i toast.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: add-entry
+      CATEGORY: c3
+      ENTRY: '50'
+- extendedWaitUntil:
+    visible: 'Lista startowa została zaktualizowana'
+    timeout: 3000
+- assertVisible: 'Julia Kamińska'

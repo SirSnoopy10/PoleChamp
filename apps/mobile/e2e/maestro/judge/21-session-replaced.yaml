@@ -1,0 +1,16 @@
+# TC-E2E-JDG-021 – sesja zastąpiona: jA loguje się przez API na innym tablecie → powrót do profili z komunikatem.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: judge-on-other-device
+      TOURNAMENT: t1
+      JUDGE: jA
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 10000
+- assertVisible: 'Zalogowano Cię na innym urządzeniu.'

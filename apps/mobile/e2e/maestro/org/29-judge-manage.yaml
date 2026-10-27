@@ -1,0 +1,33 @@
+# TC-E2E-ORG-029 – reset PIN-u, dezaktywacja i usunięcie sędziego (z ocenami – odmowa) w t1.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn: 'Sędziowie'
+- tapOn:
+    id: 'judge-${output.ids.jA}'
+- tapOn:
+    id: 'judge-reset'
+- tapOn:
+    id: 'judge-reset-confirm'
+- assertVisible:
+    id: 'pin-step'
+- tapOn:
+    id: 'pin-done'
+- tapOn:
+    id: 'judge-${output.ids.jB}'
+- tapOn:
+    id: 'judge-toggle'
+- tapOn:
+    id: 'judge-save'
+- assertVisible: 'Nieaktywny'
+- tapOn:
+    id: 'judge-${output.ids.jC}'
+- tapOn:
+    id: 'judge-delete'
+- tapOn:
+    id: 'judge-delete-confirm'
+- assertVisible: 'Nie można usunąć – są już oceny.'

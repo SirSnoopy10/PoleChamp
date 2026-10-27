@@ -1,0 +1,13 @@
+# TC-E2E-JDG-009 – lista kategorii t1: powitanie, kłódki zablokowanych (c1, c2), kategoria W przygotowaniu (c6).
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- assertVisible: 'Dzień dobry, Katarzyna'
+- assertVisible:
+    id: 'category-${output.ids.c3}'
+- assertVisible:
+    id: 'category-locked-icon'
+- tapOn:
+    id: 'category-${output.ids.c6}'
+- assertVisible: 'Ta kategoria jeszcze się nie rozpoczęła'

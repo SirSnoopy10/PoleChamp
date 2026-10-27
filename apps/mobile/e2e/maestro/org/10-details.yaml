@@ -1,0 +1,30 @@
+# TC-E2E-ORG-010 – szczegóły turnieju t1 (kafle, postęp 173 z 215) i turniej bez kategorii.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- extendedWaitUntil:
+    visible:
+      id: 'tournament-screen'
+    timeout: 6000
+- assertVisible:
+    id: 'stat-tiles'
+- assertVisible: '80%'
+- assertVisible: '173 z 215 ocen w rozpoczętych kategoriach'
+- assertVisible:
+    id: 'category-${output.ids.c3}'
+- back
+- tapOn:
+    id: 'tournaments-new'
+- tapOn:
+    id: 'tournament-name'
+- inputText: 'Turniej bez kategorii'
+- tapOn:
+    id: 'tournament-create'
+- assertVisible: 'Brak kategorii. Dodaj pierwszą, aby zacząć.'
+- tapOn: 'Brak kategorii. Dodaj pierwszą, aby zacząć.'
+- assertVisible:
+    id: 'category-sheet'

@@ -1,0 +1,26 @@
+# TC-E2E-JDG-016 – blokada c3 przez API przy otwartym formularzu: baner ≤ 3 s, brak stopki; start bez oceny jA.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u20}'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: lock
+      CATEGORY: c3
+- extendedWaitUntil:
+    visible:
+      id: 'queue-locked-banner'
+    timeout: 3000
+- assertVisible: 'Kategoria zablokowana — tylko podgląd'
+- assertNotVisible:
+    id: 'score-footer'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- assertVisible:
+    id: 'no-own-score'
+- assertVisible: 'Brak Twojej oceny dla tej zawodniczki.'

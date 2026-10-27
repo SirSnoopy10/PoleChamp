@@ -1,0 +1,37 @@
+# TC-E2E-ORG-019 – lista startowa c3 i dodanie zawodniczki (nr 50, zajęty nr 47, pusty klub, „Dodaj kolejną”).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'entries-tab'
+- assertVisible:
+    id: 'entry-${output.ids.u26}'
+- tapOn: 'Dodaj'
+- tapOn:
+    id: 'entry-number'
+- eraseText
+- inputText: '47'
+- tapOn:
+    id: 'entry-name'
+- inputText: 'Julia Kamińska'
+- tapOn:
+    id: 'entry-save'
+- assertVisible: 'Numer 47 jest już zajęty.'
+- tapOn:
+    id: 'entry-number'
+- eraseText
+- inputText: '50'
+- tapOn:
+    id: 'entry-add-another'
+- assertVisible: 'Dodano zawodniczkę'
+- assertVisible:
+    id: 'entry-sheet'
+- tapOn:
+    id: 'sheet-close'
+- assertVisible: 'Julia Kamińska'

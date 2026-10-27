@@ -1,0 +1,41 @@
+# TC-E2E-ORG-021 – edycja, wycofanie, przywrócenie (nr 47 z ocenami) i usunięcie (nr 48 bez ocen) w c3.
+appId: app.polechamp
+tags: [nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'entries-tab'
+- tapOn:
+    id: 'entry-${output.ids.u26}'
+- tapOn:
+    id: 'entry-club'
+- eraseText
+- inputText: 'PoleFit Kraków'
+- tapOn:
+    id: 'entry-save'
+- assertVisible: 'Zapisano zmiany'
+- tapOn:
+    id: 'entry-${output.ids.u26}'
+- tapOn:
+    id: 'entry-withdraw'
+- tapOn:
+    id: 'entry-confirm'
+- assertVisible: 'Wycofana'
+- tapOn:
+    id: 'entry-${output.ids.u26}'
+- tapOn:
+    id: 'entry-restore'
+- assertNotVisible: 'Wycofana'
+- tapOn:
+    id: 'entry-${output.ids.u27}'
+- tapOn:
+    id: 'entry-remove'
+- tapOn:
+    id: 'entry-confirm'
+- assertNotVisible:
+    id: 'entry-${output.ids.u27}'

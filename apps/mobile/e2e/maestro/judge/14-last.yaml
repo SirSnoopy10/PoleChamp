@@ -1,0 +1,16 @@
+# TC-E2E-JDG-014 – ostatnia nieoceniona: po zatwierdzeniu pusty panel (jA w c3 nie oceniła nr 48 i 49).
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- assertVisible:
+    id: 'score-form'
+- tapOn:
+    id: 'score-submit'
+- assertVisible: 'Wybierz zawodniczkę z listy, aby ją ocenić.'

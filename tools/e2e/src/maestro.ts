@@ -48,6 +48,64 @@ export function collectTestIds(roots: string[]): TestIds {
   return { exact, patterns };
 }
 
+/**
+ * Teksty, które mogą pojawić się w aplikacji: słowniki i18n PL (`{x}` → dowolny fragment) i dane
+ * (seed prototypu, wartości wpisywane w przepływach).
+ */
+export interface KnownTexts {
+  literals: string[];
+  patterns: RegExp[];
+}
+
+export function collectTexts(i18nDir: string, dataFiles: string[], data: string[] = []): KnownTexts {
+  const literals: string[] = [...data];
+  const patterns: RegExp[] = [];
+  const strings = (src: string) =>
+    [...src.matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g)].map((m) =>
+      (m[1] ?? m[2] ?? '').replace(/\\'/g, "'"),
+    );
+  for (const file of walk(i18nDir, /\.ts$/)) {
+    for (const s of strings(readFileSync(file, 'utf8'))) {
+      if (/\{\w+\}/.test(s))
+        patterns.push(
+          new RegExp(
+            s
+              .split(/\{\w+\}/)
+              .map(escape)
+              .join('.+'),
+          ),
+        );
+      else literals.push(s);
+    }
+  }
+  for (const file of dataFiles) literals.push(...strings(readFileSync(file, 'utf8')));
+  // Teksty formatowane w `@polechamp/scoring` (wagi, kary, wyniki).
+  patterns.push(/^×\d+(,\d)?$/, /^−\d+(,\d)? pkt$/, /^\d+,\d{1,2}$/);
+  return { literals, patterns };
+}
+
+export function textKnown(text: string, texts: KnownTexts, typed: readonly string[] = []): boolean {
+  if (text.includes('${')) return true;
+  const pool = [...texts.literals, ...typed];
+  return pool.some((l) => l.includes(text)) || texts.patterns.some((p) => p.test(text));
+}
+
+function textsInCommands(node: unknown, out: string[], typed: string[]): void {
+  if (Array.isArray(node)) node.forEach((n) => textsInCommands(n, out, typed));
+  else if (node && typeof node === 'object') {
+    for (const [k, v] of Object.entries(node)) {
+      if (
+        typeof v === 'string' &&
+        ['assertVisible', 'assertNotVisible', 'tapOn', 'visible', 'notVisible', 'text'].includes(k)
+      )
+        out.push(v);
+      else if (k === 'inputText' && typeof v === 'string') typed.push(v);
+      else if (k === 'env' && v && typeof v === 'object') typed.push(...Object.values(v).map(String));
+      else textsInCommands(v, out, typed);
+    }
+  }
+}
+
 export interface FlowIssue {
   file: string;
   message: string;
@@ -88,7 +146,7 @@ export function idKnown(id: string, ids: TestIds): boolean {
   return ids.patterns.some((p) => p.test(sample)) || [...ids.exact].some((e) => flowRe.test(e));
 }
 
-export function checkFlows(flowsDir: string, ids: TestIds): FlowIssue[] {
+export function checkFlows(flowsDir: string, ids: TestIds, texts?: KnownTexts): FlowIssue[] {
   const issues: FlowIssue[] = [];
   for (const file of walk(flowsDir, /\.ya?ml$/)) {
     const rel = relative(flowsDir, file).replace(/\\/g, '/');
@@ -111,6 +169,13 @@ export function checkFlows(flowsDir: string, ids: TestIds): FlowIssue[] {
     idsInCommands(body, used);
     for (const id of used)
       if (!idKnown(id, ids)) issues.push({ file: rel, message: `nieznany testID „${id}”` });
+    if (texts) {
+      const shown: string[] = [];
+      const typed: string[] = [];
+      textsInCommands(body, shown, typed);
+      for (const t of shown)
+        if (!textKnown(t, texts, typed)) issues.push({ file: rel, message: `nieznany tekst „${t}”` });
+    }
     const refs: string[] = [];
     filesInCommands(body, refs);
     for (const ref of refs) {

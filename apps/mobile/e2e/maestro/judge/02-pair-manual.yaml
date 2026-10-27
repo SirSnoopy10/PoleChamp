@@ -1,0 +1,43 @@
+# TC-E2E-JDG-002 – parowanie ręczne: brak kamery, zły kod, kod małymi literami bez myślnika, brak sieci.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: pairing-code
+      TOURNAMENT: t1
+- launchApp:
+    clearState: true
+    permissions:
+      camera: deny
+- tapOn:
+    id: 'mode-judge'
+- assertVisible:
+    id: 'pair-no-camera'
+- assertVisible: 'Brak dostępu do kamery. Wpisz kod ręcznie.'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'pair-code'
+- inputText: 'ABCD2345'
+- tapOn:
+    id: 'pair-connect'
+- assertVisible: 'Parowanie wymaga połączenia z internetem.'
+- setAirplaneMode: disabled
+- tapOn:
+    id: 'pair-connect'
+- assertVisible: 'Kod jest nieprawidłowy lub wygasł.'
+- tapOn:
+    id: 'pair-code'
+- eraseText
+- inputText: ${output.pairingCode.toLowerCase()}
+- tapOn:
+    id: 'pair-device-name'
+- inputText: 'Tablet stół 1'
+- tapOn:
+    id: 'pair-connect'
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 20000

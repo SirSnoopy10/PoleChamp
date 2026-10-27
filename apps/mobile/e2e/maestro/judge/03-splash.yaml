@@ -1,0 +1,22 @@
+# TC-E2E-JDG-003 – splash sędziego online i offline (wybór profilu ≤ 4,3 s z danymi lokalnymi).
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- stopApp
+- launchApp
+- assertVisible:
+    id: 'splash'
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 5000
+- setAirplaneMode: enabled
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 4300
+- setAirplaneMode: disabled

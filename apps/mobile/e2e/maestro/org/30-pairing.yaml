@@ -1,0 +1,49 @@
+# TC-E2E-ORG-030 – parowanie: QR i kod z odliczaniem, tablet syntetyczny na liście ≤ 3 s, zmiana nazwy, odłączenie.
+# Wygaśnięcie kodu (10 min) – helper zegara /__e2e/clock w wersji z identyfikatorem kodu: do uzupełnienia przy uruchomieniu.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn: 'Sędziowie'
+- tapOn:
+    id: 'pair-tablet'
+- assertVisible:
+    id: 'pair-qr'
+- assertVisible:
+    id: 'pair-countdown'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      {
+        ACTION: submit,
+        TOURNAMENT: t1,
+        CATEGORY: c3,
+        ENTRY: u27,
+        JUDGE: jB,
+        NOTE: '8',
+        DEVICE_NAME: 'Tablet stół 2',
+      }
+- tapOn:
+    id: 'pair-done'
+- extendedWaitUntil:
+    visible: 'Tablet stół 2'
+    timeout: 3000
+- tapOn: 'Tablet stół 2'
+- tapOn:
+    id: 'device-rename'
+- tapOn:
+    id: 'device-name'
+- eraseText
+- inputText: 'Tablet stół 3'
+- tapOn:
+    id: 'device-name-save'
+- assertVisible: 'Tablet stół 3'
+- tapOn: 'Tablet stół 3'
+- tapOn:
+    id: 'device-revoke'
+- tapOn:
+    id: 'device-revoke-confirm'
+- assertNotVisible: 'Tablet stół 3'

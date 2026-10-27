@@ -1,0 +1,24 @@
+# TC-E2E-ORG-032 – organizator bez sieci: baner, zapisy nieaktywne, odświeżenie po powrocie sieci.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- extendedWaitUntil:
+    visible:
+      id: 'offline-banner'
+    timeout: 8000
+- assertVisible: 'Brak połączenia — dane mogą być nieaktualne. Zmiany są niedostępne.'
+- assertVisible:
+    id: 'category-action-lock'
+    enabled: false
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    notVisible:
+      id: 'offline-banner'
+    timeout: 15000

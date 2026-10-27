@@ -1,0 +1,46 @@
+# TC-E2E-ORG-002 – rejestracja i weryfikacja e-maila kodem z kolejki e-mail (API /__e2e/emails/last).
+appId: app.polechamp
+tags: [p1, nightly, org]
+env:
+  EMAIL: 'e2e-rejestracja-${Date.now()}@e2e.polechamp.test'
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'mode-org'
+- tapOn:
+    id: 'login-register'
+- tapOn:
+    id: 'register-name'
+- inputText: 'Marta Organizatorka'
+- tapOn:
+    id: 'register-email'
+- inputText: ${EMAIL}
+- tapOn:
+    id: 'register-password'
+- inputText: 'Rura-Na-Scenie-2026'
+- assertVisible:
+    id: 'register-submit'
+    enabled: false
+- tapOn:
+    id: 'register-accept'
+- tapOn:
+    id: 'register-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'verify-email-screen'
+    timeout: 8000
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: last-email-code
+      EMAIL: ${EMAIL}
+- tapOn:
+    id: 'verify-code'
+- inputText: ${output.emailCode}
+- tapOn:
+    id: 'verify-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'tournaments-screen'
+    timeout: 8000

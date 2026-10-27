@@ -1,0 +1,28 @@
+# TC-E2E-ORG-018 – rozpoczęcie kategorii: bez zawodniczek (FX-DRAFT-CAT) i kompletna (FX-UNVERIFIED nie – konto zweryfikowane t2).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-DRAFT-CAT
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t}'
+- tapOn:
+    id: 'category-${output.ids.c}'
+- tapOn:
+    id: 'category-action-start'
+- assertVisible: 'Dodaj co najmniej jedną zawodniczkę.'
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t2}'
+- tapOn:
+    id: 'category-${output.ids.c9}'
+- tapOn:
+    id: 'category-action-start'
+- assertVisible: 'Kategoria rozpoczęta'
+- assertVisible:
+    id: 'category-action-lock'
+- assertVisible: 'Trwa'

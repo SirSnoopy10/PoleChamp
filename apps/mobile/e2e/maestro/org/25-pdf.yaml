@@ -1,0 +1,31 @@
+# TC-E2E-ORG-025 – podgląd i pobranie PDF (turniej t1, kategoria c3); offline – przycisk nieaktywny.
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn:
+    id: 'tournament-pdf'
+- assertVisible:
+    id: 'pdf-sheet'
+- assertVisible:
+    id: 'pdf-preview'
+- tapOn:
+    id: 'pdf-download'
+- extendedWaitUntil:
+    visible: 'PDF zapisany'
+    timeout: 10000
+- back
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'open-pdf'
+- assertVisible: 'Pole Sport Advanced · Trwa'
+- setAirplaneMode: enabled
+- assertVisible: 'Eksport wymaga połączenia z internetem.'
+- assertVisible:
+    id: 'pdf-download'
+    enabled: false
+- setAirplaneMode: disabled

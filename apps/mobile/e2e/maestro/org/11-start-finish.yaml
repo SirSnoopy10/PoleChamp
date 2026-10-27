@@ -1,0 +1,24 @@
+# TC-E2E-ORG-011 – rozpoczęcie i zakończenie turnieju t2 (DRAFT, 3 kategorie DRAFT).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t2}'
+- tapOn:
+    id: 'tournament-start'
+- assertVisible: 'Turniej rozpoczęty'
+- tapOn:
+    id: 'tournament-finish'
+- assertVisible:
+    id: 'finish-sheet'
+- tapOn: 'Anuluj'
+- tapOn:
+    id: 'tournament-finish'
+- tapOn:
+    id: 'finish-confirm'
+- assertVisible: 'Turniej zakończony'
+- assertNotVisible:
+    id: 'tournament-finish'
+- assertVisible: 'Nierozegrana'

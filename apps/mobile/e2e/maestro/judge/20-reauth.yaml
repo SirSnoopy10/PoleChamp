@@ -1,0 +1,12 @@
+# TC-E2E-JDG-020 – wylogowanie bez kolejki (natychmiast); ponowny PIN po 15 min w tle – zegar urządzenia,
+# procedura ręczna (sekcja 20b w uwagach): `pressKey: HOME`, +15 min, powrót → nakładka `reauth-overlay`.
+appId: app.polechamp
+tags: [p1, nightly, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'judge-logout'
+- assertVisible:
+    id: 'profiles-screen'
+- runFlow: ../_shared/judge-login.yaml
+- assertVisible: 'Dzień dobry, Katarzyna'

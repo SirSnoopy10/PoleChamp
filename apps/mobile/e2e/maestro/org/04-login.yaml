@@ -1,0 +1,25 @@
+# TC-E2E-ORG-004 – logowanie, sesja po restarcie, wylogowanie (FX-EMPTY).
+appId: app.polechamp
+tags: [p1, nightly, org]
+---
+- runFlow:
+    file: ../_shared/seed.yaml
+    env:
+      FIXTURE: FX-EMPTY
+- runFlow: ../_shared/login-org.yaml
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'tournaments-screen'
+    timeout: 8000
+- tapOn:
+    id: 'tournaments-account'
+- tapOn:
+    id: 'account-logout'
+- tapOn:
+    id: 'logout-confirm'
+- extendedWaitUntil:
+    visible:
+      id: 'login-screen'
+    timeout: 6000
