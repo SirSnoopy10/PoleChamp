@@ -33,6 +33,8 @@ export function SegmentedControl<K extends string>({
             key={segment.key}
             testID={`segment-${segment.key}`}
             accessibilityRole="tab"
+            // 36 dp + 2 × 4 dp = 44 dp strefy dotyku (NFR-203).
+            hitSlop={{ top: 4, bottom: 4 }}
             accessibilityLabel={label}
             accessibilityState={{ selected: active }}
             onPress={() => onChange(segment.key)}

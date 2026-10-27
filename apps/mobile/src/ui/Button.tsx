@@ -13,7 +13,8 @@ import { Text } from './Text';
 import { useTheme } from './theme/ThemeProvider';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'iconRound';
-export type ButtonSize = 44 | 48 | 52;
+/** 28 – akcja w wierszu nagłówka sekcji; strefa dotyku dopełniona `hitSlop` do 44 dp. */
+export type ButtonSize = 28 | 44 | 48 | 52;
 export type IconRoundSize = 30 | 36 | 40 | 44;
 
 export interface ButtonProps {

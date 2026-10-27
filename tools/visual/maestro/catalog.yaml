@@ -1,0 +1,47 @@
+# TC-DESIGN-023 – zrzuty sekcji DevCatalog (build `preview`), nazwy `<sekcja>__default__<DEVICE>.png`.
+# DEVICE = phone (390×844) | tablet (1180×820). Animacje: `waitForAnimationToEnd` (flaga E2E_DISABLE_ANIMATIONS – TODO).
+appId: app.polechamp
+env:
+  DEVICE: phone
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: typography }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: buttons }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: icons }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: status }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: cards }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: sheets }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: forms }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: feedback }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: layout }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: auth }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: tournaments }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: org }
+- runFlow:
+    file: catalog-section.yaml
+    env: { SECTION: judge }

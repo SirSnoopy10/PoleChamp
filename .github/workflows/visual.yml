@@ -1,0 +1,61 @@
+# Regresja wizualna aplikacji (IMP-459): zrzuty Maestro z DevCatalog i ekranów SCR vs wzorce (odiff),
+# raport jako artefakt i komentarz w PR; zmiany wymagają etykiety `visual-approved` (projektant).
+# Zrzuty na emulatorze – tylko przy E2E_ENABLED=true (build preview z EAS, IMP-023); wartości zastępcze.
+name: visual
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ['apps/mobile/src/**', 'apps/mobile/app/**', 'packages/tokens/**', 'tools/visual/**']
+    types: [opened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  screenshots:
+    if: vars.E2E_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: true
+      - uses: ./.github/actions/setup
+      - name: Build preview (APK) z EAS – zastępczo
+        run: 'echo "TODO(IMP-023) – artefakt preview z EAS." && exit 1'
+      - name: Maestro CLI
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.11.0 bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Zrzuty (telefon)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          profile: pixel_6
+          script: |
+            adb install -r build/app-preview.apk
+            maestro test tools/visual/maestro/catalog.yaml --env DEVICE=phone --test-output-dir reports/maestro/visual
+            maestro test tools/visual/maestro/screens.yaml --env DEVICE=phone --env API_URL=${{ secrets.E2E_API_URL }} --test-output-dir reports/maestro/visual
+      - name: Porównanie z wzorcami
+        id: compare
+        continue-on-error: true
+        run: pnpm --filter @polechamp/visual compare -- ../../reports/maestro/visual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-report
+          path: |
+            tools/visual/reports/
+            reports/maestro/visual/
+      - name: Komentarz w PR
+        if: always()
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file tools/visual/reports/comment.md --edit-last || gh pr comment ${{ github.event.pull_request.number }} --body-file tools/visual/reports/comment.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Zmiany bez akceptacji projektanta
+        if: steps.compare.outcome == 'failure' && !contains(github.event.pull_request.labels.*.name, 'visual-approved')
+        run: |
+          echo "Zrzuty różnią się od wzorców – wymagana etykieta visual-approved."
+          exit 1

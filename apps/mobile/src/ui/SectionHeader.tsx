@@ -23,7 +23,7 @@ export function SectionHeader({ title, onAdd, addLabel, addAccessibilityLabel }:
       {onAdd ? (
         <Button
           variant="ghost"
-          size={44}
+          size={28}
           icon="plus"
           label={addLabel ?? t('section.add')}
           accessibilityLabel={addAccessibilityLabel}
@@ -45,5 +45,5 @@ const styles = StyleSheet.create({
     minHeight: 20,
   },
   // Akcja w wierszu nagłówka nie zwiększa jego wysokości – strefa dotyku przez hitSlop.
-  add: { minHeight: 28, marginVertical: -8 },
+  add: { marginVertical: -8 },
 });

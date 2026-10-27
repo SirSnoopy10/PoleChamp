@@ -1,0 +1,46 @@
+# TC-DESIGN-016…020 – zrzuty ekranów SCR na danych FX-SEED (API E2E). Telefon: SCR-ORG, tablet: SCR-JDG.
+# Nazwy `scr-org-01__seed__phone.png`. Czas zamrożony przez dane seedu (daty turniejów stałe).
+appId: app.polechamp
+env:
+  DEVICE: phone
+---
+- runFlow: ../../../apps/mobile/e2e/maestro/_shared/seed.yaml
+- runFlow:
+    when:
+      true: ${DEVICE == 'phone'}
+    commands:
+      - runFlow: ../../../apps/mobile/e2e/maestro/_shared/login-org.yaml
+      - waitForAnimationToEnd
+      - takeScreenshot: 'scr-org-01__seed__phone'
+      - tapOn:
+          id: 'tournament-${output.ids.t1}'
+      - waitForAnimationToEnd
+      - takeScreenshot: 'scr-org-03__seed__phone'
+      - tapOn:
+          id: 'category-${output.ids.c3}'
+      - tapOn:
+          id: 'criteria-tab'
+      - takeScreenshot: 'scr-org-06__seed__phone'
+      - tapOn:
+          id: 'entries-tab'
+      - takeScreenshot: 'scr-org-07__seed__phone'
+      - tapOn:
+          id: 'results-tab'
+      - takeScreenshot: 'scr-org-08__seed__phone'
+- runFlow:
+    when:
+      true: ${DEVICE == 'tablet'}
+    commands:
+      - runFlow: ../../../apps/mobile/e2e/maestro/_shared/pair-tablet.yaml
+      - takeScreenshot: 'scr-jdg-01__seed__tablet'
+      - tapOn:
+          id: 'profile-${output.ids.jA}'
+      - takeScreenshot: 'scr-jdg-02__seed__tablet'
+      - runFlow: ../../../apps/mobile/e2e/maestro/_shared/judge-login.yaml
+      - takeScreenshot: 'scr-jdg-03__seed__tablet'
+      - tapOn:
+          id: 'category-${output.ids.c3}'
+      - takeScreenshot: 'scr-jdg-04__seed__tablet'
+      - tapOn:
+          id: 'queue-row-${output.ids.u27}'
+      - takeScreenshot: 'scr-jdg-05__seed__tablet'

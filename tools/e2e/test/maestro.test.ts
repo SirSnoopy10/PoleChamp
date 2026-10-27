@@ -29,5 +29,6 @@ describe('przepływy Maestro (IMP-454)', () => {
     expect(textKnown('Turniej rozpoczęty', texts)).toBe(true);
     expect(textKnown('Tekst spoza aplikacji', texts)).toBe(false);
     expect(checkFlows(resolve(mobile, 'e2e/maestro'), ids, texts)).toEqual([]);
+    expect(checkFlows(resolve(mobile, '../../tools/visual/maestro'), ids, texts)).toEqual([]);
   });
 });

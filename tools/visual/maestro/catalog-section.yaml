@@ -1,0 +1,7 @@
+# Jedna sekcja DevCatalog → zrzut `<SECTION>__default__<DEVICE>.png`.
+appId: app.polechamp
+---
+- openLink: 'polechamp://catalog/${SECTION}'
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: '${SECTION}__default__${DEVICE}'
