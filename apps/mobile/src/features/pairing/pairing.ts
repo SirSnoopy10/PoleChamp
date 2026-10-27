@@ -23,13 +23,18 @@ export function maskPairingCode(input: string): string {
   return raw.length > 4 ? `${raw.slice(0, 4)}-${raw.slice(4)}` : raw;
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Kod z QR / linku: `polechamp://pair?c=…&t=…` albo `https://polechamp.app/pair?c=…`. */
 export function parsePairingLink(data: string): { code: string; tournamentId: string | null } | null {
+  if (data.length > 512) return null;
   const match = /^(?:polechamp:\/\/|https:\/\/polechamp\.app\/)pair\?(.+)$/.exec(data.trim());
   if (!match) return null;
   const params = new URLSearchParams(match[1]);
   const code = PairingCode.safeParse(params.get('c') ?? '');
-  return code.success ? { code: code.data, tournamentId: params.get('t') } : null;
+  // Długość linku ograniczona, `t` tylko jako UUID (TC-SEC-021) – reszta ignorowana.
+  const t = params.get('t');
+  return code.success ? { code: code.data, tournamentId: t && UUID.test(t) ? t : null } : null;
 }
 
 export type PairStage = 'idle' | 'connecting' | 'loading';

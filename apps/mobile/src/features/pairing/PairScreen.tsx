@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { PairingCode } from '@polechamp/contracts';
 import { color, layout, radius } from '@polechamp/tokens';
 import { judgeRuntime } from '../../data/judge/runtime';
 import { useT } from '../../i18n';
@@ -62,12 +61,8 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
     [busy, deviceName, t],
   );
 
-  const auto = useRef(!!initialCode);
-  useEffect(() => {
-    if (!auto.current || !PairingCode.safeParse(code).success) return;
-    auto.current = false;
-    void connect(code);
-  }, [code, connect]);
+  // Kod z linku głębokiego tylko wypełnia formularz – parowanie wymaga „Połącz” (TC-SEC-021, IMP-404):
+  // obcy link nie może podpiąć tabletu do cudzego turnieju bez wiedzy sędziego.
 
   const onScan = ({ data }: { data: string }) => {
     const link = parsePairingLink(data);

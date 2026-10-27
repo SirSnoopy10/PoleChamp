@@ -89,6 +89,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     './plugins/with-android-resizability.js',
     './plugins/with-no-backup.js',
+    './plugins/with-privacy-manifest.js',
     ...(SENTRY ? [SENTRY] : []),
   ],
   extra: {

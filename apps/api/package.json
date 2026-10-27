@@ -16,6 +16,7 @@
     "test:pdf": "vitest run --config vitest.pdf.config.ts",
     "pdf:update-baselines": "vitest run --config vitest.pdf.config.ts --mode update-baselines test/pdf/visual.test.ts",
     "dev-keys": "node dist/dev-keys.js",
+    "db:privileges": "node --env-file-if-exists=.env dist/cli/db-privileges.js",
     "start:worker": "node --env-file-if-exists=.env dist/worker.js"
   },
   "dependencies": {

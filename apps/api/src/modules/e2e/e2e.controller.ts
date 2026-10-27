@@ -77,6 +77,18 @@ export class E2eController {
     return { updated: res.rowCount ?? 0, serverTime: new Date().toISOString() };
   }
 
+  /**
+   * Wymuszony 500 z danymi w zapytaniu do bazy (skan PII IMP-403, TC-SEC-017): wartość trafia jako parametr
+   * i do komunikatu PostgreSQL – log nie może jej zawierać.
+   */
+  @Post('error')
+  @Public()
+  async error(@Body() body: Record<string, unknown>) {
+    const value = JSON.stringify(body ?? {}).slice(0, 500);
+    await this.db.execute(sql`SELECT ${value}::int`);
+    return { unreachable: true };
+  }
+
   /** Ostatni kod z e-maila (weryfikacja, reset) – z kolejki e-mail; lokalnie także w Mailpit. */
   @Get('emails/last')
   @Public()

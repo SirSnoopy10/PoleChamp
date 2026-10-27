@@ -3,6 +3,7 @@ import { errorMessage } from '@polechamp/i18n';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { requestContext } from '../request-context.js';
 import { DomainError } from './domain-error.js';
+import { safeError } from './safe-error.js';
 
 const PROBLEM_BASE = 'https://api.polechamp.app/problems/';
 const kebab = (code: string) => code.toLowerCase().replaceAll('_', '-');
@@ -32,7 +33,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     if (host.getType() !== 'http') {
       // Kanał realtime: błąd handlera tylko w logu, klient dostaje kod bez szczegółów.
       const code = exception instanceof DomainError ? exception.code : 'INTERNAL';
-      if (code === 'INTERNAL') this.logger.error({ err: exception }, 'Błąd handlera realtime');
+      if (code === 'INTERNAL') this.logger.error({ err: safeError(exception) }, 'Błąd handlera realtime');
       host
         .switchToWs()
         .getClient<{ emit: (event: string, data: unknown) => void }>()
@@ -52,7 +53,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       error = new DomainError('VALIDATION_FAILED', 'Nieobsługiwany typ treści.', {}, 415);
     } else {
       error = new DomainError('INTERNAL');
-      this.logger.error({ err: exception, requestId: requestContext.requestId() }, 'Nieobsłużony wyjątek');
+      this.logger.error(
+        { err: safeError(exception), requestId: requestContext.requestId() },
+        'Nieobsłużony wyjątek',
+      );
     }
 
     const { errors, retryAfterSeconds, remainingAttempts, requiresReset, body } = error.extras;

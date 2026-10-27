@@ -1,6 +1,7 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { SEED_PINS, seedRanking } from '@polechamp/test-fixtures';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { Logger } from '@nestjs/common';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { loadEnv } from '../../src/config/env.js';
 import { startApp, testEnv } from '../support/app.js';
 import { type Call, client, flushValkey } from '../support/http.js';
@@ -71,6 +72,29 @@ describe('helpery E2E (IMP-454)', () => {
     });
     expect(denied.status).toBe(422);
     expect((await call('POST', '/__e2e/seed/FX-NIEZNANA')).status).toBe(422);
+  });
+
+  it('TC-SEC-017: wymuszony 500 i błąd walidacji ze znacznikiem – log bez PII (IMP-403)', async () => {
+    const mark = `PIIMARK-${Date.now()}`;
+    const logged: unknown[] = [];
+    const spies = (['error', 'warn', 'log'] as const).map((level) =>
+      vi.spyOn(Logger.prototype, level).mockImplementation((...args: unknown[]) => void logged.push(args)),
+    );
+    try {
+      const crash = await call('POST', '/__e2e/error', {
+        body: { fullName: `${mark} Kowalska`, club: mark, comment: mark, email: `${mark}@example.com` },
+      });
+      expect(crash.status).toBe(500);
+      expect(JSON.stringify(crash.body)).not.toContain(mark);
+      const invalid = await call('POST', '/v1/auth/register', {
+        body: { email: 'zly', password: 'x', displayName: mark, acceptTerms: true, termsVersion: '2026-11' },
+      });
+      expect(invalid.status).toBe(422);
+    } finally {
+      spies.forEach((s) => s.mockRestore());
+    }
+    expect(logged.length).toBeGreaterThan(0);
+    expect(JSON.stringify(logged)).not.toContain(mark);
   });
 
   it('TC-SEC-018: bez flagi trasy nie istnieją, w produkcji flaga przerywa start', async () => {

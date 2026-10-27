@@ -1,0 +1,43 @@
+# Nocny skan PII w telemetrii (IMP-403, TC-SEC-017, NFR-504): znacznik PIIMARK-<uuid> wstrzyknięty do API
+# staging (dane i wymuszone błędy) i przepływ Maestro aplikacji, potem wyszukiwanie w CloudWatch Logs
+# i Sentry (region UE). Trafienie = błąd + alert. Włączane po STAGING_ENABLED=true (konta AWS/Sentry).
+name: pii-scan
+
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  scan:
+    if: vars.STAGING_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_PII_SCAN_ROLE_ARN }}
+          aws-region: eu-central-1
+      - name: Skan PII (API + CloudWatch + Sentry)
+        env:
+          PII_SCAN_API_URL: ${{ vars.STAGING_API_URL }}
+          PII_SCAN_LOG_GROUPS: /ecs/polechamp-staging-api,/ecs/polechamp-staging-worker
+          SENTRY_URL: https://de.sentry.io
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECTS: ${{ vars.SENTRY_PROJECTS }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_PII_SCAN_TOKEN }}
+        run: node tools/security/src/pii-scan.ts
+      - name: Alert do kanału zespołu
+        if: failure()
+        env:
+          WEBHOOK: ${{ secrets.TEAM_ALERT_WEBHOOK }}
+        run: |
+          curl -fsS -X POST -H 'content-type: application/json' \
+            -d "{\"text\":\"pii-scan: znacznik PII w telemetrii lub błąd skanu – ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$WEBHOOK"

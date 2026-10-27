@@ -14,6 +14,7 @@ import { domainEvent } from '../../db/schema.js';
 import { withTx } from '../../db/tx.js';
 import { VALKEY } from '../../infra/infra.module.js';
 import { RealtimeGateway } from './gateway.js';
+import { safeError } from '../../common/errors/safe-error.js';
 
 /** Klucz blokady advisory lidera publikatora – jeden publikator na klaster (IMP-155). */
 export const PUBLISHER_LOCK_KEY = 0x50_43_45_56; // „PCEV”
@@ -84,7 +85,7 @@ export class EventPublisher implements OnApplicationBootstrap, OnModuleDestroy {
       if (!(await this.ensureLeader())) return;
       while (!this.stopped && (await this.publishBatch()) === BATCH);
     } catch (error) {
-      this.logger.error({ err: error }, 'Błąd publikacji zdarzeń – ponowienie');
+      this.logger.error({ err: safeError(error) }, 'Błąd publikacji zdarzeń – ponowienie');
       await this.releaseLeader(true);
     }
   }

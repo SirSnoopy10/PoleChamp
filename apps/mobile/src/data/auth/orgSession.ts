@@ -73,6 +73,11 @@ export function useForgotPassword() {
   });
 }
 
+/** Token resetu z linku głębokiego (TC-SEC-021): base64url 16–256 znaków, inaczej pusty (API → błąd linku). */
+export function resetToken(value: unknown): string {
+  return typeof value === 'string' && /^[A-Za-z0-9_-]{16,256}$/.test(value) ? value : '';
+}
+
 /** `POST /v1/auth/password/reset` (IMP-253): po zmianie hasła sesja lokalna jest czyszczona. */
 export function useResetPassword() {
   const queryClient = useQueryClient();

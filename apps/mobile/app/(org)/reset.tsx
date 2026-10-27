@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useResetPassword } from '../../src/data/auth/orgSession';
+import { resetToken, useResetPassword } from '../../src/data/auth/orgSession';
 import { NewPasswordForm } from '../../src/features/auth/NewPasswordForm';
 import { ScreenContainer } from '../../src/ui/layout/ScreenContainer';
 import { toast } from '../../src/ui/Toast';
@@ -9,7 +9,9 @@ import { toast } from '../../src/ui/Toast';
  * (IMP-253). Po zmianie hasła sesja lokalna jest czyszczona i organizator loguje się ponownie.
  */
 export default function ResetRoute() {
-  const { token } = useLocalSearchParams<{ token?: string }>();
+  const params = useLocalSearchParams<{ token?: string }>();
+  // Token z linku: tylko znaki base64url i rozsądna długość (TC-SEC-021); inaczej API odrzuci pusty.
+  const token = resetToken(params.token);
   const reset = useResetPassword();
   return (
     <ScreenContainer testID="reset-screen">

@@ -233,11 +233,14 @@ describe('SCR-ORG-13 reset hasła (IMP-253)', () => {
     ).toBeOnTheScreen();
     await r.unmount();
 
-    const link = await start('/reset?token=tok-1');
+    const link = await start('/reset?token=Qx7vR2mN9kL4pW8sT1yU6zA3bC5dE0fG_hJ-iK2oP4q');
     await fireEvent.changeText(screen.getByTestId('reset-password'), 'nowe-haslo-12345');
     await fireEvent.press(screen.getByTestId('reset-submit'));
     await waitFor(() => expect(link.getPathname()).toBe('/login'));
-    expect(reset).toEqual({ token: 'tok-1', newPassword: 'nowe-haslo-12345' });
+    expect(reset).toEqual({
+      token: 'Qx7vR2mN9kL4pW8sT1yU6zA3bC5dE0fG_hJ-iK2oP4q',
+      newPassword: 'nowe-haslo-12345',
+    });
     await link.unmount();
   });
 

@@ -6,6 +6,7 @@ import {
   type JobsOptions,
   type WorkerOptions,
 } from 'bullmq';
+import { safeError } from '../common/errors/safe-error.js';
 
 /** Kolejki workera (IMP-170, ADR-002). `email` ma własne opcje producenta (IMP-119). */
 export const PDF_QUEUE_NAME = 'pdf';
@@ -146,7 +147,7 @@ export class WorkerRuntime {
         removeOnFail: false,
       });
     } catch (e) {
-      this.options.logger.error({ err: e }, 'nie udało się zapisać zadania w DLQ');
+      this.options.logger.error({ err: safeError(e) }, 'nie udało się zapisać zadania w DLQ');
     }
   }
 

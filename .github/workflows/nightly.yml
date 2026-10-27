@@ -1,0 +1,59 @@
+# Nocne kontrole bezpieczeństwa danych (IMP-409, TC-INT-008, TC-SEC-019, NFR-409):
+# 1) role bazy i architektura repozytoriów na świeżej bazie (Testcontainers) – zawsze;
+# 2) role na staging – zadanie ECS `db-privileges` z adresami ról z Secrets Manager (po STAGING_ENABLED=true).
+# Porażka → alert do kanału zespołu.
+name: nightly
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  db-access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - name: Architektura repozytoriów (IMP-108)
+        run: pnpm --filter @polechamp/api exec vitest run test/unit/architecture.test.ts
+      - name: Role bazy – TC-INT-008 / TC-SEC-019
+        run: pnpm --filter @polechamp/api exec vitest run --config vitest.int.config.ts test/integration/migrations.test.ts
+
+  db-privileges-staging:
+    if: vars.STAGING_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_NIGHTLY_ROLE_ARN }}
+          aws-region: eu-central-1
+      - name: Zadanie ECS db-privileges (--target staging)
+        run: |
+          TASK=$(aws ecs run-task --cluster polechamp-staging --launch-type FARGATE \
+            --task-definition polechamp-staging-db-privileges \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ vars.STAGING_PRIVATE_SUBNETS }}],securityGroups=[${{ vars.STAGING_API_SG }}]}" \
+            --query 'tasks[0].taskArn' --output text)
+          aws ecs wait tasks-stopped --cluster polechamp-staging --tasks "$TASK"
+          CODE=$(aws ecs describe-tasks --cluster polechamp-staging --tasks "$TASK" --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "db-privileges exit code: $CODE"
+          test "$CODE" = "0"
+
+  alert:
+    needs: [db-access, db-privileges-staging]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Alert do kanału zespołu
+        env:
+          WEBHOOK: ${{ secrets.TEAM_ALERT_WEBHOOK }}
+        run: |
+          curl -fsS -X POST -H 'content-type: application/json' \
+            -d "{\"text\":\"nightly: uprawnienia bazy / architektura – porażka ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$WEBHOOK"

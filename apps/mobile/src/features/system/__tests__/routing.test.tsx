@@ -10,6 +10,7 @@ import ModeRoute from '../../../../app/(system)/mode';
 import { tokenStore } from '../../../data/api/tokens';
 import type { AppMode } from '../../../mode/mode';
 import { act, Providers } from '../../../test-utils/render';
+import { pairingStore } from '../../pairing/pairing';
 import { entryRoute, judgeRedirect, orgRedirect } from '../guards';
 
 const routes = {
@@ -75,6 +76,16 @@ describe('struktura tras i strażniki (IMP-220)', () => {
     expect(r.getPathname()).toBe('/pair');
     expect(r.getSearchParams()).toEqual({ c: 'ABCD-1234', t: 't1' });
     expect(r.getByTestId('pair-code')).toHaveDisplayValue('ABCD-1234');
+  });
+
+  it('TC-SEC-021: poprawny kod z linku nie paruje automatycznie – wymaga „Połącz”', async () => {
+    const r = await start('/pair?c=K7QM4ZTX', 'judge');
+    expect(r.getByTestId('pair-code')).toHaveDisplayValue('K7QM-4ZTX');
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(pairingStore.getState().stage).toBe('idle');
+    expect(r.queryByTestId('pair-progress')).toBeNull();
   });
 
   it('link resetu hasła działa bez sesji', async () => {

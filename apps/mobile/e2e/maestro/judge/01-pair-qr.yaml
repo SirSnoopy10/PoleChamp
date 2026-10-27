@@ -1,4 +1,4 @@
-# TC-E2E-JDG-001 – parowanie kodem QR: link `polechamp://pair?code=…` (to samo co skan QR) i etapy ładowania.
+# TC-E2E-JDG-001 – parowanie kodem QR: link `polechamp://pair?c=…` wypełnia kod, parowanie po „Połącz” (TC-SEC-021) i etapy ładowania.
 appId: app.polechamp
 tags: [p1, nightly, judge]
 ---
@@ -14,7 +14,7 @@ tags: [p1, nightly, judge]
       camera: allow
 - tapOn:
     id: 'mode-judge'
-- openLink: 'polechamp://pair?code=${output.pairingCode}'
+- openLink: 'polechamp://pair?c=${output.pairingCode}'
 - tapOn:
     id: 'pair-device-name'
 - inputText: 'Tablet stół 1'

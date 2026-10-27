@@ -28,7 +28,8 @@ export const VerifyEmailRequest = z.strictObject({
 
 export const LoginRequest = z.strictObject({
   email: Email,
-  password: z.string().min(1, { error: 'REQUIRED' }),
+  // Limit jak przy rejestracji – Argon2 nie liczy się na dowolnie długim wejściu (ASVS V6, IMP-404).
+  password: z.string().min(1, { error: 'REQUIRED' }).max(128, { error: 'TOO_LONG' }),
 });
 
 export const RefreshRequest = z.strictObject({ refreshToken: z.string().min(1, { error: 'REQUIRED' }) });

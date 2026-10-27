@@ -46,9 +46,9 @@ describe('IMP-301: parowanie tabletu (SCR-JDG-06)', () => {
   it('maska kodu i odczyt linku QR', () => {
     expect(maskPairingCode('k7qm4ztx')).toBe('K7QM-4ZTX');
     expect(maskPairingCode('K7Q')).toBe('K7Q');
-    expect(parsePairingLink('polechamp://pair?c=K7QM4ZTX&t=t1')).toEqual({
+    expect(parsePairingLink('polechamp://pair?c=K7QM4ZTX&t=01a17987-7fa9-7787-a7a4-4607ae877f78')).toEqual({
       code: 'K7QM4ZTX',
-      tournamentId: 't1',
+      tournamentId: '01a17987-7fa9-7787-a7a4-4607ae877f78',
     });
     expect(parsePairingLink('https://polechamp.app/pair?c=k7qm-4ztx')).toEqual({
       code: 'K7QM4ZTX',

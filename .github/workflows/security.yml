@@ -1,0 +1,49 @@
+# Zestaw testów nadużyć przed wydaniem (IMP-404, NFR-405, NFR-401): enumeracja kont, brute force (k6),
+# fuzzing Schemathesis z OpenAPI na staging. Uruchamiany ręcznie lub dla tagów wydań; wymaga staging
+# (STAGING_ENABLED=true) i kont syntetycznych w sekretach. Wyniki: docs-dev/security/abuse-tests.md.
+name: security
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  abuse:
+    if: vars.STAGING_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      API_URL: ${{ vars.STAGING_API_URL }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - name: TC-SEC-012 – enumeracja kont
+        env:
+          SECURITY_API_URL: ${{ vars.STAGING_API_URL }}
+          ENUM_EXISTING_EMAILS: ${{ secrets.SECURITY_ENUM_EMAILS }}
+        run: node tools/security/src/enumeration.ts
+      - uses: grafana/setup-k6-action@v1
+      - name: TC-SEC-013 – brute force logowania
+        run: k6 run -e API_URL="$API_URL" -e EMAIL="${{ secrets.SECURITY_BRUTEFORCE_EMAIL }}" tools/security/k6/bruteforce-login.js
+      - name: TC-SEC-014 – brute force PIN-u
+        run: >-
+          k6 run -e API_URL="$API_URL" -e DEVICE_TOKEN="${{ secrets.SECURITY_DEVICE_TOKEN }}"
+          -e JUDGE_IDS="${{ secrets.SECURITY_JUDGE_IDS }}" tools/security/k6/bruteforce-pin.js
+      - name: TC-SEC-015 – brute force kodu parowania
+        run: k6 run -e API_URL="$API_URL" tools/security/k6/bruteforce-pairing.js
+      - name: TC-SEC-022 – Schemathesis
+        run: |
+          pnpm --filter @polechamp/contracts build
+          pipx run schemathesis==4.31.0 run packages/contracts/dist/openapi.json \
+            --url "$API_URL" --checks all --max-examples 50 \
+            --header "Authorization: Bearer ${{ secrets.SECURITY_ORG_TOKEN }}" \
+            --report junit --report-dir reports/schemathesis
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: reports/

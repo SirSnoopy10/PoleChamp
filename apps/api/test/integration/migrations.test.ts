@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { checkPrivileges, inRollback, MUST_DENY } from '../../src/db/privileges.js';
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
 import { migrate } from '../../src/db/migrate.js';
 
@@ -48,6 +49,13 @@ describe('migracje (IMP-103…107)', () => {
     await expect(app.query('SELECT * FROM schema_migrations')).rejects.toMatchObject({ code: '42501' });
     const { rows } = await app.query("SELECT count(*)::int AS n FROM audit_log WHERE action = 'TEST_ENTRY'");
     expect(rows[0].n).toBe(1);
+  });
+
+  it('TC-INT-008 / TC-SEC-019: pełny test ról pc_app, pc_retention, pc_readonly (IMP-409)', async () => {
+    expect(await checkPrivileges((role, sql) => inRollback(admin, sql, role))).toEqual([]);
+    // Kontrola samego testu: superużytkownik bez SET ROLE ma uprawnienia → naruszenia wykryte.
+    const asAdmin = await checkPrivileges((_role, sql) => inRollback(admin, sql));
+    expect(asAdmin.filter((v) => v.includes(' może: ')).length).toBe(MUST_DENY.length);
   });
 
   it('audyt ma partycje miesięczne i partycję zapasową', async () => {
