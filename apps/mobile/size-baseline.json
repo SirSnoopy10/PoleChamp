@@ -1,0 +1,7 @@
+{
+  "release": "1.0.0-przed",
+  "date": "2026-10-27",
+  "android": { "hermesBytecodeKb": 8435 },
+  "ios": { "hermesBytecodeKb": null },
+  "store": { "iosDownloadMb": null, "androidDownloadMb": null }
+}

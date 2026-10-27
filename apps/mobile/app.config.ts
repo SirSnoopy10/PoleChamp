@@ -72,7 +72,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-build-properties',
       {
         ios: { deploymentTarget: '16.4' },
-        android: { minSdkVersion: 29, targetSdkVersion: 36, compileSdkVersion: 36 },
+        android: {
+          minSdkVersion: 29,
+          targetSdkVersion: 36,
+          compileSdkVersion: 36,
+          // IMP-506 (NFR-109): R8 i usuwanie nieużywanych zasobów w buildach release; podział ABI
+          // robi Google Play (AAB).
+          enableMinifyInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true,
+        },
       },
     ],
     [

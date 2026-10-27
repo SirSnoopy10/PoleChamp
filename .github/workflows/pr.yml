@@ -88,6 +88,9 @@ jobs:
       - run: pnpm --filter @polechamp/mobile perf:test -- --branch ${{ github.head_ref }}
       - run: node scripts/reassure-gate.mjs
         working-directory: apps/mobile
+      # IMP-506 (TC-PERF-009): bajtkod Hermes ≤ +10% względem apps/mobile/size-baseline.json.
+      - run: node scripts/size-check.mjs --platform android
+        working-directory: apps/mobile
       - uses: actions/upload-artifact@v4
         if: always()
         with:
