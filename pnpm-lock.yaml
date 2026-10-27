@@ -633,6 +633,9 @@ importers:
       '@polechamp/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@polechamp/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
       '@polechamp/test-fixtures':
         specifier: workspace:*
         version: link:../../packages/test-fixtures
