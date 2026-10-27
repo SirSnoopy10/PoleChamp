@@ -35,6 +35,9 @@ export class InfraModule implements OnApplicationShutdown {
               maxRetriesPerRequest: 1,
               enableOfflineQueue: false,
               connectTimeout: 1_000,
+              // Węzeł bez odpowiedzi (sieć „w próżnię”) – polecenie kończy się błędem, limity działają fail-open
+              // zamiast wstrzymywać żądania (TC-SYNC-019, IMP-462).
+              commandTimeout: 500,
             });
             // Awaria Valkey nie zatrzymuje API (limity fail-open, realtime czeka – NFR-307); log raz na stan.
             let lastError = '';
