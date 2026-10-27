@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import argon2 from 'argon2';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { createLimiter, type Limiter } from '../../common/concurrency/limiter.js';
 import { ENV, type Env } from '../../config/env.js';
 
 /** Argon2id – minimum OWASP: m = 19 MiB, t = 2, p = 1 (02-model §2.1). */
@@ -11,15 +12,21 @@ const ARGON2 = { type: argon2.argon2id, memoryCost: 19_456, timeCost: 2, paralle
 export class PasswordService {
   /** Hash atrapy – logowanie nieistniejącego konta trwa tyle samo co istniejącego. */
   private dummy?: Promise<string>;
+  /** Kolejka hashowań (IMP-502, `HASH_CONCURRENCY`) – logowania organizatorów i PIN-y online. */
+  readonly limiter: Limiter;
+
+  constructor(@Inject(ENV) env: Pick<Env, 'HASH_CONCURRENCY'>) {
+    this.limiter = createLimiter(env.HASH_CONCURRENCY);
+  }
 
   hash(password: string): Promise<string> {
-    return argon2.hash(password, ARGON2);
+    return this.limiter.run(() => argon2.hash(password, ARGON2));
   }
 
   async verify(hash: string | null, password: string): Promise<boolean> {
     this.dummy ??= this.hash('dummy-password-for-timing');
     const target = hash ?? (await this.dummy);
-    const ok = await argon2.verify(target, password).catch(() => false);
+    const ok = await this.limiter.run(() => argon2.verify(target, password)).catch(() => false);
     return hash !== null && ok;
   }
 }

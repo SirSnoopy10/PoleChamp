@@ -11,7 +11,8 @@
     "ios": "expo run:ios",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest",
-    "perf:test": "reassure",
+    "perf:test": "node scripts/perf-test.mjs",
+    "bundle:report": "node scripts/bundle-report.mjs",
     "check:prod-bundle": "node scripts/check-prod-bundle.mjs"
   },
   "dependencies": {

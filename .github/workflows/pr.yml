@@ -68,6 +68,32 @@ jobs:
           name: '@polechamp/api'
           working-directory: apps/api
 
+  # IMP-500 (TC-PERF-004): Reassure – baza z gałęzi docelowej, pomiar PR, próg scripts/reassure-gate.mjs
+  # (więcej renderów albo czas > +10% przerywa job).
+  perf:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.sha }}
+      - uses: ./.github/actions/setup
+      - run: pnpm turbo run build --filter=@polechamp/mobile^...
+      - run: pnpm --filter @polechamp/mobile perf:test -- --baseline
+      - run: git checkout --force ${{ github.event.pull_request.head.sha }}
+      - uses: ./.github/actions/setup
+      - run: pnpm turbo run build --filter=@polechamp/mobile^...
+      - run: pnpm --filter @polechamp/mobile perf:test -- --branch ${{ github.head_ref }}
+      - run: node scripts/reassure-gate.mjs
+        working-directory: apps/mobile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reassure
+          path: apps/mobile/.reassure/output.md
+
   secrets:
     runs-on: ubuntu-latest
     timeout-minutes: 10

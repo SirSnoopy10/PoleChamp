@@ -1,0 +1,34 @@
+# TC-PERF-004 / TC-EDGE-024 (IMP-500) – obciążenie formularza oceny pod Flashlight (Android) i Instruments
+# (iPad): ~30 s przeciągania suwaków i zmian kar na starcie kategorii c3. Uruchamiany przez
+# tools/e2e/src/flashlight.sh – nie wchodzi w przebiegi nightly (tag perf).
+appId: app.polechamp
+tags: [perf, judge]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- assertVisible:
+    id: 'score-total'
+- repeat:
+    times: 10
+    commands:
+      - swipe:
+          from:
+            id: 'criterion-${output.ids.c3_k1}-slider'
+          direction: RIGHT
+          duration: 1200
+      - swipe:
+          from:
+            id: 'criterion-${output.ids.c3_k1}-slider'
+          direction: LEFT
+          duration: 1200
+      - tapOn: { id: 'penalty-${output.ids.c3_p1}-plus' }
+      - tapOn: { id: 'penalty-${output.ids.c3_p1}-minus' }
+- scrollUntilVisible:
+    element:
+      id: 'score-comment'
+    direction: DOWN
+- assertVisible:
+    id: 'score-footer'

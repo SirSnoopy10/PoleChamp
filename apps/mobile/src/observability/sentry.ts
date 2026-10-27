@@ -30,12 +30,22 @@ export function initSentry(): void {
 
 let ttiReported = false;
 
+/** Ekran, na którym kończy się zimny start: lista turniejów, profile tabletu albo wybór trybu. */
+export type InteractiveScreen = 'tournaments' | 'profiles' | 'mode';
+
+export const interactiveScreen = (mode: 'org' | 'judge' | null | undefined): InteractiveScreen =>
+  mode === 'org' ? 'tournaments' : mode === 'judge' ? 'profiles' : 'mode';
+
 /** Znacznik „time to interactive” (NFR-101) po pierwszym renderze listy turniejów / profili. */
-export function markInteractive(screen: 'tournaments' | 'profiles' | 'mode'): void {
-  if (ttiReported) return;
+export function markInteractive(screen: InteractiveScreen): number | null {
+  if (ttiReported) return null;
   ttiReported = true;
-  Sentry.setMeasurement('time_to_interactive', performance.now(), 'millisecond');
+  // `performance.now()` w RN liczy od startu procesu – czas od zimnego startu do pierwszego ekranu.
+  const ms = Math.round(performance.now());
+  Sentry.setMeasurement('time_to_interactive', ms, 'millisecond');
+  Sentry.setTag('tti_screen', screen);
   Sentry.addBreadcrumb({ category: 'app.lifecycle', message: `tti:${screen}`, level: 'info' });
+  return ms;
 }
 
 export { Sentry };

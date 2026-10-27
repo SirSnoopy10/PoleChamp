@@ -14,6 +14,8 @@ export const EnvSchema = z
     DATABASE_URL: z.url(),
     DATABASE_SSL: bool,
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(20),
+    /** Równoległe hashowania Argon2id na proces (IMP-502) – z 4 wątków puli libuv 2 zostają dla reszty. */
+    HASH_CONCURRENCY: z.coerce.number().int().positive().default(2),
     VALKEY_URL: z.url(),
     /** JSON `JwtKeysSecret` – `{ active, next?, previous? }` (Secrets Manager `jwt-signing`, IMP-014/405). */
     JWT_KEYS: z.string().min(1),

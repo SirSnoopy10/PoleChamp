@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { formatPenaltySum, formatScore, sheetTotal, type CategoryConfig } from '@polechamp/scoring';
 import { color, layout, radius } from '@polechamp/tokens';
@@ -20,14 +21,41 @@ export interface ScoreFooterProps {
  * „/ {max}”, chip „kary −{suma}” (gdy > 0) i przycisk zatwierdzenia z etykietą wg TC-STATE-002.
  */
 export function ScoreFooter({ store, config, maxHundredths, label, onSubmit }: ScoreFooterProps) {
-  const t = useT();
-  const criteria = useForm(store, (s) => s.criteria);
-  const penalties = useForm(store, (s) => s.penalties);
   const submitting = useForm(store, (s) => s.submitting);
-  const total = sheetTotal({ criteria, penalties }, config);
   return (
     <View testID="score-footer" style={styles.footer}>
       <FadedDivider position="top" />
+      <LiveTotal store={store} config={config} maxHundredths={maxHundredths} />
+      <View style={styles.spacer} />
+      <Button
+        label={label}
+        size={52}
+        onBar
+        icon="arrow-right"
+        iconPosition="end"
+        loading={submitting}
+        onPress={onSubmit}
+        testID="score-submit"
+      />
+    </View>
+  );
+}
+
+/**
+ * Wynik na żywo (IMP-500): jedyna część stopki subskrybująca noty i kary – przycisk i separator
+ * nie renderują się przy każdym kroku suwaka; `sheetTotal` liczony raz na zmianę wartości.
+ */
+const LiveTotal = memo(function LiveTotal({
+  store,
+  config,
+  maxHundredths,
+}: Pick<ScoreFooterProps, 'store' | 'config' | 'maxHundredths'>) {
+  const t = useT();
+  const criteria = useForm(store, (s) => s.criteria);
+  const penalties = useForm(store, (s) => s.penalties);
+  const total = useMemo(() => sheetTotal({ criteria, penalties }, config), [criteria, penalties, config]);
+  return (
+    <>
       <View>
         <Text variant="kicker" color={color.neutral[400]} style={styles.kicker}>
           {t('judge:form.yourScore')}
@@ -48,20 +76,9 @@ export function ScoreFooter({ store, config, maxHundredths, label, onSubmit }: S
           </Text>
         </View>
       ) : null}
-      <View style={styles.spacer} />
-      <Button
-        label={label}
-        size={52}
-        onBar
-        icon="arrow-right"
-        iconPosition="end"
-        loading={submitting}
-        onPress={onSubmit}
-        testID="score-submit"
-      />
-    </View>
+    </>
   );
-}
+});
 
 const styles = StyleSheet.create({
   footer: {

@@ -14,7 +14,13 @@ import { useOrientationLock } from '../src/features/system/orientation';
 import { OrientationGuard } from '../src/features/system/OrientationGuard';
 import { UpdateRequired, useUpdateState } from '../src/features/system/UpdateRequired';
 import { useMode } from '../src/mode/mode';
-import { initSentry, navigationIntegration, Sentry } from '../src/observability/sentry';
+import {
+  initSentry,
+  interactiveScreen,
+  markInteractive,
+  navigationIntegration,
+  Sentry,
+} from '../src/observability/sentry';
 import { SPLASH_STAGES, SplashScreen } from '../src/ui/splash/SplashScreen';
 import { toast } from '../src/ui/Toast';
 
@@ -65,7 +71,11 @@ function Root() {
           mode={mode ?? 'org'}
           stage={stage}
           onReady={hideNative}
-          onFinish={() => setSplashDone(true)}
+          onFinish={() => {
+            setSplashDone(true);
+            // TTI (NFR-101, TC-PERF-001): pierwszy interaktywny ekran = koniec splasha.
+            markInteractive(interactiveScreen(mode));
+          }}
         />
       )}
     </OrientationGuard>

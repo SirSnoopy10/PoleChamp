@@ -24,4 +24,13 @@ config.server.enhanceMiddleware = (middleware) => (req, res, next) => {
   return middleware(req, res, next);
 };
 
+// IMP-501 (zimny start): inline requires – moduł wykonywany przy pierwszym użyciu, nie przy starcie
+// bundla (trasy `(org)`/`(judge)` dopiero przy renderze). Bajtkod rośnie o ~27% (8,4 → 10,5 MB),
+// więc tylko do pomiaru A/B na urządzeniu: `METRO_INLINE_REQUIRES=1` (docs-dev/perf/cold-start.md).
+if (process.env.METRO_INLINE_REQUIRES === '1') {
+  config.transformer.getTransformOptions = async () => ({
+    transform: { experimentalImportSupport: true, inlineRequires: true },
+  });
+}
+
 module.exports = config;
