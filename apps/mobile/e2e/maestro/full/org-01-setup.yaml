@@ -1,0 +1,28 @@
+# TC-E2E-FULL-001 – telefon: logowanie (konto z seedu orkiestratora), turniej t2 – dodanie zawodniczki do c9.
+# Zmienne z `tools/e2e/src/full.ts`: EMAIL, PASSWORD, ID_<klucz seedu>, PIN_<sędzia>.
+appId: app.polechamp
+tags: [full]
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: 'mode-org'
+- tapOn:
+    id: 'login-email'
+- inputText: ${EMAIL}
+- tapOn:
+    id: 'login-password'
+- inputText: ${PASSWORD}
+- tapOn:
+    id: 'login-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'tournaments-screen'
+    timeout: 10000
+- tapOn:
+    id: 'tournament-${ID_t1}'
+- tapOn: 'Sędziowie'
+- tapOn:
+    id: 'pair-tablet'
+- assertVisible:
+    id: 'pair-qr'

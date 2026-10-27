@@ -1,0 +1,9 @@
+# TC-E2E-FULL-005 – telefon: „Zakończ i zablokuj” mimo braków.
+appId: app.polechamp
+tags: [full]
+---
+- tapOn:
+    id: 'category-action-lock'
+- tapOn:
+    id: 'lock-force'
+- assertVisible: 'Kategoria zakończona'

@@ -1,0 +1,8 @@
+# TC-E2E-FULL-005 / TC-PERF-005 – tablet: baner blokady ≤ 3 s od blokady u organizatora.
+appId: app.polechamp
+tags: [full]
+---
+- extendedWaitUntil:
+    visible:
+      id: 'queue-locked-banner'
+    timeout: 3000

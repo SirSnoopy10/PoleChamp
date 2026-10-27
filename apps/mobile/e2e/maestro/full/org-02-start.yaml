@@ -1,0 +1,14 @@
+# TC-E2E-FULL-003 – telefon: tablet na liście urządzeń, start kategorii c6 (W przygotowaniu).
+appId: app.polechamp
+tags: [full]
+---
+- launchApp
+- tapOn:
+    id: 'tournament-${ID_t1}'
+- tapOn:
+    id: 'category-${ID_c6}'
+- tapOn:
+    id: 'category-action-start'
+- assertVisible: 'Kategoria rozpoczęta'
+- tapOn:
+    id: 'results-tab'

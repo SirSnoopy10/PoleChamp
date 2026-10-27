@@ -1,0 +1,9 @@
+# TC-E2E-FULL-004 / TC-PERF-005 – telefon: wynik zawodniczki w rankingu c6 (pomiar od zatwierdzenia na tablecie).
+appId: app.polechamp
+tags: [full]
+---
+- extendedWaitUntil:
+    visible:
+      id: 'result-${ID_u44}'
+    timeout: 2000
+- assertVisible: '1/5 sędziów'

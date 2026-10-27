@@ -1,0 +1,18 @@
+# TC-E2E-FULL-006 – telefon: PDF turnieju i zakończenie turnieju (audyt sprawdza orkiestrator).
+appId: app.polechamp
+tags: [full]
+---
+- back
+- tapOn:
+    id: 'tournament-pdf'
+- tapOn:
+    id: 'pdf-download'
+- extendedWaitUntil:
+    visible: 'PDF zapisany'
+    timeout: 10000
+- back
+- tapOn:
+    id: 'tournament-finish'
+- tapOn:
+    id: 'finish-confirm'
+- assertVisible: 'Turniej zakończony'
