@@ -1,0 +1,13 @@
+# TC-SYNC-004/005 – jedna iteracja pętli kill -9 (`tools/e2e/src/kill-loop.ts` uruchamia 100×):
+# zatwierdzenie oceny i natychmiastowe zabicie aplikacji; po restarcie ocena wysłana dokładnie raz.
+appId: app.polechamp
+tags: [sync]
+---
+- tapOn:
+    id: 'score-submit'
+- killApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-synced'
+    timeout: 30000

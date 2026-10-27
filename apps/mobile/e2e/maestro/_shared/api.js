@@ -42,6 +42,17 @@ function uuid() {
   );
 }
 
+/** Zmiana zasobu z wersją (`If-Match`). */
+function ifMatch(method, path, version, body) {
+  var headers = {
+    'Content-Type': 'application/json',
+    Authorization: 'Bearer ' + orgToken(),
+    'If-Match': 'W/"' + version + '"',
+  };
+  var res = http.request(base + path, { method: method, headers: headers, body: JSON.stringify(body || {}) });
+  if (res.status >= 400) throw new Error(method + ' ' + path + ' → ' + res.status + ' ' + res.body);
+}
+
 function orgToken() {
   if (!output.orgToken)
     output.orgToken = post('/v1/auth/login', { email: output.email, password: output.password }).accessToken;
@@ -169,6 +180,28 @@ if (ACTION === 'seed') {
     headers: headers,
     body: '{}',
   });
+} else if (ACTION === 'withdraw') {
+  var entries = call(
+    'GET',
+    '/v1/categories/' + output.ids[CATEGORY] + '/entries',
+    undefined,
+    orgToken(),
+  ).items;
+  var entry = entries.filter(function (e) {
+    return e.id === output.ids[ENTRY];
+  })[0];
+  ifMatch('POST', '/v1/entries/' + entry.id + '/withdraw', entry.version);
+} else if (ACTION === 'deactivate-judge') {
+  var judges = call(
+    'GET',
+    '/v1/tournaments/' + output.ids[TOURNAMENT] + '/judges',
+    undefined,
+    orgToken(),
+  ).items;
+  var j = judges.filter(function (x) {
+    return x.id === output.ids[JUDGE];
+  })[0];
+  ifMatch('PATCH', '/v1/judges/' + j.id, j.version, { isActive: false });
 } else if (ACTION === 'last-email-code') {
   var mail = call('GET', '/__e2e/emails/last?to=' + encodeURIComponent(EMAIL));
   output.emailCode = mail.params && mail.params.code;

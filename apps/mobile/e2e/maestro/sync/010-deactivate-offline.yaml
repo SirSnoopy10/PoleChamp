@@ -1,0 +1,25 @@
+# TC-SYNC-010 – dezaktywacja sędziego (jA) oceniającego offline → koniec sesji po synchronizacji (JUDGE_INACTIVE).
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: deactivate-judge
+      TOURNAMENT: t1
+      JUDGE: jA
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 30000
+- assertNotVisible:
+    id: 'profile-${output.ids.jA}'

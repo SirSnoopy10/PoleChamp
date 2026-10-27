@@ -1,0 +1,21 @@
+# TC-SYNC-001 – utrata sieci w trakcie oceniania: 3 oceny offline w kolejce, wysyłka po powrocie sieci.
+appId: app.polechamp
+tags: [p1, nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c5}'
+- setAirplaneMode: enabled
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: 'score-submit'
+- assertVisible:
+    id: 'sync-pill-offlineQueue'
+- assertVisible: 'Offline · 3 w kolejce'
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-synced'
+    timeout: 30000

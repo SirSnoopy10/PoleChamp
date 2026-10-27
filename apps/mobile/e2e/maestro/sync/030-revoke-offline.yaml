@@ -1,0 +1,24 @@
+# TC-SYNC-030 – odłączenie urządzenia podczas offline z kolejką: ekran odłączenia z liczbą niewysłanych (1).
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: revoke-device
+      TOURNAMENT: t1
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'revoked-screen'
+    timeout: 30000
+- assertVisible:
+    id: 'revoked-pending'

@@ -1,0 +1,26 @@
+# TC-SYNC-012 – ten sam start oceniony przez jA na drugim tablecie (API) w czasie poprawki offline → STALE_REVISION,
+# baner formularza i „Pokaż aktualną”.
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u20}'
+- setAirplaneMode: enabled
+- tapOn: { id: 'criterion-${output.ids.c3_k1}-plus' }
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env: { ACTION: submit, TOURNAMENT: t1, CATEGORY: c3, ENTRY: u20, JUDGE: jA, NOTE: '6' }
+- setAirplaneMode: disabled
+- tapOn:
+    id: 'queue-row-${output.ids.u20}'
+- extendedWaitUntil:
+    visible:
+      id: 'form-stale-banner'
+    timeout: 30000
+- assertVisible:
+    id: 'show-current'

@@ -1,0 +1,17 @@
+# TC-SYNC-024 – heartbeat: tablet z kolejką offline widoczny u organizatora (stan urządzeń sprawdza org/31);
+# tu: kolejka offline, potem heartbeat po powrocie sieci zeruje licznik niewysłanych.
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c5}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'score-submit'
+- assertVisible: 'Offline · 1 w kolejce'
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-synced'
+    timeout: 30000

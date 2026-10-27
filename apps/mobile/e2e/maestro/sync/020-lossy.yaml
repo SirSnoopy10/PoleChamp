@@ -1,0 +1,18 @@
+# TC-SYNC-020 / TC-SYNC-018 – sieć z 30% utratą i zablokowany WebSocket: przed przepływem
+# `node tools/e2e/src/net.ts lossy 30` i `blockWs` (toxiproxy przed API e2e); po nim `online`, `unblockWs`.
+# Oceny docierają (odpytywanie zamiast WS), bez duplikatów.
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c5}'
+- repeat:
+    times: 5
+    commands:
+      - tapOn:
+          id: 'score-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-synced'
+    timeout: 60000

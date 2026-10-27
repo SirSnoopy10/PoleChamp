@@ -1,0 +1,24 @@
+# TC-SYNC-011 – reset PIN-u jA w trakcie sesji offline: po synchronizacji sesja kończy się (PIN_VERSION_OUTDATED),
+# logowanie nowym PIN-em działa.
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: reset-pin
+      JUDGE: jA
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'profiles-screen'
+    timeout: 30000
+- runFlow: ../_shared/judge-login.yaml

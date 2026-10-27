@@ -1,0 +1,26 @@
+# TC-SYNC-007 – blokada c3 przy tablecie offline: 2 oceny w kolejce → odrzucenie CATEGORY_LOCKED po synchronizacji.
+appId: app.polechamp
+tags: [p1, nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: lock
+      CATEGORY: c3
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'queue-rejected-banner'
+    timeout: 30000
+- assertVisible:
+    id: 'queue-state-rejected'

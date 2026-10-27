@@ -1,0 +1,30 @@
+# TC-SYNC-035 – raport prób PIN offline: 5 błędnych prób offline (jB), po synchronizacji serwer liczy próby
+# (PIN_ATTEMPTS_REPORT); kolejne 5 błędów online → blokada globalna „PIN zablokowany…”.
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/pair-tablet.yaml
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'profile-${output.ids.jB}'
+- repeat:
+    times: 5
+    commands:
+      - repeat:
+          times: 4
+          commands:
+            - tapOn: { id: 'pin-key-0' }
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    notVisible:
+      id: 'pin-locked-icon'
+    timeout: 65000
+- repeat:
+    times: 5
+    commands:
+      - repeat:
+          times: 4
+          commands:
+            - tapOn: { id: 'pin-key-0' }
+- assertVisible: 'PIN zablokowany. Poproś organizatora o reset.'

@@ -1,0 +1,23 @@
+# TC-SYNC-021 – przełączanie online/offline w trakcie wysyłki paczki: kolejka kończy się wysłaniem bez duplikatów.
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c4}'
+- setAirplaneMode: enabled
+- repeat:
+    times: 7
+    commands:
+      - tapOn:
+          id: 'score-submit'
+- repeat:
+    times: 3
+    commands:
+      - setAirplaneMode: disabled
+      - setAirplaneMode: enabled
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-synced'
+    timeout: 30000

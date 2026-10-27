@@ -1,0 +1,29 @@
+# TC-SYNC-002 – długa praca offline: oceny jA we wszystkich trwających kategoriach t1 (c3–c5 bez jej ocen),
+# po powrocie sieci komplet wysłany. Wariant 2 h z przyspieszonym zegarem – ręcznie (docs-dev/qa/sync/manual.md).
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'category-${output.ids.c4}'
+- repeat:
+    times: 7
+    commands:
+      - tapOn:
+          id: 'score-submit'
+- back
+- tapOn:
+    id: 'category-${output.ids.c5}'
+- repeat:
+    times: 8
+    commands:
+      - tapOn:
+          id: 'score-submit'
+- assertVisible:
+    id: 'sync-pill-offlineQueue'
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'sync-pill-synced'
+    timeout: 30000

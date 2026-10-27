@@ -1,0 +1,64 @@
+# TC-SYNC-013 – wielu sędziów i tabletów naraz: jA na tablecie, jB…jE na tabletach syntetycznych (API) oceniają nr 48;
+# organizator widzi 5/5, brak duplikatów (sprawdzenie `GET /entries/{id}/score-sheets` w raporcie orkiestratora).
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- runScript:
+    file: ../_shared/api.js
+    env:
+      {
+        ACTION: submit,
+        TOURNAMENT: t1,
+        CATEGORY: c3,
+        ENTRY: u27,
+        JUDGE: jB,
+        NOTE: '7',
+        DEVICE_NAME: 'Tablet stół 2',
+      }
+- runScript:
+    file: ../_shared/api.js
+    env:
+      {
+        ACTION: submit,
+        TOURNAMENT: t1,
+        CATEGORY: c3,
+        ENTRY: u27,
+        JUDGE: jC,
+        NOTE: '7.5',
+        DEVICE_NAME: 'Tablet stół 3',
+      }
+- runScript:
+    file: ../_shared/api.js
+    env:
+      {
+        ACTION: submit,
+        TOURNAMENT: t1,
+        CATEGORY: c3,
+        ENTRY: u27,
+        JUDGE: jD,
+        NOTE: '8',
+        DEVICE_NAME: 'Tablet stół 4',
+      }
+- runScript:
+    file: ../_shared/api.js
+    env:
+      {
+        ACTION: submit,
+        TOURNAMENT: t1,
+        CATEGORY: c3,
+        ENTRY: u27,
+        JUDGE: jE,
+        NOTE: '8.5',
+        DEVICE_NAME: 'Tablet stół 5',
+      }
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'queue-state-synced'
+    timeout: 10000

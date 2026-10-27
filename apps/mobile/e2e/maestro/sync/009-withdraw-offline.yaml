@@ -1,0 +1,23 @@
+# TC-SYNC-009 – wycofanie zawodniczki (nr 48) przy tablecie offline z jej oceną w kolejce → ENTRY_WITHDRAWN.
+appId: app.polechamp
+tags: [nightly, sync]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- setAirplaneMode: enabled
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'score-submit'
+- runScript:
+    file: ../_shared/api.js
+    env:
+      ACTION: withdraw
+      CATEGORY: c3
+      ENTRY: u27
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    visible:
+      id: 'queue-state-rejected'
+    timeout: 30000
