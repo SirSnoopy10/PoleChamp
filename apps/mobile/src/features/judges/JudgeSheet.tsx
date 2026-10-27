@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import { copySecret } from '../../data/secure/clipboard';
 import { z } from 'zod';
 import { color, layout, radius } from '@polechamp/tokens';
 import { JudgePatch, type JudgeRow } from '@polechamp/contracts';
@@ -47,7 +47,7 @@ export function PinRevealStep({ judge, onDone }: { judge: JudgeWithPin; onDone: 
         icon="copy"
         size={44}
         label={t('org:judgeForm.copy')}
-        onPress={() => void Clipboard.setStringAsync(judge.pin).then(() => toast.success('toasts:pinCopied'))}
+        onPress={() => void copySecret(judge.pin).then(() => toast.success('toasts:pinCopied'))}
         style={styles.center}
       />
       <View style={styles.warning}>

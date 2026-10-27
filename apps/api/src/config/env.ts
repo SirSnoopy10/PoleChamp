@@ -15,7 +15,7 @@ export const EnvSchema = z
     DATABASE_SSL: bool,
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(20),
     VALKEY_URL: z.url(),
-    /** JSON `{ active: { kid, privateJwk }, previous?: { kid, publicJwk } }` (Secrets Manager `jwt-signing`, IMP-014). */
+    /** JSON `JwtKeysSecret` – `{ active, next?, previous? }` (Secrets Manager `jwt-signing`, IMP-014/405). */
     JWT_KEYS: z.string().min(1),
     JWT_ISSUER: z.string().default('https://api.polechamp.app'),
     /** Klucz HMAC `pin_fingerprint` (base64, ≥ 32 B) – TL-06. */

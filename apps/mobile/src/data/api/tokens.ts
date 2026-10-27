@@ -1,6 +1,4 @@
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import { storage } from '../../storage/mmkv';
+import { secureStorage } from '../secure/secureStore';
 
 export type TokenKind = 'org' | 'device' | 'judge';
 
@@ -27,28 +25,7 @@ function emit(next: Partial<TokenState>) {
   listeners.forEach((l) => l());
 }
 
-/** SecureStore (Keychain/Keystore); Expo web (DevCatalog, podgląd) nie ma bezpiecznego magazynu – MMKV. */
-const secure =
-  Platform.OS === 'web'
-    ? {
-        getItemAsync: async (key: string) => storage.getString(key) ?? null,
-        setItemAsync: async (key: string, value: string, _options?: SecureStore.SecureStoreOptions) =>
-          storage.set(key, value),
-        deleteItemAsync: async (key: string) => void storage.remove(key),
-      }
-    : SecureStore;
-
-/** Dostęp po pierwszym odblokowaniu, bez kopii w iCloud/kopiach zapasowych (IMP-250 krok 4). */
-const SECURE_OPTIONS: SecureStore.SecureStoreOptions = {
-  keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-};
-
-/** Bezpieczny magazyn aplikacji (tokeny, sekret i pepper urządzenia – nigdy SQLite/MMKV na urządzeniu). */
-export const secureStorage = {
-  get: (key: string) => secure.getItemAsync(key),
-  set: (key: string, value: string | null) =>
-    value === null ? secure.deleteItemAsync(key) : secure.setItemAsync(key, value, SECURE_OPTIONS),
-};
+export { secureStorage };
 
 const write = (kind: TokenKind, value: string | null) => secureStorage.set(KEY[kind], value);
 
@@ -65,9 +42,9 @@ export const tokenStore = {
   async load(): Promise<void> {
     try {
       const [org, device, judge] = await Promise.all([
-        secure.getItemAsync(KEY.org),
-        secure.getItemAsync(KEY.device),
-        secure.getItemAsync(KEY.judge),
+        secureStorage.get(KEY.org),
+        secureStorage.get(KEY.device),
+        secureStorage.get(KEY.judge),
       ]);
       emit({ org: org ? (JSON.parse(org) as OrgTokens) : null, device, judge, loaded: true });
     } catch {

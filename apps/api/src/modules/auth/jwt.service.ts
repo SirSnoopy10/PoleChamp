@@ -38,11 +38,21 @@ interface KeySet {
   publicKeys: Map<string, ImportedKey>;
 }
 
+/**
+ * Sekret `jwt-signing` (IMP-014, rotacja IMP-405 – `ops/runbooks/jwt-rotation.md`): `active` podpisuje,
+ * `next` (opublikowany przed przełączeniem) i `previous` (do wygaszenia po 30 dniach) tylko weryfikują.
+ */
+export interface JwtKeysSecret {
+  active: { kid: string; privateJwk: JWK; createdAt?: string };
+  next?: { kid: string; privateJwk: JWK; createdAt?: string };
+  previous?: { kid: string; publicJwk: JWK; retireAfter?: string };
+}
+
 export class InvalidTokenError extends Error {}
 
 /**
- * Tokeny ES256 z `kid` (IMP-113, ADR-008): podpis aktywnym kluczem, weryfikacja aktywnym lub poprzednim
- * (rotacja bez wylogowania). Odrzuca `alg: none`, HS256 i nieznane `kid`.
+ * Tokeny ES256 z `kid` (IMP-113, ADR-008): podpis aktywnym kluczem, weryfikacja aktywnym, następnym
+ * lub poprzednim (rotacja bez wylogowania, TC-SEC-024). Odrzuca `alg: none`, HS256 i nieznane `kid`.
  */
 @Injectable()
 export class JwtService {
@@ -52,20 +62,15 @@ export class JwtService {
 
   private loadKeys(): Promise<KeySet> {
     this.keys ??= (async () => {
-      const parsed = JSON.parse(this.env.JWT_KEYS) as {
-        active: { kid: string; privateJwk: JWK };
-        previous?: { kid: string; publicJwk: JWK };
+      const parsed = JSON.parse(this.env.JWT_KEYS) as JwtKeysSecret;
+      const publicKeys = new Map<string, ImportedKey>();
+      const addPublic = async (kid: string, jwk: JWK) => {
+        const { d: _private, ...publicJwk } = jwk;
+        publicKeys.set(kid, (await importJWK({ ...publicJwk, alg: 'ES256' }, 'ES256')) as ImportedKey);
       };
-      const { d: _private, ...publicJwk } = parsed.active.privateJwk;
-      const publicKeys = new Map<string, ImportedKey>([
-        [parsed.active.kid, (await importJWK({ ...publicJwk, alg: 'ES256' }, 'ES256')) as ImportedKey],
-      ]);
-      if (parsed.previous) {
-        publicKeys.set(
-          parsed.previous.kid,
-          (await importJWK({ ...parsed.previous.publicJwk, alg: 'ES256' }, 'ES256')) as ImportedKey,
-        );
-      }
+      await addPublic(parsed.active.kid, parsed.active.privateJwk);
+      if (parsed.next) await addPublic(parsed.next.kid, parsed.next.privateJwk);
+      if (parsed.previous) await addPublic(parsed.previous.kid, parsed.previous.publicJwk);
       return {
         activeKid: parsed.active.kid,
         privateKey: (await importJWK({ ...parsed.active.privateJwk, alg: 'ES256' }, 'ES256')) as ImportedKey,

@@ -88,6 +88,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       { image: './assets/splash-icon.png', imageWidth: 160, backgroundColor: BG, resizeMode: 'contain' },
     ],
     './plugins/with-android-resizability.js',
+    './plugins/with-no-backup.js',
     ...(SENTRY ? [SENTRY] : []),
   ],
   extra: {

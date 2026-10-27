@@ -7,9 +7,13 @@ const tc = (key: string) => i18n.t(key, { ns: 'common' });
 
 const BOM = String.fromCharCode(0xfeff);
 
-/** Pole CSV z „;” – cudzysłów, gdy zawiera separator, cudzysłów lub nową linię. */
-function field(value: string | number | null | undefined): string {
-  const text = value === null || value === undefined ? '' : String(value);
+/**
+ * Pole CSV z „;” – cudzysłów, gdy zawiera separator, cudzysłów lub nową linię. Tekst zaczynający się
+ * od `= + - @`, tabulacji lub CR (poza liczbą) dostaje apostrof – ochrona przed formułami (ASVS V1, IMP-400).
+ */
+export function field(value: string | number | null | undefined): string {
+  const raw = value === null || value === undefined ? '' : String(value);
+  const text = /^[=+\-@\t\r]/.test(raw) && !/^-?\d+(,\d+)?$/.test(raw) ? `'${raw}` : raw;
   return /[;"\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 

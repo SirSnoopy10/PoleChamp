@@ -32,6 +32,10 @@ Wersja: ______ Build (iOS / Android): ______ / ______ Commit API: ______ Data: _
 | TC-A11Y-002…014 | `a11y/README.md` – 0 krytycznych | | |
 | TC-COMPAT-001…010, TC-PERF-014/015 | `compat-matrix.md` | | |
 | TC-UAT (przygotowawcze) | `uat/README.md` – sprzęt, instrukcje, karty | | |
+| TC-SEC-002 | testy MASTG z `docs-dev/security/masvs-mapping.md` (sekcja „Testy ręczne przed wydaniem”) | | |
+| TC-SEC-016 | zrzut systemu plików aplikacji (`adb shell run-as`, kopia iOS) – brak tokenów/sekretów poza Keystore/Keychain | | |
+| TC-SEC-018 | build `production`: brak „Demo · PIN-y”, DevCatalog, logów debug | | |
+| TC-SEC-020 | PIN z aktywną nakładką Androida – dotyki odrzucane | | |
 
 ## Defekty
 

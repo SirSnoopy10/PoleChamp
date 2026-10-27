@@ -57,6 +57,10 @@ describe('IMP-100: szkielet API', () => {
     const res = await app.inject({ method: 'GET', url: '/health/live', headers: { 'x-request-id': id } });
     expect(res.headers['x-request-id']).toBe(id);
     expect(res.headers['x-min-app-version']).toBe('1.2.0');
+    // TC-SEC-003 (część aplikacyjna): HSTS ≥ 1 rok i nagłówki bezpieczeństwa (IMP-400).
+    expect(res.headers['strict-transport-security']).toBe('max-age=31536000; includeSubDomains');
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
+    expect(res.headers['referrer-policy']).toBe('no-referrer');
     const generated = await app.inject({
       method: 'GET',
       url: '/health/live',

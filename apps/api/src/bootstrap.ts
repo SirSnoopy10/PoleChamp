@@ -51,6 +51,10 @@ export async function createApp(
   });
   fastify.addHook('onSend', (_request, reply, payload, done) => {
     void reply.header('X-Min-App-Version', env.APP_MIN_VERSION);
+    // Nagłówki bezpieczeństwa (05-bezpieczenstwo §7, TC-SEC-003); TLS kończy się na ALB.
+    void reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    void reply.header('X-Content-Type-Options', 'nosniff');
+    void reply.header('Referrer-Policy', 'no-referrer');
     done(null, payload);
   });
   return app;

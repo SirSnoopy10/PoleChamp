@@ -1,0 +1,14 @@
+{
+  "name": "@polechamp/security-tools",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bezpieczeństwo i RODO: kontrola mapowań ASVS/MASVS i dokumentów, testy nadużyć, skan PII, rotacja kluczy",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "jose": "6.2.13"
+  }
+}

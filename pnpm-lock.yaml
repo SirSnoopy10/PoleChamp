@@ -564,6 +564,9 @@ importers:
       '@types/react':
         specifier: ~19.2.18
         version: 19.2.18
+      babel-plugin-transform-remove-console:
+        specifier: 6.9.4
+        version: 6.9.4
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3
@@ -648,6 +651,12 @@ importers:
       eslint:
         specifier: 9.39.5
         version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
+
+  tools/security:
+    devDependencies:
+      jose:
+        specifier: 6.2.13
+        version: 6.2.13
 
   tools/visual:
     devDependencies:
@@ -4327,6 +4336,9 @@ packages:
 
   babel-plugin-transform-flow-enums@0.0.2:
     resolution: {integrity: sha512-g4aaCrDDOsWjbm0PUUeVnkcVd6AKJsVc/MbnPhEotEpkeJQP6b8nzewohQi7+QS8UyPehOhGWn0nOwjvWpmMvQ==}
+
+  babel-plugin-transform-remove-console@6.9.4:
+    resolution: {integrity: sha512-88blrUrMX3SPiGkT1GnvVY8E/7A+k6oj3MNvUtTIxJflFzXTw1bHkuJ/y039ouhFMp2prRn5cQGzokViYi1dsg==}
 
   babel-preset-current-node-syntax@1.2.0:
     resolution: {integrity: sha512-E/VlAEzRrsLEb2+dv8yp3bo4scof3l9nR4lrld+Iy5NyVqgVYUJnDAmunkhPMisRI32Qc4iRiz425d8vM++2fg==}
@@ -13663,6 +13675,8 @@ snapshots:
       '@babel/plugin-syntax-flow': 7.29.7(@babel/core@7.29.7(supports-color@8.1.1))
     transitivePeerDependencies:
       - '@babel/core'
+
+  babel-plugin-transform-remove-console@6.9.4: {}
 
   babel-preset-current-node-syntax@1.2.0(@babel/core@7.29.7(supports-color@7.2.0)):
     dependencies:
