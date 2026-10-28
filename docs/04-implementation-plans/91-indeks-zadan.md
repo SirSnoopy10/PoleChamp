@@ -23,6 +23,7 @@
 | EP-13 Wydanie i pilotaż | [13-wydanie.md](13-wydanie.md) | 8 | 46 | 11 | 57 |
 | EP-14 Spike’i techniczne | [14-spike.md](14-spike.md) | 10 | 66 | 14 | 80 |
 | EP-15 Design i akceptacje | [15-design-i-akceptacje.md](15-design-i-akceptacje.md) | 4 | 42 | 8 | 50 |
+| EP-16 Poprawki UX (dodany 28.10.2026, poza sumą poniżej) | [16-poprawki-ux.md](16-poprawki-ux.md) | 19 | 133 | 36 | 169 |
 | **Razem** | | **250** | **1679** | **328** | **2007** |
 
 
@@ -426,3 +427,22 @@ SCR-PUB-01 (publiczne wyniki, FR-709) i FR-407 (import CSV) są poza MVP – bra
 | [IMP-652](15-design-i-akceptacje.md#imp-652--ikona-aplikacji-splash-statyczny-materiały-do-sklepów) | Ikona aplikacji, splash statyczny, materiały do sklepów | EP-15 | DESIGN | 8 h | niskie | – | ADR-001 |
 | [IMP-653](15-design-i-akceptacje.md#imp-653--akceptacja-wzorców-regresji-wizualnej) | Akceptacja wzorców regresji wizualnej | EP-15 | DESIGN | 6 h | niskie | IMP-459 | NFR-210 |
 
+| [IMP-700](16-poprawki-ux.md#imp-700--krok-oceny-w-synchronizacji-ocen-syncpush) | Krok oceny w synchronizacji ocen (sync/push) | EP-16 | BE | 6 h | wysokie | – | ustalenie #1; FR-305, FR-603; 07-reguly-punktacji |
+| [IMP-701](16-poprawki-ux.md#imp-701--widoczny-los-każdej-oceny-na-tablecie-outbox-i-popover-synchronizacji) | Widoczny los każdej oceny na tablecie (outbox i popover synchronizacji) | EP-16 | MOB | 8 h | wysokie | IMP-700 | ustalenia #1, #15, #35 (licznik); SCR-JDG-07; FR-803, FR-805 |
+| [IMP-702](16-poprawki-ux.md#imp-702--ochrona-przed-podwójnym-zatwierdzeniem-oceny) | Ochrona przed podwójnym zatwierdzeniem oceny | EP-16 | MOB | 4 h | średnie | – | ustalenie #2; FR-606; TC-EDGE (podwójne kliknięcia) |
+| [IMP-703](16-poprawki-ux.md#imp-703--spójny-stan-danych-organizatora-po-zapisach) | Spójny stan danych organizatora po zapisach | EP-16 | MOB | 10 h | wysokie | – | ustalenia #3, #4, #10; SCR-ORG-03, SCR-ORG-06…08, SCR-ORG-22; TL-45; FR-807 |
+| [IMP-704](16-poprawki-ux.md#imp-704--ekran-zawodniczki-turnieju-i-nawigacja-wstecz) | Ekran „Zawodniczki” turnieju i nawigacja wstecz | EP-16 | MOB | 8 h | niskie | – | ustalenia #11, #28, #37, #43; SCR-ORG-07, SCR-ORG-17 |
+| [IMP-705](16-poprawki-ux.md#imp-705--ryzykowne-akcje-tryb-urządzenia-pin-start-turnieju-dezaktywacja-usunięcie-konta) | Ryzykowne akcje: tryb urządzenia, PIN, start turnieju, dezaktywacja, usunięcie konta | EP-16 | FULL | 10 h | średnie | IMP-650 (teksty), decyzja PO dla (c) | ustalenia #5, #6, #7, #16, #17; SCR-SYS-01, SCR-ORG-03, SCR-ORG-15, SCR-ORG-21; FR-206, FR-308, FR-106 |
+| [IMP-706](16-poprawki-ux.md#imp-706--teksty-zmienne-odmiana-liczba-mnoga-toasty) | Teksty: zmienne, odmiana, liczba mnoga, toasty | EP-16 | MOB | 7 h | niskie | IMP-650 (akceptacja tekstów) | ustalenia #8, #18, #19, #20, #21, #22, #45 (teksty), #46; NFR-210 |
+| [IMP-707](16-poprawki-ux.md#imp-707--formularze-organizatora-zgoda-pola-liczbowe-klawiatura-wybór-daty) | Formularze organizatora: zgoda, pola liczbowe, klawiatura, wybór daty | EP-16 | MOB | 10 h | niskie | – | ustalenia #21, #23, #24, #25, #36, #39, #44; SCR-ORG-02, 05, 09, 10, 11, 17, 20; TC-L10N-002, TC-A11Y-007 |
+| [IMP-708](16-poprawki-ux.md#imp-708--spójność-wzorców-ui-organizatora) | Spójność wzorców UI organizatora | EP-16 | MOB | 8 h | niskie | IMP-650 (nazewnictwo), IMP-706 | ustalenia #26, #27, #29, #30, #31, #32; tabela „Niespójności w nazewnictwie”; 09-design-system |
+| [IMP-709](16-poprawki-ux.md#imp-709--wycofana-zawodniczka-w-rankingu-pdf-i-csv) | Wycofana zawodniczka w rankingu, PDF i CSV | EP-16 | FULL | 4 h | średnie | decyzja PO | ustalenie #12; FR-403, FR-701; SCR-ORG-08, SCR-ORG-17 |
+| [IMP-710](16-poprawki-ux.md#imp-710--eksport-pdfcsv-podgląd-i-informacja-zwrotna) | Eksport PDF/CSV: podgląd i informacja zwrotna | EP-16 | MOB | 7 h | średnie | IMP-703 | ustalenia #13, #42; SCR-ORG-12; FR-705, FR-706; IMP-174 |
+| [IMP-711](16-poprawki-ux.md#imp-711--pin-sędziego-informacja-o-weryfikacji-próbach-i-odblokowaniu) | PIN sędziego: informacja o weryfikacji, próbach i odblokowaniu | EP-16 | MOB | 6 h | średnie | – | ustalenia #9, #34; SCR-JDG-02, SCR-JDG-08; FR-509 |
+| [IMP-712](16-poprawki-ux.md#imp-712--formularz-oceny-i-kolejka-sędziego-nieruszone-kryteria-szkice-stany-końcowe) | Formularz oceny i kolejka sędziego: nieruszone kryteria, szkice, stany końcowe | EP-16 | MOB | 8 h | średnie | IMP-650 | ustalenia #14, #35; SCR-JDG-01, 03, 04, 05; FR-603…611 |
+| [IMP-713](16-poprawki-ux.md#imp-713--parowanie-tabletu-kamera-układ-nazwa-urządzenia) | Parowanie tabletu: kamera, układ, nazwa urządzenia | EP-16 | MOB | 4 h | niskie | – | ustalenie #33; SCR-JDG-06, SCR-ORG-14, SCR-ORG-16 |
+| [IMP-714](16-poprawki-ux.md#imp-714--regresja-ux-na-emulatorach-telefon--tablet) | Regresja UX na emulatorach (telefon + tablet) | EP-16 | QA | 6 h | niskie | IMP-700…713, IMP-715…718 | raport UX |
+| [IMP-715](16-poprawki-ux.md#imp-715--podwójne-żądania-wolny-klient-http-i-błędy-po-udanych-akcjach) | Podwójne żądania, wolny klient HTTP i błędy po udanych akcjach | EP-16 | FULL | 10 h | wysokie | – | ustalenia #4, #38; TL-45; FR-101…104; NFR-102 |
+| [IMP-716](16-poprawki-ux.md#imp-716--usunięcie-danych-osobowych-każdej-zawodniczki-zakończonego-turnieju) | Usunięcie danych osobowych każdej zawodniczki zakończonego turnieju | EP-16 | FULL | 3 h | średnie | – | ustalenie #40; FR-904; SCR-ORG-17; TL-17; US-091 |
+| [IMP-717](16-poprawki-ux.md#imp-717--tablet-po-zakończeniu-turnieju) | Tablet po zakończeniu turnieju | EP-16 | FULL | 8 h | wysokie | IMP-701 | ustalenie #41; SCR-JDG-01 (TL-47), SCR-JDG-02, SCR-JDG-10, SCR-ORG-14; FR-808 |
+| [IMP-718](16-poprawki-ux.md#imp-718--ścieżki-konta-organizatora-adres-e-mail-reset-hasła-e-maile) | Ścieżki konta organizatora: adres e-mail, reset hasła, e-maile | EP-16 | FULL | 6 h | niskie | IMP-715, decyzja PO (zmiana e-maila) | ustalenie #45; SCR-ORG-13, SCR-ORG-21; FR-101…107 |

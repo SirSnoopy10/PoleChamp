@@ -22,6 +22,7 @@
 | [13-wydanie.md](13-wydanie.md) | EP-13 | sklepy, przegląd, produkcja, pilotaż |
 | [14-spike.md](14-spike.md) | EP-14 | spike'i z kryterium decyzji i limitem czasu |
 | [15-design-i-akceptacje.md](15-design-i-akceptacje.md) | EP-15 | akceptacje projektanta, zasoby graficzne |
+| [16-poprawki-ux.md](16-poprawki-ux.md) | EP-16 | poprawki z testu UX (28.10.2026) |
 
 ## 2. Skala szacowania
 
