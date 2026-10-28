@@ -26,6 +26,8 @@ import { MEDIUM } from './styles';
 export const VERIFY_DELAY_MS = 160;
 /** Po tym czasie weryfikacji kropki pulsują (SCR-JDG-08). */
 export const PULSE_AFTER_MS = 500;
+/** Liczbę pozostałych prób pokazujemy od 5. błędu z 10 (UX-09). */
+export const SHOW_REMAINING_AT = 5;
 
 type Message = { key: string; params?: Record<string, number> } | null;
 
@@ -65,6 +67,17 @@ export function PinScreen({ judgeId, reauth = false }: { judgeId: string; reauth
     [],
   );
 
+  // Reset PIN-u przez organizatora (nowa `pinVersion` z pull/realtime) zdejmuje blokadę – powrót do
+  // klawiatury bez „Zmień sędziego” (UX-34).
+  const pinVersion = judge?.pinVersion;
+  const seenVersion = useRef(pinVersion);
+  useEffect(() => {
+    if (pinVersion === undefined || pinVersion === seenVersion.current) return;
+    seenVersion.current = pinVersion;
+    setLockedReset(false);
+    setMessage(null);
+  }, [pinVersion]);
+
   // Lokalna blokada czasowa zapisana w SQLite – trwa także po restarcie aplikacji (TC-E2E-JDG-006).
   const lockedUntil = judge?.lockedUntil ?? null;
   useEffect(() => {
@@ -103,6 +116,12 @@ export function PinScreen({ judgeId, reauth = false }: { judgeId: string; reauth
     } else if (result.kind === 'lockedReset') {
       setLockedReset(true);
       setMessage(null);
+    } else if (
+      result.kind === 'invalid' &&
+      result.remaining !== undefined &&
+      result.remaining <= SHOW_REMAINING_AT
+    ) {
+      setMessage({ key: 'judge:pin.remaining', params: { count: result.remaining } });
     } else if (result.kind === 'error') {
       setMessage({ key: result.messageKey });
     } else {
@@ -144,9 +163,11 @@ export function PinScreen({ judgeId, reauth = false }: { judgeId: string; reauth
             <Text variant="body" style={MEDIUM}>
               {judge?.fullName ?? ''}
             </Text>
-            <Text variant="caption" color={color.neutral[400]}>
-              {t('judge:pin.hint')}
-            </Text>
+            {lockedReset ? null : (
+              <Text variant="caption" color={color.neutral[400]}>
+                {t('judge:pin.hint')}
+              </Text>
+            )}
           </View>
         </View>
         {lockedReset ? (
@@ -158,6 +179,10 @@ export function PinScreen({ judgeId, reauth = false }: { judgeId: string; reauth
           {lockedReset ? (
             <Text variant="meta" color={color.accentRamp[300]} testID="pin-message">
               {t('errors:PIN_LOCKED_requiresReset')}
+            </Text>
+          ) : checking ? (
+            <Text variant="meta" color={color.neutral[300]} testID="pin-verifying">
+              {t('judge:pin.verifying')}
             </Text>
           ) : shown ? (
             <View style={styles.messageRow}>

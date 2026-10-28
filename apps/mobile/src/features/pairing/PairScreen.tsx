@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { ActivityIndicator, Linking, StyleSheet, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { color, layout, radius } from '@polechamp/tokens';
 import { judgeRuntime } from '../../data/judge/runtime';
@@ -40,9 +41,13 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
   const busy = stage !== 'idle';
   const scanned = useRef(false);
 
-  useEffect(() => {
-    if (permission && !permission.granted && permission.canAskAgain) void requestPermission();
-  }, [permission, requestPermission]);
+  // Prośba systemowa dopiero po „Zezwól na kamerę” pod wyjaśnieniem i tylko raz – po odmowie formularz
+  // ręczny i link do ustawień (UX-33).
+  const [asked, setAsked] = useState(false);
+  const askCamera = async () => {
+    setAsked(true);
+    await requestPermission();
+  };
 
   const connect = useCallback(
     async (value: string) => {
@@ -51,14 +56,15 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
       try {
         await pairDevice(judgeRuntime(), {
           code: value,
-          deviceName: deviceName.trim() || t('judge:pair.defaultDeviceName'),
+          // Pusta nazwa – API nadaje „Tablet {n}” (UX-33).
+          deviceName: deviceName.trim() || undefined,
         });
       } catch (e) {
         scanned.current = false;
         setError(pairErrorKey(e));
       }
     },
-    [busy, deviceName, t],
+    [busy, deviceName],
   );
 
   // Kod z linku głębokiego tylko wypełnia formularz – parowanie wymaga „Połącz” (TC-SEC-021, IMP-404):
@@ -73,14 +79,15 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
     void connect(masked);
   };
 
-  const cameraDenied = permission !== null && !permission.granted;
+  const cameraDenied = permission !== null && !permission.granted && (asked || !permission.canAskAgain);
 
   return (
     <View testID="pair-screen" style={styles.root}>
       <ScreenGlow />
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={[styles.content, { paddingTop: insets.top + layout[48] }]}
         keyboardShouldPersistTaps="handled"
+        bottomOffset={layout[24]}
       >
         <View style={styles.square}>
           <Icon name="qr-code" size={24} color={color.accent} />
@@ -114,6 +121,18 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
                     barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
                     onBarcodeScanned={busy ? undefined : onScan}
                   />
+                ) : permission ? (
+                  <View testID="pair-camera-ask" style={styles.noCamera}>
+                    <Text variant="bodyS" align="center" color={color.neutral[300]}>
+                      {t('judge:pair.cameraWhy')}
+                    </Text>
+                    <Button
+                      variant="secondary"
+                      label={t('judge:pair.allowCamera')}
+                      onPress={() => void askCamera()}
+                      testID="pair-allow-camera"
+                    />
+                  </View>
                 ) : null}
                 <View style={[styles.corner, styles.tl]} />
                 <View style={[styles.corner, styles.tr]} />
@@ -178,7 +197,7 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
             />
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
@@ -209,7 +228,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: color.surface,
   },
-  noCamera: { alignItems: 'center', justifyContent: 'center', gap: layout[12], padding: layout[22] },
+  noCamera: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: layout[12],
+    padding: layout[22],
+  },
   corner: { position: 'absolute', width: CORNER, height: CORNER, borderColor: color.accent },
   tl: {
     top: 0,

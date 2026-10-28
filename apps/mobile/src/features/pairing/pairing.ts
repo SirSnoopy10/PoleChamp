@@ -66,7 +66,7 @@ export function pairErrorKey(error: unknown): PairErrorKey {
  */
 export async function pairDevice(
   rt: JudgeRuntime,
-  input: { code: string; deviceName: string },
+  input: { code: string; deviceName?: string },
 ): Promise<PairResponse> {
   pairingStore.setState({ stage: 'connecting' });
   try {
@@ -75,7 +75,7 @@ export async function pairDevice(
         rt.api.POST('/v1/devices/pair', {
           body: {
             code: PairingCode.parse(input.code),
-            deviceName: input.deviceName,
+            ...(input.deviceName ? { deviceName: input.deviceName } : {}),
             platform: Platform.OS === 'ios' ? 'ios' : 'android',
             model: (Device.modelName ?? 'unknown').slice(0, 100),
             osVersion: (Device.osVersion ?? 'unknown').slice(0, 40),

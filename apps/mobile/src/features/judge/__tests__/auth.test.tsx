@@ -306,6 +306,51 @@ describe('IMP-305: logowanie online / offline (SCR-JDG-08)', () => {
     expect(screen.getByText('Zmień sędziego')).toBeOnTheScreen();
   });
 
+  it('UX-34: blokada bez podpisu „Wpisz PIN”; reset PIN-u (nowa wersja z pull) przywraca klawiaturę', async () => {
+    network.reportHttpSuccess();
+    env.routes.set('POST /v1/judge-sessions', () =>
+      json({ status: 423, code: 'PIN_LOCKED', title: 'x', requiresReset: true }, 423),
+    );
+    await startJudge(JUDGE_ROUTES, '/pin/jA');
+    await typePin('1111');
+    await waitFor(() => expect(screen.queryByTestId('pin-pad')).toBeNull());
+    expect(screen.queryByText('Wpisz 4-cyfrowy PIN')).toBeNull();
+    await act(async () => {
+      await env.local.tx((db) =>
+        db.runSync('UPDATE local_judge SET pin_version = pin_version + 1, pin_locked = 0 WHERE id = ?', 'jA'),
+      );
+      syncEvents.emit([{ type: 'judgeLocked', judgeId: 'jA' }]);
+    });
+    expect(await screen.findByTestId('pin-pad')).toBeOnTheScreen();
+    expect(screen.getByText('Wpisz 4-cyfrowy PIN')).toBeOnTheScreen();
+    expect(screen.queryByTestId('pin-message')).toBeNull();
+  });
+
+  it('UX-09: „Sprawdzanie…” w trakcie weryfikacji; od 5. błędu liczba pozostałych prób z API', async () => {
+    network.reportHttpSuccess();
+    let release: () => void = () => undefined;
+    env.routes.set(
+      'POST /v1/judge-sessions',
+      () =>
+        new Promise((resolve) => {
+          release = () =>
+            resolve(json({ status: 401, code: 'PIN_INVALID', title: 'x', remainingAttempts: 4 }, 401));
+        }),
+    );
+    await startJudge(JUDGE_ROUTES, '/pin/jA');
+    for (const d of '1111') await fireEvent.press(screen.getByTestId(`pin-key-${d}`));
+    await act(async () => {
+      jest.advanceTimersByTime(VERIFY_DELAY_MS);
+    });
+    expect(await screen.findByTestId('pin-verifying')).toHaveTextContent('Sprawdzanie…');
+    expect(screen.getByTestId('pin-key-1')).toBeDisabled();
+    await act(async () => release());
+    await waitFor(() =>
+      expect(screen.getByTestId('pin-message')).toHaveTextContent('Nieprawidłowy PIN. Pozostały 4 próby.'),
+    );
+    expect(screen.queryByTestId('pin-verifying')).toBeNull();
+  });
+
   it('online PIN_INVALID → komunikat; błąd sieci → ścieżka offline', async () => {
     await fastVerifier();
     network.reportHttpSuccess();
@@ -328,7 +373,14 @@ describe('IMP-305: logowanie online / offline (SCR-JDG-08)', () => {
     for (const seconds of expected) {
       for (let i = 1; i <= 5; i++) {
         const res = await JudgeAuth.login(env.rt, 'jA', '0000');
-        expect(res).toEqual(i < 5 ? { kind: 'invalid' } : { kind: 'locked', seconds });
+        // Dwie ostatnie próby serii – z liczbą pozostałych (UX-09).
+        expect(res).toEqual(
+          i < 3
+            ? { kind: 'invalid' }
+            : i < 5
+              ? { kind: 'invalid', remaining: 5 - i }
+              : { kind: 'locked', seconds },
+        );
       }
       // „Restart”: stan wyłącznie z bazy – logowanie odrzucone do końca blokady.
       expect(await JudgeAuth.login(env.rt, 'jA', '1234')).toEqual({ kind: 'locked', seconds });

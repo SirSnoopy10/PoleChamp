@@ -15,6 +15,7 @@ export interface Problem {
   requestId?: string;
   errors?: { field: string; code: FieldErrorCode }[];
   requiresReset?: boolean;
+  remainingAttempts?: number;
   [extra: string]: unknown;
 }
 

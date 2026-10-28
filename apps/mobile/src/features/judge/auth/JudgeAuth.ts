@@ -14,10 +14,12 @@ import { ATTEMPTS_PER_SERIES, lockSeconds, offlineDecision } from './offlinePoli
 
 /** Limit czasu logowania online – potem ścieżka offline (sędzia nie czeka 30 s przy słabej sieci). */
 export const ONLINE_LOGIN_TIMEOUT_MS = 8_000;
+const OFFLINE_SHOW_REMAINING = 2;
 
 export type LoginResult =
   | { kind: 'ok'; authMode: 'ONLINE_PIN' | 'OFFLINE_PIN' }
-  | { kind: 'invalid' }
+  /** `remaining` – próby do blokady (online z API, offline do blokady czasowej). */
+  | { kind: 'invalid'; remaining?: number }
   | { kind: 'locked'; seconds: number }
   | { kind: 'lockedReset' }
   | { kind: 'needsOnline' }
@@ -57,8 +59,10 @@ async function loginOnline(rt: JudgeRuntime, judge: LocalJudge, pin: string): Pr
     if (!(error instanceof ApiError) || error.code === 'NETWORK' || error.code === 'TIMEOUT') return null;
     if (error.status >= 500) return null;
     switch (error.code) {
-      case 'PIN_INVALID':
-        return { kind: 'invalid' };
+      case 'PIN_INVALID': {
+        const remaining = error.problem?.remainingAttempts;
+        return typeof remaining === 'number' ? { kind: 'invalid', remaining } : { kind: 'invalid' };
+      }
       case 'PIN_LOCKED':
         return error.problem?.requiresReset
           ? { kind: 'lockedReset' }
@@ -86,7 +90,9 @@ async function registerOfflineFailure(rt: JudgeRuntime, judge: LocalJudge): Prom
     const failed = judge.failedAttempts + 1;
     if (failed % ATTEMPTS_PER_SERIES !== 0) {
       db.runSync('UPDATE local_judge SET failed_attempts = ? WHERE id = ?', failed, judge.id);
-      return { kind: 'invalid' };
+      // Seria offline ma 5 prób – liczba pozostałych dopiero przy 2 ostatnich (UX-09).
+      const remaining = ATTEMPTS_PER_SERIES - (failed % ATTEMPTS_PER_SERIES);
+      return remaining <= OFFLINE_SHOW_REMAINING ? { kind: 'invalid', remaining } : { kind: 'invalid' };
     }
     const level = judge.lockLevel + 1;
     const seconds = lockSeconds(level);

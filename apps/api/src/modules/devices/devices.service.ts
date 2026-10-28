@@ -93,6 +93,17 @@ export class DevicesService {
         .for('update');
       if (!t || t.status === 'FINISHED') throw new DomainError('PAIRING_CODE_INVALID');
       await this.limits.assertCanAdd(tx, 'devices', t.id);
+      // Bez nazwy – „Tablet {n}”: kolejny numer w turnieju (licząc też odwołane), UX-33.
+      const name =
+        input.deviceName ??
+        `Tablet ${
+          one(
+            await tx
+              .select({ n: sql<number>`count(*)::int` })
+              .from(device)
+              .where(eq(device.tournamentId, t.id)),
+          ).n + 1
+        }`;
       const secret = randomToken();
       const pepper = randomBytes(32);
       const d = one(
@@ -100,7 +111,7 @@ export class DevicesService {
           .insert(device)
           .values({
             tournamentId: t.id,
-            name: input.deviceName,
+            name,
             platform: input.platform,
             model: input.model,
             osVersion: input.osVersion,

@@ -104,6 +104,27 @@ describe('IMP-301: parowanie tabletu (SCR-JDG-06)', () => {
     await waitFor(() => expect(screen.getByTestId('pair-error')).toHaveTextContent('Osiągnięto limit (20).'));
     expect(tokenStore.getState().device).toBeNull();
   });
+
+  it('UX-33: wyjaśnienie przed prośbą o kamerę, jedna prośba; pusta nazwa – bez deviceName (API „Tablet {n}”)', async () => {
+    await unpaired();
+    const request = (Camera as unknown as { __request: jest.Mock }).__request;
+    request.mockClear();
+    setPermission({ granted: false, canAskAgain: true });
+    env.routes.set('POST /v1/devices/pair', () => json(pairResponse, 201));
+    const r = await startJudge(JUDGE_ROUTES, '/pair');
+    expect(
+      screen.getByText('Kamera posłuży tylko do zeskanowania kodu QR z telefonu organizatora.'),
+    ).toBeOnTheScreen();
+    expect(request).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('pair-allow-camera'));
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText('Brak dostępu do kamery. Wpisz kod ręcznie.')).toBeOnTheScreen();
+    expect(request).toHaveBeenCalledTimes(1);
+    await fireEvent.changeText(screen.getByTestId('pair-code'), 'K7QM-4ZTX');
+    await fireEvent.press(screen.getByTestId('pair-connect'));
+    await waitFor(() => expect(r.getPathname()).toBe('/profiles'));
+    expect(env.calls.find((c) => c.path === '/v1/devices/pair')?.body).not.toHaveProperty('deviceName');
+  });
 });
 
 describe('IMP-302: rozruch tabletu (SCR-JDG-00)', () => {

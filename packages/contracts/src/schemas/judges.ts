@@ -51,7 +51,8 @@ export const Platform = z.enum(['ios', 'android']);
 
 export const PairRequest = z.strictObject({
   code: PairingCode,
-  deviceName: TrimmedString(1, 60),
+  /** Brak – API nadaje „Tablet {n}” (kolejny numer w turnieju, UX-33). */
+  deviceName: TrimmedString(1, 60).optional(),
   platform: Platform,
   model: z.string().max(100),
   osVersion: z.string().max(40),

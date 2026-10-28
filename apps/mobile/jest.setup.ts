@@ -50,9 +50,15 @@ jest.mock('expo-camera', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
   let permission: { granted: boolean; canAskAgain: boolean } | null = { granted: true, canAskAgain: true };
+  // Prośba systemowa: odmowa (bez kolejnego pytania), o ile uprawnienie nie było już nadane.
+  const request = jest.fn(async () => {
+    if (permission && !permission.granted) permission = { granted: false, canAskAgain: false };
+    return permission;
+  });
   return {
     CameraView: View,
-    useCameraPermissions: () => [permission, jest.fn(async () => permission)],
+    useCameraPermissions: () => [permission, request],
+    __request: request,
     __setPermission: (p: typeof permission) => {
       permission = p;
     },

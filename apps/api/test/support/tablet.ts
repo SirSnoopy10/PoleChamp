@@ -6,13 +6,14 @@ export async function pairTablet(
   call: Call,
   org: ReturnType<typeof organizer>,
   tournamentId: string,
-  name = 'Tablet stół 1',
+  /** `null` – parowanie bez nazwy (API nadaje „Tablet {n}”). */
+  name: string | null = 'Tablet stół 1',
 ) {
   const code = (await org.req('POST', `/v1/tournaments/${tournamentId}/pairing-codes`)).body.code as string;
   const paired = await call('POST', '/v1/devices/pair', {
     body: {
       code,
-      deviceName: name,
+      ...(name === null ? {} : { deviceName: name }),
       platform: 'android',
       model: 'Galaxy Tab A8',
       osVersion: '15',

@@ -121,6 +121,19 @@ describe('parowanie i urządzenia (IMP-140, IMP-141)', () => {
     expect([res.status, res.body.code]).toEqual([409, 'LIMIT_EXCEEDED']);
   });
 
+  it('UX-33: parowanie bez nazwy – „Tablet {n}” z kolejnym numerem w turnieju', async () => {
+    const t = await org.tournament();
+    await pairTablet(call, org, t.id, 'Tablet przy scenie');
+    const a = await pairTablet(call, org, t.id, null);
+    const b = await pairTablet(call, org, t.id, null);
+    const names = Object.fromEntries(
+      (
+        (await org.req('GET', `/v1/tournaments/${t.id}/devices`)).body.items as { id: string; name: string }[]
+      ).map((d) => [d.id, d.name]),
+    );
+    expect([names[a.deviceId], names[b.deviceId]]).toEqual(['Tablet 2', 'Tablet 3']);
+  });
+
   it('TC-API-065 / TC-API-067 / TC-API-069: lista, zmiana nazwy, heartbeat i stan online', async () => {
     const t = await org.tournament();
     const judge = await org.judge(t.id, 'Katarzyna Nowak');

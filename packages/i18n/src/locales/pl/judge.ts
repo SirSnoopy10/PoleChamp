@@ -50,6 +50,12 @@ export const judge = {
     backspace: 'Usuń cyfrę',
     entered: 'Wpisano {count} z 4 cyfr',
     checking: 'Sprawdzanie PIN-u',
+    /** Stan weryfikacji widoczny pod kropkami (UX-09). */
+    verifying: 'Sprawdzanie…',
+    /** Od 5. błędu – `remainingAttempts` z API, offline do najbliższej blokady (UX-09). */
+    remaining_one: 'Nieprawidłowy PIN. Pozostała {count} próba.',
+    remaining_few: 'Nieprawidłowy PIN. Pozostały {count} próby.',
+    remaining_many: 'Nieprawidłowy PIN. Pozostało {count} prób.',
   },
   /** SCR-JDG-03. */
   categories: {
@@ -139,8 +145,9 @@ export const judge = {
     code: 'Kod parowania',
     codePlaceholder: 'XXXX-XXXX',
     deviceName: 'Nazwa tabletu (opcjonalnie)',
-    deviceNamePlaceholder: 'np. Tablet stół 1',
-    defaultDeviceName: 'Tablet sędziowski',
+    deviceNamePlaceholder: 'Puste – „Tablet 1”, „Tablet 2”…',
+    cameraWhy: 'Kamera posłuży tylko do zeskanowania kodu QR z telefonu organizatora.',
+    allowCamera: 'Zezwól na kamerę',
     connect: 'Połącz',
     connecting: 'Łączenie z turniejem…',
     loading: 'Pobieranie list startowych…',
