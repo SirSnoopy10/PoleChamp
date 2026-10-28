@@ -11,7 +11,7 @@ import { Button } from '../../ui/Button';
 import { NumberField, TextField, formatNumber, useZodForm } from '../../ui/form';
 import { FieldFrame } from '../../ui/form/FieldFrame';
 import { SegmentedControl } from '../../ui/SegmentedControl';
-import { ConfirmContent, Sheet, SheetHeader, SheetStep, useSheetStep } from '../../ui/sheet';
+import { ConfirmContent, Sheet, SheetHeader, SheetStep, useDirtyGuard, useSheetStep } from '../../ui/sheet';
 import { toast } from '../../ui/Toast';
 import { toastSaveError } from './CategoryFormSheet';
 
@@ -45,7 +45,10 @@ export function handleConfigError(e: unknown, close: () => void, applyFields: (e
   toastSaveError(e);
 }
 
-/** SCR-ORG-09 – nowe / edycja / usunięcie kryterium (IMP-263). Waga ze stepperem −/+ 0,5. */
+/**
+ * SCR-ORG-09 – nowe / edycja / usunięcie kryterium (IMP-263). Skala i waga ze stepperem −/+ (UX-25),
+ * pytanie przy zamknięciu ze zmianami, „Zapisz” w edycji aktywny dopiero po zmianie (UX-36).
+ */
 export function CriterionSheet({
   visible,
   onClose,
@@ -58,6 +61,8 @@ export function CriterionSheet({
   const offline = !useOnline();
   const form = useZodForm(CriterionInput, { defaultValues: NEW as never });
   const { step, setStep, reset } = useSheetStep<'form' | 'delete'>('form');
+  const dirty = form.formState.isDirty;
+  const guard = useDirtyGuard(visible, dirty, onClose);
 
   useEffect(() => {
     if (!visible) return;
@@ -110,145 +115,140 @@ export function CriterionSheet({
     form.fieldError(name) ? t(key as never) : undefined;
 
   return (
-    <Sheet visible={visible} onClose={onClose} accessibilityLabel={title} testID="criterion-sheet">
-      <SheetStep stepKey={step}>
-        {step === 'form' ? (
-          <View style={styles.body}>
-            <SheetHeader title={title} />
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <TextField
-                  testID="criterion-name"
-                  label={t('org:criterionForm.name')}
-                  placeholder={t('org:criterionForm.namePlaceholder')}
-                  value={field.value as string}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                  error={err('name', 'org:criterionForm.nameError')}
-                  maxLength={60}
-                />
-              )}
-            />
-            <View style={styles.grid}>
-              <View style={styles.cell}>
-                <Controller
-                  control={form.control}
-                  name="scaleMax"
-                  render={({ field }) => (
-                    <NumberField
-                      testID="criterion-scale"
-                      label={t('org:criterionForm.scale')}
-                      value={field.value as number | null}
-                      onChange={(v) => field.onChange(v)}
-                      error={err('scaleMax', 'org:criterionForm.scaleError')}
-                    />
-                  )}
-                />
-              </View>
-              <View style={styles.cell}>
-                <Controller
-                  control={form.control}
-                  name="weight"
-                  render={({ field }) => (
-                    <NumberField
-                      testID="criterion-weight"
-                      label={t('org:criterionForm.weight')}
-                      value={field.value as number | null}
-                      onChange={(v) => field.onChange(v)}
-                      stepper={{ step: 0.5, min: 0.5, max: 5 }}
-                      error={err('weight', 'org:criterionForm.weightError')}
-                    />
-                  )}
-                />
-              </View>
-            </View>
-            <Controller
-              control={form.control}
-              name="step"
-              render={({ field }) => (
-                <FieldFrame label={t('org:criterionForm.step')} testID="criterion-step">
-                  <SegmentedControl
-                    segments={STEPS.map((s) => ({ key: String(s), label: formatNumber(s) }))}
-                    value={String(field.value ?? 0.5)}
-                    onChange={(k) => field.onChange(Number(k))}
-                    testID="criterion-step-control"
+    <Sheet visible={visible} onClose={guard.close} accessibilityLabel={title} testID="criterion-sheet">
+      {guard.prompt ?? (
+        <SheetStep stepKey={step}>
+          {step === 'form' ? (
+            <View style={styles.body}>
+              <SheetHeader title={title} />
+              <Controller
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <TextField
+                    testID="criterion-name"
+                    label={t('org:criterionForm.name')}
+                    placeholder={t('org:criterionForm.namePlaceholder')}
+                    value={field.value as string}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    error={err('name', 'org:criterionForm.nameError')}
+                    maxLength={60}
                   />
-                </FieldFrame>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <TextField
-                  testID="criterion-description"
-                  label={t('org:criterionForm.description')}
-                  placeholder={t('org:criterionForm.descriptionPlaceholder')}
-                  value={(field.value as string | null) ?? ''}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                  error={form.fieldError('description')}
-                  maxLength={200}
-                />
-              )}
-            />
-            <Button
-              testID="criterion-save"
-              label={t('org:criterionForm.save')}
-              size={48}
-              fullWidth
-              loading={form.formState.isSubmitting}
-              onPress={() => void submit()}
-              disabled={offline}
-            />
-            {criterion ? (
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="scaleMax"
+                render={({ field }) => (
+                  <NumberField
+                    testID="criterion-scale"
+                    label={t('org:criterionForm.scale')}
+                    value={field.value as number | null}
+                    onChange={(v) => field.onChange(v)}
+                    stepper={{ step: 1, min: 1, max: 20 }}
+                    error={err('scaleMax', 'org:criterionForm.scaleError')}
+                  />
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <NumberField
+                    testID="criterion-weight"
+                    label={t('org:criterionForm.weight')}
+                    value={field.value as number | null}
+                    onChange={(v) => field.onChange(v)}
+                    stepper={{ step: 0.5, min: 0.5, max: 5 }}
+                    error={err('weight', 'org:criterionForm.weightError')}
+                  />
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="step"
+                render={({ field }) => (
+                  <FieldFrame label={t('org:criterionForm.step')} testID="criterion-step">
+                    <SegmentedControl
+                      segments={STEPS.map((s) => ({ key: String(s), label: formatNumber(s) }))}
+                      value={String(field.value ?? 0.5)}
+                      onChange={(k) => field.onChange(Number(k))}
+                      testID="criterion-step-control"
+                    />
+                  </FieldFrame>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <TextField
+                    testID="criterion-description"
+                    label={t('org:criterionForm.description')}
+                    placeholder={t('org:criterionForm.descriptionPlaceholder')}
+                    value={(field.value as string | null) ?? ''}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    error={form.fieldError('description')}
+                    maxLength={200}
+                  />
+                )}
+              />
               <Button
-                testID="criterion-delete"
-                variant="secondary"
-                destructive
-                icon="trash"
-                label={t('org:criterionForm.delete')}
+                testID="criterion-save"
+                label={t('org:criterionForm.save')}
                 size={48}
                 fullWidth
-                onPress={() => setStep('delete')}
-                disabled={offline}
+                loading={form.formState.isSubmitting}
+                onPress={() => void submit()}
+                disabled={offline || (!!criterion && !dirty)}
               />
-            ) : null}
-          </View>
-        ) : (
-          <ConfirmContent
-            icon="trash"
-            title={t('org:criterionForm.deleteTitle', { name: criterion?.name ?? '' })}
-            actions={
-              <>
+              {criterion ? (
                 <Button
-                  testID="criterion-delete-confirm"
-                  label={t('org:criterionForm.deleteConfirm')}
+                  testID="criterion-delete"
+                  variant="secondary"
+                  destructive
+                  icon="trash"
+                  label={t('org:criterionForm.delete')}
                   size={48}
                   fullWidth
-                  onPress={() => void remove()}
+                  onPress={() => setStep('delete')}
                   disabled={offline}
                 />
-                <Button
-                  variant="secondary"
-                  label={t('common:cancel')}
-                  size={48}
-                  fullWidth
-                  onPress={() => setStep('form')}
-                />
-              </>
-            }
-          />
-        )}
-      </SheetStep>
+              ) : null}
+            </View>
+          ) : (
+            <ConfirmContent
+              icon="trash"
+              title={t('org:criterionForm.deleteTitle', { name: criterion?.name ?? '' })}
+              actions={
+                <>
+                  <Button
+                    testID="criterion-delete-confirm"
+                    label={t('org:criterionForm.deleteConfirm')}
+                    size={48}
+                    fullWidth
+                    onPress={() => void remove()}
+                    disabled={offline}
+                  />
+                  <Button
+                    variant="secondary"
+                    label={t('common:cancel')}
+                    size={48}
+                    fullWidth
+                    onPress={() => setStep('form')}
+                  />
+                </>
+              }
+            />
+          )}
+        </SheetStep>
+      )}
     </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
   body: { gap: layout[14] },
-  grid: { flexDirection: 'row', gap: layout[10] },
-  cell: { flex: 1 },
 });

@@ -63,6 +63,7 @@ export function PdfPreviewSheet({
 
   return (
     <Sheet
+      scroll={false}
       visible={visible}
       onClose={onClose}
       maxHeightRatio={0.86}

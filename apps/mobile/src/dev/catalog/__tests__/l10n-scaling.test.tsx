@@ -1,6 +1,8 @@
 import { I18nProvider } from '../../../i18n';
 import { MAX_FONT_SCALE } from '../../../mode/mode';
-import { renderWithProviders, screen } from '../../../test-utils/render';
+import { Text } from '../../../ui/Text';
+import { Sheet } from '../../../ui/sheet';
+import { fireEvent, renderWithProviders, screen } from '../../../test-utils/render';
 import { catalogSections } from '../registry';
 import '../sections';
 
@@ -98,5 +100,23 @@ describe('pseudolokalizacja i skalowanie tekstu (IMP-504)', () => {
     silence.mockRestore();
     expect(rendered).toBeGreaterThan(50);
     expect(raw).toEqual([]);
+  });
+
+  it('UX-44: treść arkusza dłuższa niż ekran (skala 130%) przewija się – akcje pod zapisem osiągalne', async () => {
+    const view = await renderWithProviders(
+      <Sheet visible onClose={() => undefined} testID="long-sheet">
+        {Array.from({ length: 12 }, (_, i) => (
+          <Text key={i}>{`Wiersz ${i}`}</Text>
+        ))}
+        <Text testID="last-action">Usuń dane osobowe</Text>
+      </Sheet>,
+    );
+    const scroll = screen.getByTestId('long-sheet-scroll');
+    expect(screen.getByTestId('last-action')).toBeOnTheScreen();
+    expect(scroll).toContainElement(screen.getByTestId('last-action'));
+    await fireEvent(scroll, 'layout', { nativeEvent: { layout: { height: 500 } } });
+    await fireEvent(scroll, 'contentSizeChange', 360, 900);
+    expect(screen.getByTestId('long-sheet-scroll').props.showsVerticalScrollIndicator).toBe(true);
+    await view.unmount();
   });
 });

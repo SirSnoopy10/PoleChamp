@@ -28,7 +28,10 @@ export interface CriteriaTabProps {
   onEditPenalty: (penalty: Penalty) => void;
 }
 
-/** SCR-ORG-06 – zakładka Kryteria (IMP-262): dane z `['category', id]`, bez osobnego zapytania. */
+/**
+ * SCR-ORG-06 – zakładka Kryteria (IMP-262): dane z `['category', id]`, bez osobnego zapytania.
+ * Krok oceny zawsze w wierszu; w przygotowaniu notka, że kryteria i kary to szablon (UX-24).
+ */
 export function CriteriaTab({
   category,
   editable,
@@ -51,6 +54,14 @@ export function CriteriaTab({
           </Text>
         </View>
       ) : null}
+      {editable ? (
+        <View testID="criteria-defaults-note" style={styles.info}>
+          <Icon name="info" size={14} color={color.neutral[400]} />
+          <Text variant="caption" color={color.neutral[400]} style={styles.infoText}>
+            {t('org:criteria.defaultsNote')}
+          </Text>
+        </View>
+      ) : null}
       <View style={styles.section}>
         <SectionHeader
           title={t('org:criteria.title')}
@@ -63,11 +74,7 @@ export function CriteriaTab({
               key={c.id}
               testID={`criterion-${c.id}`}
               title={c.name}
-              subtitle={
-                c.step === 0.5
-                  ? t('org:criteria.scale', { max: c.scaleMax })
-                  : t('org:criteria.scaleStep', { max: c.scaleMax, step: formatNumber(c.step) })
-              }
+              subtitle={t('org:criteria.scaleStep', { max: c.scaleMax, step: formatNumber(c.step) })}
               trailing={<Badge variant="weight" value={toTenths(c.weight)} />}
               inactive={!editable}
               onPress={editable ? () => onEditCriterion(c) : undefined}

@@ -10,7 +10,7 @@ import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { ChoiceChipGroup, TextField, useZodForm } from '../../ui/form';
-import { ConfirmContent, Sheet, SheetHeader, SheetStep, useSheetStep } from '../../ui/sheet';
+import { ConfirmContent, Sheet, SheetHeader, SheetStep, useDirtyGuard, useSheetStep } from '../../ui/sheet';
 import { toast } from '../../ui/Toast';
 
 type CategoryValues = {
@@ -139,123 +139,128 @@ export function CategoryFormSheet({
   const levels = Level.options.map((value) => ({ value, label: t(`org:level.${value}`) }));
   const nameError = form.fieldError('name') ? t('org:categoryForm.nameError') : undefined;
 
+  const dirty = form.formState.isDirty;
+  const guard = useDirtyGuard(visible, dirty, onClose);
+
   return (
-    <Sheet visible={visible} onClose={onClose} accessibilityLabel={title} testID="category-sheet">
-      <SheetStep stepKey={step}>
-        {step === 'form' ? (
-          <View style={styles.body}>
-            <SheetHeader title={title} />
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <TextField
-                  testID="category-name"
-                  label={t('org:categoryForm.name')}
-                  placeholder={t('org:categoryForm.namePlaceholder')}
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                  error={nameError}
-                  maxLength={80}
-                />
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="style"
-              render={({ field }) => (
-                <ChoiceChipGroup
-                  testID="category-style"
-                  label={t('org:categoryForm.style')}
-                  options={styleOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={started}
-                />
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="level"
-              render={({ field }) => (
-                <ChoiceChipGroup
-                  testID="category-level"
-                  label={t('org:categoryForm.level')}
-                  options={levels}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={started}
-                  disabledHint={started ? t('org:categoryForm.lockedHint') : undefined}
-                />
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="ageGroup"
-              render={({ field }) => (
-                <TextField
-                  testID="category-age"
-                  label={t('org:categoryForm.ageGroup')}
-                  value={field.value ?? ''}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                  error={form.fieldError('ageGroup')}
-                  maxLength={40}
-                />
-              )}
-            />
-            <Button
-              testID="category-submit"
-              label={t(category ? 'org:categoryForm.save' : 'org:categoryForm.create')}
-              size={48}
-              fullWidth
-              disabled={!canWrite}
-              loading={form.formState.isSubmitting}
-              onPress={() => void submit()}
-            />
-            {category?.status === 'DRAFT' ? (
+    <Sheet visible={visible} onClose={guard.close} accessibilityLabel={title} testID="category-sheet">
+      {guard.prompt ?? (
+        <SheetStep stepKey={step}>
+          {step === 'form' ? (
+            <View style={styles.body}>
+              <SheetHeader title={title} />
+              <Controller
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <TextField
+                    testID="category-name"
+                    label={t('org:categoryForm.name')}
+                    placeholder={t('org:categoryForm.namePlaceholder')}
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    error={nameError}
+                    maxLength={80}
+                  />
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="style"
+                render={({ field }) => (
+                  <ChoiceChipGroup
+                    testID="category-style"
+                    label={t('org:categoryForm.style')}
+                    options={styleOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={started}
+                  />
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="level"
+                render={({ field }) => (
+                  <ChoiceChipGroup
+                    testID="category-level"
+                    label={t('org:categoryForm.level')}
+                    options={levels}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={started}
+                    disabledHint={started ? t('org:categoryForm.lockedHint') : undefined}
+                  />
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="ageGroup"
+                render={({ field }) => (
+                  <TextField
+                    testID="category-age"
+                    label={t('org:categoryForm.ageGroup')}
+                    value={field.value ?? ''}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    error={form.fieldError('ageGroup')}
+                    maxLength={40}
+                  />
+                )}
+              />
               <Button
-                testID="category-delete"
-                variant="secondary"
-                destructive
-                icon="trash"
-                label={t('org:categoryForm.delete')}
+                testID="category-submit"
+                label={t(category ? 'org:categoryForm.save' : 'org:categoryForm.create')}
                 size={48}
                 fullWidth
-                disabled={!canWrite}
-                onPress={() => setStep('delete')}
+                disabled={!canWrite || (!!category && !dirty)}
+                loading={form.formState.isSubmitting}
+                onPress={() => void submit()}
               />
-            ) : null}
-          </View>
-        ) : (
-          <ConfirmContent
-            icon="trash"
-            title={t('org:categoryForm.deleteTitle', { name: category?.name ?? '' })}
-            text={t('org:categoryForm.deleteText')}
-            actions={
-              <>
+              {category?.status === 'DRAFT' ? (
                 <Button
-                  testID="category-delete-confirm"
+                  testID="category-delete"
                   variant="secondary"
-                  label={t('org:categoryForm.deleteConfirm')}
+                  destructive
+                  icon="trash"
+                  label={t('org:categoryForm.delete')}
                   size={48}
                   fullWidth
-                  onPress={() => void remove()}
-                  disabled={offline}
+                  disabled={!canWrite}
+                  onPress={() => setStep('delete')}
                 />
-                <Button
-                  variant="ghost"
-                  label={t('common:cancel')}
-                  size={48}
-                  fullWidth
-                  onPress={() => setStep('form')}
-                />
-              </>
-            }
-          />
-        )}
-      </SheetStep>
+              ) : null}
+            </View>
+          ) : (
+            <ConfirmContent
+              icon="trash"
+              title={t('org:categoryForm.deleteTitle', { name: category?.name ?? '' })}
+              text={t('org:categoryForm.deleteText')}
+              actions={
+                <>
+                  <Button
+                    testID="category-delete-confirm"
+                    variant="secondary"
+                    label={t('org:categoryForm.deleteConfirm')}
+                    size={48}
+                    fullWidth
+                    onPress={() => void remove()}
+                    disabled={offline}
+                  />
+                  <Button
+                    variant="ghost"
+                    label={t('common:cancel')}
+                    size={48}
+                    fullWidth
+                    onPress={() => setStep('form')}
+                  />
+                </>
+              }
+            />
+          )}
+        </SheetStep>
+      )}
     </Sheet>
   );
 }

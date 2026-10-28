@@ -35,7 +35,13 @@ export const ui = {
     loadFailed: 'Nie udało się wczytać danych.',
     retry: 'Spróbuj ponownie',
   },
-  sheet: { close: 'Zamknij' },
+  sheet: {
+    close: 'Zamknij',
+    discardTitle: 'Odrzucić zmiany?',
+    discardText: 'Wpisane dane nie zostaną zapisane.',
+    discard: 'Odrzuć zmiany',
+    keepEditing: 'Wróć do edycji',
+  },
   form: {
     charCount: '{count}/{max}',
     decrement: 'Zmniejsz',

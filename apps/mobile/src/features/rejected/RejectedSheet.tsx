@@ -85,6 +85,7 @@ export function RejectedSheet({
 
   return (
     <Sheet
+      scroll={false}
       visible={visible}
       onClose={close}
       accessibilityLabel={t('org:rejected.title')}

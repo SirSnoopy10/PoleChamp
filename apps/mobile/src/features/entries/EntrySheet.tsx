@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Controller } from 'react-hook-form';
-import { StyleSheet, View } from 'react-native';
-import { color, layout } from '@polechamp/tokens';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { layout } from '@polechamp/tokens';
 import { EntryCreate, type EntryRow } from '@polechamp/contracts';
 import { uuidv7 } from '../../data/api';
 import { ApiError } from '../../data/api/errors';
@@ -10,7 +10,7 @@ import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { Checkbox, NumberField, TextField, useZodForm } from '../../ui/form';
-import { ConfirmContent, Sheet, SheetHeader, SheetStep, useSheetStep } from '../../ui/sheet';
+import { ConfirmContent, Sheet, SheetHeader, SheetStep, useDirtyGuard, useSheetStep } from '../../ui/sheet';
 import { Text } from '../../ui/Text';
 import { toast } from '../../ui/Toast';
 import { applyFormError, toastSaveError } from '../categories/CategoryFormSheet';
@@ -77,8 +77,13 @@ export function EntrySheet({
     },
   });
   const [key, setKey] = useState(uuidv7);
+  const nameRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const clubRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const yearRef = useRef<ComponentRef<typeof TextInput>>(null);
   const { step, setStep, reset } = useSheetStep<Step>('form');
   const birthYear = form.watch('birthYear') as number | null | undefined;
+  const dirty = form.formState.isDirty;
+  const guard = useDirtyGuard(visible, dirty, onClose);
   const minor = isMinorByYear(birthYear ?? null) || (!!entry?.athlete.isMinor && birthYear == null);
 
   const blank = (number: number): Values => ({
@@ -99,7 +104,7 @@ export function EntrySheet({
             startNumber: entry.startNumber,
             fullName: entry.athlete.fullName,
             club: entry.athlete.club ?? '',
-            birthYear: null,
+            birthYear: entry.athlete.birthYear ?? null,
             guardianConsentConfirmed: entry.athlete.isMinor,
           }
         : blank(suggestedNumber)) as never,
@@ -135,8 +140,10 @@ export function EntrySheet({
         if (!numberLocked && parsed.startNumber !== entry.startNumber) body.startNumber = parsed.startNumber;
         if (parsed.fullName !== entry.athlete.fullName) body.fullName = parsed.fullName;
         if ((parsed.club ?? null) !== (entry.athlete.club ?? null)) body.club = parsed.club ?? null;
-        if (parsed.birthYear != null) body.birthYear = parsed.birthYear;
-        if (parsed.isMinor) {
+        if ((parsed.birthYear ?? null) !== (entry.athlete.birthYear ?? null))
+          body.birthYear = parsed.birthYear ?? null;
+        // Zgoda tylko przy zmianie – zapis bez zmian nie wysyła nic (UX-39).
+        if (parsed.isMinor && (!entry.athlete.isMinor || body.birthYear !== undefined)) {
           body.isMinor = true;
           body.guardianConsentConfirmed = parsed.guardianConsentConfirmed;
         }
@@ -195,197 +202,206 @@ export function EntrySheet({
   };
 
   return (
-    <Sheet visible={visible} onClose={onClose} accessibilityLabel={title} testID="entry-sheet">
-      <SheetStep stepKey={step}>
-        {step === 'form' ? (
-          <View style={styles.body}>
-            <SheetHeader title={title} />
-            <View style={styles.grid}>
-              <View style={styles.number}>
-                <Controller
-                  control={form.control}
-                  name="startNumber"
-                  render={({ field }) => (
-                    <NumberField
-                      testID="entry-number"
-                      label={t('org:entryForm.number')}
-                      value={field.value as number | null}
-                      onChange={(v) => field.onChange(v)}
-                      editable={!numberLocked}
-                      error={form.fieldError('startNumber')}
-                    />
-                  )}
-                />
+    <Sheet visible={visible} onClose={guard.close} accessibilityLabel={title} testID="entry-sheet">
+      {guard.prompt ?? (
+        <SheetStep stepKey={step}>
+          {step === 'form' ? (
+            <View style={styles.body}>
+              <SheetHeader title={title} />
+              <View style={styles.grid}>
+                <View style={styles.number}>
+                  <Controller
+                    control={form.control}
+                    name="startNumber"
+                    render={({ field }) => (
+                      <NumberField
+                        testID="entry-number"
+                        label={t('org:entryForm.number')}
+                        value={field.value as number | null}
+                        onChange={(v) => field.onChange(v)}
+                        editable={!numberLocked}
+                        error={form.fieldError('startNumber')}
+                        returnKeyType="next"
+                        onSubmitEditing={() => nameRef.current?.focus()}
+                      />
+                    )}
+                  />
+                </View>
+                <View style={styles.cell}>
+                  <Controller
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <TextField
+                        ref={nameRef}
+                        testID="entry-name"
+                        returnKeyType="next"
+                        submitBehavior="submit"
+                        onSubmitEditing={() => clubRef.current?.focus()}
+                        label={t('org:entryForm.fullName')}
+                        value={(field.value as string) ?? ''}
+                        onChangeText={field.onChange}
+                        onBlur={field.onBlur}
+                        error={fullNameError}
+                        autoCapitalize="words"
+                        autoComplete="off"
+                        maxLength={100}
+                      />
+                    )}
+                  />
+                </View>
               </View>
-              <View style={styles.cell}>
-                <Controller
-                  control={form.control}
-                  name="fullName"
-                  render={({ field }) => (
-                    <TextField
-                      testID="entry-name"
-                      label={t('org:entryForm.fullName')}
-                      value={(field.value as string) ?? ''}
-                      onChangeText={field.onChange}
-                      onBlur={field.onBlur}
-                      error={fullNameError}
-                      autoCapitalize="words"
-                      autoComplete="off"
-                      maxLength={100}
-                    />
-                  )}
-                />
-              </View>
-            </View>
-            <Controller
-              control={form.control}
-              name="club"
-              render={({ field }) => (
-                <TextField
-                  testID="entry-club"
-                  label={t('org:entryForm.club')}
-                  value={(field.value as string | null) ?? ''}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                  error={form.fieldError('club')}
-                  maxLength={100}
-                />
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="birthYear"
-              render={({ field }) => (
-                <NumberField
-                  testID="entry-birth-year"
-                  label={t('org:entryForm.birthYear')}
-                  value={(field.value as number | null | undefined) ?? null}
-                  onChange={(v) => field.onChange(v)}
-                  error={form.fieldError('birthYear')}
-                />
-              )}
-            />
-            {minor ? (
               <Controller
                 control={form.control}
-                name="guardianConsentConfirmed"
+                name="club"
                 render={({ field }) => (
-                  <View style={styles.consent}>
+                  <TextField
+                    ref={clubRef}
+                    testID="entry-club"
+                    returnKeyType="next"
+                    submitBehavior="submit"
+                    onSubmitEditing={() => yearRef.current?.focus()}
+                    label={t('org:entryForm.club')}
+                    value={(field.value as string | null) ?? ''}
+                    onChangeText={field.onChange}
+                    onBlur={field.onBlur}
+                    error={form.fieldError('club')}
+                    maxLength={100}
+                  />
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="birthYear"
+                render={({ field }) => (
+                  <NumberField
+                    ref={yearRef}
+                    testID="entry-birth-year"
+                    returnKeyType="done"
+                    onSubmitEditing={() => void save(false)()}
+                    label={t('org:entryForm.birthYear')}
+                    value={(field.value as number | null | undefined) ?? null}
+                    onChange={(v) => field.onChange(v)}
+                    error={form.fieldError('birthYear')}
+                  />
+                )}
+              />
+              {minor ? (
+                <Controller
+                  control={form.control}
+                  name="guardianConsentConfirmed"
+                  render={({ field }) => (
                     <Checkbox
                       testID="entry-consent"
                       checked={!!field.value}
                       onChange={field.onChange}
                       accessibilityLabel={t('org:entryForm.consent')}
+                      error={consentError}
                     >
                       <Text variant="bodyS">{t('org:entryForm.consent')}</Text>
                     </Checkbox>
-                    {consentError ? (
-                      <Text variant="caption" color={color.accentRamp[300]}>
-                        {consentError}
-                      </Text>
-                    ) : null}
-                  </View>
-                )}
-              />
-            ) : null}
-            <Button
-              testID="entry-save"
-              label={t(entry ? 'org:entryForm.save' : 'org:entryForm.add')}
-              size={48}
-              fullWidth
-              disabled={offline || (!entry && !canChangeList)}
-              loading={form.formState.isSubmitting}
-              onPress={() => void save(false)()}
-            />
-            {!entry ? (
+                  )}
+                />
+              ) : null}
               <Button
-                testID="entry-add-another"
-                variant="ghost"
-                size={44}
-                label={t('org:entryForm.addAnother')}
-                disabled={offline || !canChangeList}
-                onPress={() => void save(true)()}
-                style={styles.center}
+                testID="entry-save"
+                label={t(entry ? 'org:entryForm.save' : 'org:entryForm.add')}
+                size={48}
+                fullWidth
+                disabled={offline || (!entry && !canChangeList) || (!!entry && !dirty)}
+                loading={form.formState.isSubmitting}
+                onPress={() => void save(false)()}
               />
-            ) : (
-              <>
-                {canChangeList ? (
-                  entry.status === 'ACTIVE' ? (
-                    <Button
-                      testID="entry-withdraw"
-                      variant="secondary"
-                      destructive
-                      icon="user-minus"
-                      label={t('org:entryForm.withdraw')}
-                      size={48}
-                      fullWidth
-                      onPress={() => setStep('withdraw')}
-                      disabled={offline}
-                    />
-                  ) : (
-                    <Button
-                      testID="entry-restore"
-                      variant="secondary"
-                      label={t('org:entryForm.restore')}
-                      size={48}
-                      fullWidth
-                      onPress={() => void run(onRestore, 'toasts:athleteRestored')}
-                      disabled={offline}
-                    />
-                  )
-                ) : null}
-                {scored || tournamentFinished ? (
-                  <Button
-                    testID="entry-anonymize"
-                    variant="ghost"
-                    size={44}
-                    label={t('org:entryForm.anonymize')}
-                    onPress={() => setStep('anonymize')}
-                    style={styles.center}
-                    disabled={offline}
-                  />
-                ) : canChangeList ? (
-                  <Button
-                    testID="entry-remove"
-                    variant="ghost"
-                    size={44}
-                    label={t('org:entryForm.remove')}
-                    onPress={() => setStep('remove')}
-                    style={styles.center}
-                    disabled={offline}
-                  />
-                ) : null}
-              </>
-            )}
-          </View>
-        ) : (
-          <ConfirmContent
-            icon={confirm[step].icon}
-            title={confirm[step].title}
-            text={confirm[step].text}
-            actions={
-              <>
+              {!entry ? (
                 <Button
-                  testID="entry-confirm"
-                  variant="secondary"
-                  label={confirm[step].label}
-                  size={48}
-                  fullWidth
-                  onPress={confirm[step].onPress}
-                  disabled={offline}
-                />
-                <Button
+                  testID="entry-add-another"
                   variant="ghost"
-                  label={t('common:cancel')}
-                  size={48}
-                  fullWidth
-                  onPress={() => setStep('form')}
+                  size={44}
+                  label={t('org:entryForm.addAnother')}
+                  disabled={offline || !canChangeList}
+                  onPress={() => void save(true)()}
+                  style={styles.center}
                 />
-              </>
-            }
-          />
-        )}
-      </SheetStep>
+              ) : (
+                <>
+                  {canChangeList ? (
+                    entry.status === 'ACTIVE' ? (
+                      <Button
+                        testID="entry-withdraw"
+                        variant="secondary"
+                        destructive
+                        icon="user-minus"
+                        label={t('org:entryForm.withdraw')}
+                        size={48}
+                        fullWidth
+                        onPress={() => setStep('withdraw')}
+                        disabled={offline}
+                      />
+                    ) : (
+                      <Button
+                        testID="entry-restore"
+                        variant="secondary"
+                        label={t('org:entryForm.restore')}
+                        size={48}
+                        fullWidth
+                        onPress={() => void run(onRestore, 'toasts:athleteRestored')}
+                        disabled={offline}
+                      />
+                    )
+                  ) : null}
+                  {scored || tournamentFinished ? (
+                    <Button
+                      testID="entry-anonymize"
+                      variant="ghost"
+                      size={44}
+                      label={t('org:entryForm.anonymize')}
+                      onPress={() => setStep('anonymize')}
+                      style={styles.center}
+                      disabled={offline}
+                    />
+                  ) : canChangeList ? (
+                    <Button
+                      testID="entry-remove"
+                      variant="ghost"
+                      size={44}
+                      label={t('org:entryForm.remove')}
+                      onPress={() => setStep('remove')}
+                      style={styles.center}
+                      disabled={offline}
+                    />
+                  ) : null}
+                </>
+              )}
+            </View>
+          ) : (
+            <ConfirmContent
+              icon={confirm[step].icon}
+              title={confirm[step].title}
+              text={confirm[step].text}
+              actions={
+                <>
+                  <Button
+                    testID="entry-confirm"
+                    variant="secondary"
+                    label={confirm[step].label}
+                    size={48}
+                    fullWidth
+                    onPress={confirm[step].onPress}
+                    disabled={offline}
+                  />
+                  <Button
+                    variant="ghost"
+                    label={t('common:cancel')}
+                    size={48}
+                    fullWidth
+                    onPress={() => setStep('form')}
+                  />
+                </>
+              }
+            />
+          )}
+        </SheetStep>
+      )}
     </Sheet>
   );
 }
@@ -395,6 +411,5 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', gap: layout[10] },
   number: { width: 96 },
   cell: { flex: 1 },
-  consent: { gap: layout[4] },
   center: { alignSelf: 'center' },
 });

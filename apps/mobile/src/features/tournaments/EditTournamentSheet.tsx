@@ -8,7 +8,7 @@ import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { useZodForm } from '../../ui/form';
-import { ConfirmContent, Sheet, SheetHeader, SheetStep, useSheetStep } from '../../ui/sheet';
+import { ConfirmContent, Sheet, SheetHeader, SheetStep, useDirtyGuard, useSheetStep } from '../../ui/sheet';
 import { toast } from '../../ui/Toast';
 import { TournamentFields, type TournamentFormValues } from './TournamentFields';
 
@@ -95,64 +95,69 @@ export function EditTournamentSheet({
     }
   };
 
+  const dirty = form.formState.isDirty;
+  const guard = useDirtyGuard(visible, dirty, onClose);
+
   return (
-    <Sheet visible={visible} onClose={onClose} accessibilityLabel={t('org:tournamentForm.editTitle')}>
-      <SheetStep stepKey={step}>
-        {step === 'form' ? (
-          <View style={styles.body}>
-            <SheetHeader title={t('org:tournamentForm.editTitle')} />
-            <TournamentFields form={form} onSubmitEditing={() => void save()} />
-            <Button
-              testID="tournament-save"
-              label={t('org:tournamentForm.save')}
-              size={48}
-              fullWidth
-              loading={form.formState.isSubmitting}
-              onPress={() => void save()}
-              disabled={offline}
-            />
-            {tournament.status === 'DRAFT' ? (
+    <Sheet visible={visible} onClose={guard.close} accessibilityLabel={t('org:tournamentForm.editTitle')}>
+      {guard.prompt ?? (
+        <SheetStep stepKey={step}>
+          {step === 'form' ? (
+            <View style={styles.body}>
+              <SheetHeader title={t('org:tournamentForm.editTitle')} />
+              <TournamentFields form={form} onSubmitEditing={() => void save()} />
               <Button
-                testID="tournament-delete"
-                variant="secondary"
-                destructive
-                icon="trash"
-                label={t('org:tournamentForm.delete')}
+                testID="tournament-save"
+                label={t('org:tournamentForm.save')}
                 size={48}
                 fullWidth
-                onPress={() => setStep('delete')}
-                disabled={offline}
+                loading={form.formState.isSubmitting}
+                onPress={() => void save()}
+                disabled={offline || !dirty}
               />
-            ) : null}
-          </View>
-        ) : (
-          <ConfirmContent
-            icon="trash"
-            title={t('org:tournamentForm.deleteTitle', { name: tournament.name })}
-            text={t('org:tournamentForm.deleteText')}
-            actions={
-              <>
+              {tournament.status === 'DRAFT' ? (
                 <Button
-                  testID="tournament-delete-confirm"
+                  testID="tournament-delete"
                   variant="secondary"
-                  label={t('org:tournamentForm.deleteConfirm')}
+                  destructive
+                  icon="trash"
+                  label={t('org:tournamentForm.delete')}
                   size={48}
                   fullWidth
-                  onPress={() => void remove()}
+                  onPress={() => setStep('delete')}
                   disabled={offline}
                 />
-                <Button
-                  variant="ghost"
-                  label={t('common:cancel')}
-                  size={48}
-                  fullWidth
-                  onPress={() => setStep('form')}
-                />
-              </>
-            }
-          />
-        )}
-      </SheetStep>
+              ) : null}
+            </View>
+          ) : (
+            <ConfirmContent
+              icon="trash"
+              title={t('org:tournamentForm.deleteTitle', { name: tournament.name })}
+              text={t('org:tournamentForm.deleteText')}
+              actions={
+                <>
+                  <Button
+                    testID="tournament-delete-confirm"
+                    variant="secondary"
+                    label={t('org:tournamentForm.deleteConfirm')}
+                    size={48}
+                    fullWidth
+                    onPress={() => void remove()}
+                    disabled={offline}
+                  />
+                  <Button
+                    variant="ghost"
+                    label={t('common:cancel')}
+                    size={48}
+                    fullWidth
+                    onPress={() => setStep('form')}
+                  />
+                </>
+              }
+            />
+          )}
+        </SheetStep>
+      )}
     </Sheet>
   );
 }

@@ -95,6 +95,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-splash-screen',
       { image: './assets/splash-icon.png', imageWidth: 160, backgroundColor: BG, resizeMode: 'contain' },
     ],
+    // Natywny dialog daty Androida w kolorach Nocturne (UX-36; `themeVariant` działa tylko na iOS).
+    // Język dialogu = język systemu (Android ignoruje `locale`).
+    [
+      '@react-native-community/datetimepicker',
+      {
+        android: {
+          datePicker: {
+            colorAccent: { light: '#9184d9' },
+            windowBackground: { light: '#232532' },
+            textColorPrimary: { light: '#e9e9ed' },
+            textColorSecondary: { light: '#cfd3e5' },
+          },
+        },
+      },
+    ],
     './plugins/with-android-resizability.js',
     './plugins/with-no-backup.js',
     './plugins/with-privacy-manifest.js',

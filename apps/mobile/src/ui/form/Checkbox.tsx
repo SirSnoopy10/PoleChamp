@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { color, radius } from '@polechamp/tokens';
+import { FieldFrame } from './FieldFrame';
 
 export interface CheckboxProps {
   checked: boolean;
@@ -9,31 +10,48 @@ export interface CheckboxProps {
   accessibilityLabel: string;
   /** Treść obok pola – może zawierać linki (zagnieżdżone `Text` z `onPress`). */
   children: ReactNode;
+  /** Błąd pod polem – ten sam styl co w pozostałych polach (UX-23). */
+  error?: string;
   testID?: string;
 }
 
-/** Pole zgody 22 dp (obrys neutral-600, zaznaczone – obrys i kwadrat accent) ze strefą dotyku 44 dp. */
-export function Checkbox({ checked, onChange, accessibilityLabel, children, testID }: CheckboxProps) {
+/**
+ * Pole zgody 22 dp (obrys neutral-600, zaznaczone – obrys i kwadrat accent). Cały wiersz (min. 44 dp)
+ * przełącza zgodę (UX-23); linki w treści przejmują własne dotknięcia. Dla czytnika ekranu
+ * przełącznikiem jest kwadrat z pełną etykietą, a linki pozostają osobno dostępne.
+ */
+export function Checkbox({ checked, onChange, accessibilityLabel, children, error, testID }: CheckboxProps) {
+  const toggle = () => onChange(!checked);
   return (
-    <View style={styles.row}>
+    <FieldFrame error={error}>
       <Pressable
-        testID={testID}
-        accessibilityRole="checkbox"
-        accessibilityLabel={accessibilityLabel}
-        accessibilityState={{ checked }}
-        onPress={() => onChange(!checked)}
-        hitSlop={11}
-        style={[styles.box, { borderColor: checked ? color.accent : color.neutral[600] }]}
+        testID={testID ? `${testID}-row` : undefined}
+        accessible={false}
+        onPress={toggle}
+        style={styles.row}
       >
-        {checked ? <View testID={testID ? `${testID}-mark` : undefined} style={styles.mark} /> : null}
+        <Pressable
+          testID={testID}
+          accessibilityRole="checkbox"
+          accessibilityLabel={accessibilityLabel}
+          accessibilityState={{ checked }}
+          onPress={toggle}
+          hitSlop={11}
+          style={[
+            styles.box,
+            { borderColor: error ? color.accentRamp[300] : checked ? color.accent : color.neutral[600] },
+          ]}
+        >
+          {checked ? <View testID={testID ? `${testID}-mark` : undefined} style={styles.mark} /> : null}
+        </Pressable>
+        <View style={styles.label}>{children}</View>
       </Pressable>
-      <View style={styles.label}>{children}</View>
-    </View>
+    </FieldFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, minHeight: 44, paddingVertical: 11 },
   box: {
     width: 22,
     height: 22,

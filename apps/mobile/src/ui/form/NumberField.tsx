@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { useEffect, useState, type ComponentRef, type Ref } from 'react';
+import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { color } from '@polechamp/tokens';
 import { formatDecimal } from '@polechamp/i18n';
 import { useT } from '../../i18n';
@@ -27,6 +27,10 @@ export interface NumberFieldProps {
   stepper?: { step?: number; min: number; max: number };
   editable?: boolean;
   testID?: string;
+  /** Kolejność pól „Dalej” (UX-36). */
+  ref?: Ref<ComponentRef<typeof TextInput>>;
+  returnKeyType?: TextInputProps['returnKeyType'];
+  onSubmitEditing?: () => void;
 }
 
 /** Pole liczbowe: klawiatura numeryczna, przecinek i kropka, opcjonalny stepper (TC-UI-009). */
@@ -38,16 +42,22 @@ export function NumberField({
   stepper,
   editable = true,
   testID,
+  ref,
+  returnKeyType,
+  onSubmitEditing,
 }: NumberFieldProps) {
   const t = useT();
   const { maxFontScale } = useThemeSettings();
   const [focused, setFocused] = useState(false);
   const [text, setText] = useState(value === null ? '' : formatNumber(value));
 
-  // Zmiana wartości z zewnątrz (stepper, reset formularza) nadpisuje tekst, o ile nie trwa edycja.
+  // Zmiana wartości z zewnątrz (stepper, reset formularza) nadpisuje tekst także w trakcie edycji,
+  // gdy tekst już jej nie odpowiada („Dodaj kolejną” – UX-23); niedokończony wpis („1,”) zostaje.
   useEffect(() => {
-    if (!focused) setText(value === null ? '' : formatNumber(value));
-  }, [value, focused]);
+    setText((current) =>
+      parseDecimal(current) === value ? current : value === null ? '' : formatNumber(value),
+    );
+  }, [value]);
 
   const step = stepper?.step ?? 0.5;
   const bump = (dir: 1 | -1) => {
@@ -60,8 +70,12 @@ export function NumberField({
 
   const input = (
     <TextInput
+      ref={ref}
       testID={testID}
       value={text}
+      returnKeyType={returnKeyType}
+      onSubmitEditing={onSubmitEditing}
+      submitBehavior={onSubmitEditing ? 'submit' : undefined}
       editable={editable}
       keyboardType="decimal-pad"
       inputMode="decimal"

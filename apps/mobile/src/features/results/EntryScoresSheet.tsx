@@ -108,7 +108,13 @@ export function EntryScoresSheet({ row, judgeCount, onClose }: EntryScoresSheetP
   const data = query.data;
   const summary = data?.summary;
   return (
-    <Sheet visible={!!row} onClose={onClose} accessibilityLabel={row?.fullName} testID="scores-sheet">
+    <Sheet
+      scroll={false}
+      visible={!!row}
+      onClose={onClose}
+      accessibilityLabel={row?.fullName}
+      testID="scores-sheet"
+    >
       {row ? (
         <>
           <SheetHeader title={row.fullName} />

@@ -8,7 +8,7 @@ import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { useZodForm } from '../../ui/form';
-import { Sheet, SheetHeader } from '../../ui/sheet';
+import { Sheet, SheetHeader, useDirtyGuard } from '../../ui/sheet';
 import { toast } from '../../ui/Toast';
 import { emptyTournament, TournamentFields, type TournamentFormValues } from './TournamentFields';
 
@@ -52,21 +52,26 @@ export function NewTournamentSheet({ visible, onClose, onCreate, onCreated }: Ne
     }
   });
 
+  const dirty = form.formState.isDirty;
+  const guard = useDirtyGuard(visible, dirty, onClose);
+
   return (
-    <Sheet visible={visible} onClose={onClose} accessibilityLabel={t('org:tournamentForm.newTitle')}>
-      <View style={styles.body}>
-        <SheetHeader title={t('org:tournamentForm.newTitle')} />
-        <TournamentFields form={form} onSubmitEditing={() => void submit()} />
-        <Button
-          testID="tournament-create"
-          label={t('org:tournamentForm.create')}
-          size={48}
-          fullWidth
-          loading={form.formState.isSubmitting}
-          onPress={() => void submit()}
-          disabled={offline}
-        />
-      </View>
+    <Sheet visible={visible} onClose={guard.close} accessibilityLabel={t('org:tournamentForm.newTitle')}>
+      {guard.prompt ?? (
+        <View style={styles.body}>
+          <SheetHeader title={t('org:tournamentForm.newTitle')} />
+          <TournamentFields form={form} onSubmitEditing={() => void submit()} />
+          <Button
+            testID="tournament-create"
+            label={t('org:tournamentForm.create')}
+            size={48}
+            fullWidth
+            loading={form.formState.isSubmitting}
+            onPress={() => void submit()}
+            disabled={offline}
+          />
+        </View>
+      )}
     </Sheet>
   );
 }

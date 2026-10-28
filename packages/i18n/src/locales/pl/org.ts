@@ -133,8 +133,8 @@ export const org = {
   /** SCR-ORG-06 – zakładka Kryteria. */
   criteria: {
     title: 'Kryteria oceny',
-    scale: 'Skala 0–{max}',
     scaleStep: 'Skala 0–{max}, co {step}',
+    defaultsNote: 'Kategoria ma domyślne kryteria i kary – możesz je zmienić przed startem.',
     penalties: 'Kary punktowe',
     maxPerRun: 'maks. {n}× na występ',
     noPenalties: 'Brak kar punktowych.',

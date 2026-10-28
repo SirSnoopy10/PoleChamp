@@ -52,7 +52,7 @@ describe('SCR-ORG-06 zakładka Kryteria (IMP-262)', () => {
     mockCategory(categoryDetails());
     const r = await startOrg(routes, '/c/c3', state);
     const list = await screen.findByTestId('criteria-list');
-    expect(within(list).getAllByText('Skala 0–10')).toHaveLength(5);
+    expect(within(list).getAllByText('Skala 0–10, co 0,5')).toHaveLength(5);
     expect(within(list).getByText('×2')).toBeOnTheScreen();
     expect(within(list).getByText('×1,5')).toBeOnTheScreen();
     expect(screen.getByText('Maksymalny wynik sędziego: 65 pkt')).toBeOnTheScreen();
@@ -341,6 +341,51 @@ describe('SCR-ORG-07/11/17 zawodniczki (IMP-265…267)', () => {
     await fireEvent.press(await screen.findByTestId('entry-confirm'));
     expect(await screen.findByText('Usunięto zawodniczkę z listy')).toBeOnTheScreen();
     expect(calls).toEqual(['patch W/"1" {"club":"Pole Passion Gdańsk"}', 'withdraw', 'delete']);
+    await r.unmount();
+  });
+
+  it('UX-39: edycja wczytuje rok urodzenia; bez zmian „Zapisz” nieaktywny, zmiana klubu nie rusza roku', async () => {
+    const minor = entry(45, 'Ola Nowak', {
+      athlete: { id: 'a45', fullName: 'Ola Nowak', club: null, birthYear: 2012, isMinor: true },
+    });
+    mockCategory(categoryDetails({ status: 'IN_PROGRESS', entryCount: 1 }));
+    const bodies: unknown[] = [];
+    server.use(
+      http.get(`${API}/v1/categories/c3/entries`, () => HttpResponse.json({ items: [minor] })),
+      http.patch(`${API}/v1/entries/e45`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json(minor);
+      }),
+    );
+    const r = await startOrg(routes, '/c/c3?tab=entries', state);
+    await fireEvent.press(await screen.findByTestId('entry-e45'));
+    expect(screen.getByTestId('entry-birth-year').props.value).toBe('2012');
+    expect(screen.getByTestId('entry-consent').props.accessibilityState).toMatchObject({ checked: true });
+    expect(screen.getByTestId('entry-save')).toBeDisabled();
+    await fireEvent.changeText(screen.getByTestId('entry-club'), 'Pole Art');
+    await fireEvent.press(screen.getByTestId('entry-save'));
+    expect(await screen.findByText('Zapisano zmiany')).toBeOnTheScreen();
+    expect(bodies).toEqual([{ club: 'Pole Art' }]);
+    await r.unmount();
+  });
+
+  it('UX-23 / UX-36: tap etykiety przełącza zgodę; „Dalej” przechodzi do pola; zamknięcie ze zmianami pyta', async () => {
+    mockCategory(categoryDetails({ entryCount: 0 }), 'DRAFT');
+    server.use(http.get(`${API}/v1/categories/c3/entries`, () => HttpResponse.json({ items: [] })));
+    const r = await startOrg(routes, '/c/c3?tab=entries', state);
+    expect(await screen.findByText('Lista startowa jest pusta.')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByText('Dodaj'));
+    expect(screen.getByTestId('entry-name').props.returnKeyType).toBe('next');
+    await fireEvent.changeText(screen.getByTestId('entry-birth-year'), String(new Date().getFullYear() - 14));
+    await fireEvent.press(screen.getByText('Mam zgodę rodzica/opiekuna na przetwarzanie danych'));
+    expect(screen.getByTestId('entry-consent').props.accessibilityState).toMatchObject({ checked: true });
+    await fireEvent.press(screen.getByTestId('entry-sheet-backdrop', { includeHiddenElements: true }));
+    expect(await screen.findByText('Odrzucić zmiany?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('sheet-keep-editing'));
+    expect(screen.getByTestId('entry-birth-year').props.value).toBe(String(new Date().getFullYear() - 14));
+    await fireEvent.press(screen.getByTestId('entry-sheet-backdrop', { includeHiddenElements: true }));
+    await fireEvent.press(await screen.findByTestId('sheet-discard'));
+    await waitFor(() => expect(screen.queryByTestId('entry-sheet')).toBeNull());
     await r.unmount();
   });
 

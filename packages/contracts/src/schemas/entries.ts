@@ -54,6 +54,8 @@ export const Athlete = z.object({
   id: Id,
   fullName: z.string(),
   club: z.string().nullable().optional(),
+  /** Rok urodzenia (lista organizatora – formularz edycji, UX-39). */
+  birthYear: z.number().int().nullable().optional(),
   isMinor: z.boolean(),
 });
 

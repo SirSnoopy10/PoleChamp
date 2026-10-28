@@ -5,6 +5,7 @@ import {
   findNodeHandle,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -37,6 +38,8 @@ export interface SheetProps {
   maxHeightRatio?: 0.88 | 0.86;
   /** Etykieta arkusza dla czytnika ekranu (zwykle tytuł). */
   accessibilityLabel?: string;
+  /** Treść w `ScrollView` (domyślnie). `false` – arkusz z własną listą przewijaną. */
+  scroll?: boolean;
   testID?: string;
 }
 
@@ -51,6 +54,7 @@ export function Sheet({
   children,
   maxHeightRatio = 0.88,
   accessibilityLabel,
+  scroll = true,
   testID = 'sheet',
 }: SheetProps) {
   const [mounted, setMounted] = useState(visible);
@@ -65,6 +69,7 @@ export function Sheet({
         onHidden={onHidden}
         maxHeightRatio={maxHeightRatio}
         accessibilityLabel={accessibilityLabel}
+        scroll={scroll}
         testID={testID}
       >
         {children}
@@ -80,6 +85,7 @@ function SheetBody({
   children,
   maxHeightRatio,
   accessibilityLabel,
+  scroll,
   testID,
 }: Required<Omit<SheetProps, 'accessibilityLabel'>> & {
   onHidden: () => void;
@@ -97,6 +103,11 @@ function SheetBody({
   const translateY = useSharedValue(windowHeight);
   const backdrop = useSharedValue(0);
   const [closing, setClosing] = useState(false);
+  // Treść dłuższa niż arkusz (np. skala tekstu 130% – UX-44) przewija się; gest zamknięcia
+  // zostaje wtedy tylko na uchwycie, żeby nie przechwytywać przewijania.
+  const [viewport, setViewport] = useState(0);
+  const [content, setContent] = useState(0);
+  const scrollable = scroll && content > viewport + 1;
 
   const duration = reduced ? 0 : motion.sheetIn.duration;
   const fade = reduced ? 0 : motion.backdropFade.duration;
@@ -141,7 +152,22 @@ function SheetBody({
   const close = useCallback(() => onClose(), [onClose]);
 
   const pan = Gesture.Pan()
+    .enabled(!scrollable)
     .activeOffsetY(10)
+    .onUpdate((e) => {
+      translateY.value = Math.max(0, e.translationY);
+    })
+    .onEnd((e) => {
+      if (e.translationY > sheetHeight.value * CLOSE_RATIO || e.velocityY > CLOSE_VELOCITY) {
+        scheduleOnRN(close);
+      } else {
+        translateY.value = withTiming(0, { duration: 180 });
+      }
+    });
+
+  // Ta sama logika dla uchwytu (osobny obiekt gestu – jeden gest na jeden detektor).
+  const handlePan = Gesture.Pan()
+    .enabled(scrollable)
     .onUpdate((e) => {
       translateY.value = Math.max(0, e.translationY);
     })
@@ -184,8 +210,28 @@ function SheetBody({
               sheetStyle,
             ]}
           >
-            <View style={styles.handle} />
-            <SheetContext.Provider value={{ close, titleRef }}>{children}</SheetContext.Provider>
+            <GestureDetector gesture={handlePan}>
+              <View style={styles.grab}>
+                <View style={styles.handle} />
+              </View>
+            </GestureDetector>
+            <SheetContext.Provider value={{ close, titleRef }}>
+              {scroll ? (
+                <ScrollView
+                  testID={`${testID}-scroll`}
+                  style={styles.scroll}
+                  contentContainerStyle={styles.content}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={scrollable}
+                  onLayout={(e) => setViewport(e.nativeEvent.layout.height)}
+                  onContentSizeChange={(_, h) => setContent(h)}
+                >
+                  {children}
+                </ScrollView>
+              ) : (
+                children
+              )}
+            </SheetContext.Provider>
           </Animated.View>
         </GestureDetector>
       </KeyboardAvoidingView>
@@ -207,6 +253,9 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     alignSelf: 'center',
   },
+  grab: { alignSelf: 'stretch', alignItems: 'center', paddingVertical: 4, marginTop: -4 },
+  scroll: { flexGrow: 0, flexShrink: 1 },
+  content: { gap: 14, paddingBottom: 2 },
   handle: {
     alignSelf: 'center',
     width: 36,

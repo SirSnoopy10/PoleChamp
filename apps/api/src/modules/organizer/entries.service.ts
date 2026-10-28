@@ -57,6 +57,8 @@ export class EntriesService {
         // Po pseudonimizacji etykieta z numeru startu (TL-15).
         fullName: pseudonymized ? `Zawodniczka nr ${row.entry.startNumber}` : row.athlete.fullName,
         club: row.athlete.club,
+        // Do formularza edycji – zapis bez zmian nie czyści roku (UX-39).
+        birthYear: row.athlete.birthYear,
         isMinor: row.athlete.isMinor,
       },
       judged: { done, expected },
