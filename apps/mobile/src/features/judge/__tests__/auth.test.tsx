@@ -241,6 +241,10 @@ describe('IMP-305: logowanie online / offline (SCR-JDG-08)', () => {
   }, 15_000);
 
   it('TC-E2E-JDG-008: synchronizacja 25 h temu – „Połącz tablet z internetem, aby się zalogować.”', async () => {
+    // Brak serwera: logowanie online kończy się błędem sieci (nie odpowiedzią 404 atrapy).
+    env.routes.set('POST /v1/judge-sessions', () => {
+      throw new TypeError('Network request failed');
+    });
     await fastVerifier();
     env.clock.advance(25 * 3600_000);
     await startJudge(JUDGE_ROUTES, '/pin/jA');
@@ -346,6 +350,10 @@ describe('IMP-305: logowanie online / offline (SCR-JDG-08)', () => {
   });
 
   it('TC-STATE-005: warunki logowania offline (zgoda, 24 h, restart, cofnięty zegar, blokady, wersja PIN)', async () => {
+    // Brak serwera: logowanie online kończy się błędem sieci (nie odpowiedzią 404 atrapy).
+    env.routes.set('POST /v1/judge-sessions', () => {
+      throw new TypeError('Network request failed');
+    });
     const judge = readJudge(env.local.read, VECTOR_JUDGE_ID)!;
     const tournament = readTournament(env.local.read)!;
     const meta = () => readMeta(env.local.read);
