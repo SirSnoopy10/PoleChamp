@@ -80,13 +80,18 @@ export const push = (call: Call, token: string, mutations: unknown[], deviceTime
 export async function runningCategory(
   call: Call,
   org: Org,
-  options: { judges?: string[]; entries?: number[] } = {},
+  options: { judges?: string[]; entries?: number[]; step?: 0.1 | 0.5 | 1 } = {},
 ) {
   const t = await org.tournament();
   const judges = [];
   for (const name of options.judges ?? ['Katarzyna Nowak', 'Ewa Zielińska'])
     judges.push(await org.judge(t.id, name));
   const c = await org.category(t.id);
+  if (options.step !== undefined)
+    for (const k of c.criteria) {
+      const res = await org.req('PATCH', `/v1/criteria/${k.id}`, { step: options.step });
+      if (res.status !== 200) throw new Error(`krok kryterium: ${JSON.stringify(res.body)}`);
+    }
   const entries = [];
   for (const n of options.entries ?? [44, 45, 46]) entries.push(await org.entry(c.id, n));
   const started = await org.req('POST', `/v1/categories/${c.id}/start`);

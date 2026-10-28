@@ -31,6 +31,7 @@ describe('migracje (IMP-103…107)', () => {
       '0009_domain_event_notify',
       '0010_export_format',
       '0011_retention',
+      '0012_criterion_step',
     ]);
   });
 

@@ -10,7 +10,7 @@ import { ResultsService } from '../results/results.service.js';
 export type ScoreSheetRow = typeof scoreSheet.$inferSelect;
 
 /**
- * Treść arkusza z tabletu → noty w dziesiątych. Nota spoza kroku 0,5 albo komplet kryteriów niezgodny
+ * Treść arkusza z tabletu → noty w dziesiątych. Nota spoza kroku kryterium (`stepTenths`) albo komplet kryteriów niezgodny
  * z kategorią → `null` (`SCHEMA_MISMATCH`, INT-02); brak licznika kary oznacza 0.
  */
 export function toSheetInput(payload: ScoreSheetPayload, config: CategoryConfig): SheetInput | null {
@@ -114,6 +114,7 @@ export class SheetWriter {
             id: c.id,
             scaleMax: c.scaleMax,
             weightTenths: c.weightTenths,
+            stepTenths: c.stepTenths,
           })),
           penaltyTypes: input.config.penaltyTypes.map((p) => ({ id: p.id, pointsTenths: p.pointsTenths })),
         },

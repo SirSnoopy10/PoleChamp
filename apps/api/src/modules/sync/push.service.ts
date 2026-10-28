@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Mutation, PushRequest, PushResponse } from '@polechamp/contracts';
 import { eq, sql } from 'drizzle-orm';
 import type { DeviceClaims, JudgeClaims } from '../../common/auth/auth.decorators.js';
+import { safeError } from '../../common/errors/safe-error.js';
 import { canonical, sha256Hex } from '../../common/ids.js';
 import { requestContext } from '../../common/request-context.js';
 import { DB, type Db, type Tx } from '../../db/client.js';
@@ -139,13 +140,14 @@ export class PushService {
         return stored;
       });
     } catch (error) {
-      if (!isTransient(error)) {
-        this.logger.error(
-          { err: error, mutationId: m.mutationId, type: m.type },
-          'Błąd przetwarzania mutacji',
-        );
-      }
-      return { mutationId: m.mutationId, status: 'RETRY' };
+      if (isTransient(error)) return { mutationId: m.mutationId, status: 'RETRY' };
+      // UX-01: błąd trwały nie może blokować kolejki tabletu wiecznym RETRY – odrzucenie bez zapisu
+      // w `processed_mutation`, sędzia widzi baner i może zatwierdzić ocenę ponownie.
+      this.logger.error(
+        { err: safeError(error), mutationId: m.mutationId, type: m.type },
+        'Błąd przetwarzania mutacji',
+      );
+      return { mutationId: m.mutationId, status: 'REJECTED', code: 'SCHEMA_MISMATCH' };
     } finally {
       requestContext.setActor(previousActor);
     }

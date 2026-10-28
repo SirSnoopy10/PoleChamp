@@ -1,6 +1,7 @@
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { and, asc, count, eq, inArray } from 'drizzle-orm';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SheetWriter } from '../../src/modules/sync/sheet-writer.js';
 import { uuidv7 } from '../../src/common/ids.js';
 import type { DbHandle } from '../../src/db/client.js';
 import * as s from '../../src/db/schema.js';
@@ -246,6 +247,72 @@ describe('SUBMIT_SCORE_SHEET (IMP-147)', () => {
         and(eq(s.changeLog.entityType, 'score_sheet'), eq(s.changeLog.entityId, m.payload.scoreSheetId)),
       );
     expect(log.map((l) => l.audience).sort()).toEqual([`DEVICE:${tablet.deviceId}`, `JUDGE:${jA.id}`]);
+  });
+
+  it('UX-01: krok 0,1 – nota 7,7 przyjęta; krok 0,5 – nota 7,7 odrzucona SCHEMA_MISMATCH', async () => {
+    const fine = await runningCategory(call, org, { step: 0.1 });
+    const ok = mutation.submit({
+      judgeId: fine.jA.id,
+      judgeSessionId: fine.session.sessionId,
+      categoryId: fine.c.id,
+      entryId: fine.entries[0]!.id,
+      criteria: fine.c.criteria,
+      notes: [7.7, 7.7, 7.7, 7.7, 7.7],
+    });
+    const res = await push(call, fine.tablet.token, [ok]);
+    expect(res.body.results[0]).toMatchObject({ status: 'APPLIED', revision: 1 });
+    const done = await handle.db
+      .select()
+      .from(s.processedMutation)
+      .where(eq(s.processedMutation.mutationId, ok.mutationId));
+    expect(done).toHaveLength(1);
+    const [result] = await handle.db
+      .select()
+      .from(s.categoryResult)
+      .where(
+        and(eq(s.categoryResult.categoryId, fine.c.id), eq(s.categoryResult.entryId, fine.entries[0]!.id)),
+      );
+    expect(result!.sheetCount).toBe(1);
+
+    const coarse = await runningCategory(call, org);
+    const bad = mutation.submit({
+      judgeId: coarse.jA.id,
+      judgeSessionId: coarse.session.sessionId,
+      categoryId: coarse.c.id,
+      entryId: coarse.entries[0]!.id,
+      criteria: coarse.c.criteria,
+      notes: [7.7, 7.5, 7.5, 7.5, 7.5],
+    });
+    const next = mutation.submit({
+      judgeId: coarse.jA.id,
+      judgeSessionId: coarse.session.sessionId,
+      categoryId: coarse.c.id,
+      entryId: coarse.entries[1]!.id,
+      criteria: coarse.c.criteria,
+    });
+    const res2 = await push(call, coarse.tablet.token, [bad, next]);
+    expect(statuses(res2)).toEqual(['SCHEMA_MISMATCH', 'APPLIED']);
+  });
+
+  it('UX-01: wyjątek trwały w jednej mutacji → REJECTED, reszta paczki przetworzona', async () => {
+    const { c, jA, entries, tablet, session } = await runningCategory(call, org);
+    const base = {
+      judgeId: jA.id,
+      judgeSessionId: session.sessionId,
+      categoryId: c.id,
+      criteria: c.criteria,
+    };
+    const first = mutation.submit({ ...base, entryId: entries[0]!.id });
+    const second = mutation.submit({ ...base, entryId: entries[1]!.id });
+    const spy = vi.spyOn(app.get(SheetWriter), 'write').mockRejectedValueOnce(new Error('błąd trwały'));
+    try {
+      const res = await push(call, tablet.token, [first, second]);
+      expect(statuses(res)).toEqual(['SCHEMA_MISMATCH', 'APPLIED']);
+    } finally {
+      spy.mockRestore();
+    }
+    const retried = await push(call, tablet.token, [first]);
+    expect(statuses(retried)).toEqual(['APPLIED']);
   });
 
   it('TC-API-084: aktualizacja arkusza (rev 2), potem nieaktualna rewizja → STALE_REVISION bez rejected_submission', async () => {
