@@ -51,6 +51,16 @@ export async function createApp(
     void reply.header('X-Request-Id', String(request.id));
     done();
   });
+  // Dziennik dostępu (debug): metoda, ścieżka bez zapytania, status, czas i klucz idempotencji –
+  // diagnoza powtórzonych żądań klienta (IMP-715). Bez treści i nagłówków uwierzytelniania.
+  const access = new Logger('Http');
+  fastify.addHook('onResponse', (request, reply, done) => {
+    access.debug(
+      `${request.method} ${request.url.split('?')[0]} ${reply.statusCode} ${Math.round(reply.elapsedTime)}ms ` +
+        `rid=${request.id} idem=${String(request.headers['idempotency-key'] ?? '-')}`,
+    );
+    done();
+  });
   fastify.addHook('onSend', (_request, reply, payload, done) => {
     void reply.header('X-Min-App-Version', env.APP_MIN_VERSION);
     // Nagłówki bezpieczeństwa (05-bezpieczenstwo §7, TC-SEC-003); TLS kończy się na ALB.
