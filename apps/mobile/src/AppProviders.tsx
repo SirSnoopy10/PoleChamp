@@ -5,7 +5,8 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { color } from '@polechamp/tokens';
-import { useReconnectTrigger } from './data/network/online';
+import { api } from './data/api';
+import { useOnlineProbe, useReconnectTrigger } from './data/network/online';
 import { GC_TIME_MS, bindOnlineManager, queryClient, queryPersister } from './data/query/queryClient';
 import { I18nProvider } from './i18n';
 import { MAX_FONT_SCALE, ModeProvider, useMode } from './mode/mode';
@@ -30,12 +31,15 @@ export function ThemedByMode({
 }
 
 const refetchActive = () => void queryClient.invalidateQueries({ refetchType: 'active' });
+const probeApi = () => api.GET('/v1/app-config');
 
 /** Cache organizatora w MMKV (IMP-215) – tablet korzysta z SQLite (EP-08), nie z tego cache. */
 function QueryProvider({ children }: { children: ReactNode }) {
   useEffect(() => bindOnlineManager(), []);
   // Powrót łączności wg NetInfo → odświeżenie aktywnych ekranów; udana odpowiedź przywraca „online” (IMP-278).
   useReconnectTrigger(refetchActive);
+  // Tablet utrzymuje stan „online” heartbeatem synchronizacji – sonda tylko dla organizatora.
+  useOnlineProbe(probeApi, useMode().mode !== 'judge');
   return (
     <PersistQueryClientProvider
       client={queryClient}

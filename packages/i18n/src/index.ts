@@ -5,6 +5,7 @@ import { judge } from './locales/pl/judge.js';
 import { org } from './locales/pl/org.js';
 import { toasts } from './locales/pl/toasts.js';
 import { ui } from './locales/pl/ui.js';
+import { pluralCategory } from './plural.js';
 import { pseudoDictionary } from './pseudo.js';
 
 /** @polechamp/i18n – teksty PL dla aplikacji, PDF i e-maili (IMP-069, IMP-070). */
@@ -20,8 +21,30 @@ export interface CreateI18nOptions {
   pseudo?: boolean;
 }
 
+/**
+ * Hermes (Android/iOS) nie ma `Intl.PluralRules` – bez niego i18next nie dobiera sufiksów
+ * `_one/_few/_many` i pokazuje surowy klucz (np. `card.categories`). Zamiennik z regułą PL.
+ */
+export function ensurePluralRules(): void {
+  const intl = Intl as { PluralRules?: unknown };
+  if (typeof intl.PluralRules === 'function') return;
+  class PolishPluralRules {
+    select(n: number) {
+      return Number.isInteger(n) ? pluralCategory(n) : 'other';
+    }
+    resolvedOptions() {
+      return { locale: 'pl', pluralCategories: ['one', 'few', 'many', 'other'] };
+    }
+    static supportedLocalesOf() {
+      return ['pl'];
+    }
+  }
+  intl.PluralRules = PolishPluralRules;
+}
+
 /** Instancja i18next: język `pl`, placeholdery `{nazwa}` jak w specyfikacji ekranów. */
 export function createI18n(options: CreateI18nOptions = {}): I18n {
+  ensurePluralRules();
   const instance = createInstance();
   const resources = options.pseudo ? pseudoDictionary(pl as never) : pl;
   void instance.init({

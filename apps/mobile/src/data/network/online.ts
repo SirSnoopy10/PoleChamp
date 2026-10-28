@@ -1,8 +1,11 @@
 import { useEffect, useSyncExternalStore } from 'react';
+import { AppState } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 
 /** Okno „online” po ostatnim udanym żądaniu HTTP (TL-45). */
 export const HTTP_ONLINE_WINDOW_MS = 60_000;
+/** Sonda HTTP bez WebSocketu – krócej niż okno, żeby bezczynny ekran nie przechodził w offline. */
+export const ONLINE_PROBE_MS = 45_000;
 
 interface NetworkState {
   wsConnected: boolean;
@@ -77,4 +80,27 @@ export function useReconnectTrigger(onReconnect: () => void): void {
       }),
     [onReconnect],
   );
+}
+
+/**
+ * Sonda „online” bez WebSocketu: na ekranach bez gniazda (np. lista turniejów) stan wygasałby po 60 s
+ * bezczynności i blokował zapisy. Co `ONLINE_PROBE_MS` (nie w tle) lekkie żądanie –
+ * odpowiedź przedłuża okno HTTP, brak odpowiedzi zgłasza offline (middleware `reportHttp*`).
+ */
+export function useOnlineProbe(probe: () => Promise<unknown>, enabled = true): void {
+  useEffect(() => {
+    if (!enabled) return;
+    const tick = () => {
+      if (AppState.currentState === 'background' || state.wsConnected) return;
+      probe().catch(() => undefined);
+    };
+    const timer = setInterval(tick, ONLINE_PROBE_MS);
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') tick();
+    });
+    return () => {
+      clearInterval(timer);
+      sub.remove();
+    };
+  }, [probe, enabled]);
 }

@@ -91,6 +91,7 @@ export default function TournamentRoute() {
       onEdit={editSheet.open}
       onPdf={pdfSheet.open}
       onJudges={() => router.push(`/judges/${id}`)}
+      onAthletes={() => router.push(`/athletes/${id}`)}
       onStart={onStart}
       onFinish={finishSheet.open}
       onAddCategory={categorySheet.open}

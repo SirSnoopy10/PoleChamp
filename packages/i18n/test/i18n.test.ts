@@ -2,6 +2,7 @@ import { ERROR_CODES, FIELD_ERROR_CODES } from '@polechamp/contracts';
 import { describe, expect, it } from 'vitest';
 import {
   createI18n,
+  ensurePluralRules,
   diffKeys,
   dictionaryKeys,
   errorMessage,
@@ -134,5 +135,31 @@ describe('@polechamp/i18n (IMP-069)', () => {
     expect(i18n.t('org:rankingFormula', { tieBreak: tieBreakSentence('Technika') })).toBe(
       'Wynik = średnia sędziów z (kryterium × waga − kary). Remis rozstrzyga wyższa ocena za Technikę.',
     );
+  });
+});
+
+describe('liczebniki bez Intl.PluralRules (Hermes)', () => {
+  it('ensurePluralRules: zamiennik z regułą PL, gdy silnik nie ma PluralRules', () => {
+    const original = Intl.PluralRules;
+    try {
+      // Symulacja Hermesa.
+      delete (Intl as { PluralRules?: unknown }).PluralRules;
+      ensurePluralRules();
+      const t = createI18n().getFixedT('pl', 'ui');
+      expect(t('card.categories', { count: 1, pct: 0 })).toBe('1 kategoria · 0%');
+      expect(t('card.categories', { count: 3, pct: 50 })).toBe('3 kategorie · 50%');
+      expect(t('card.categories', { count: 9, pct: 80 })).toBe('9 kategorii · 80%');
+      expect(t('card.athletes', { count: 22, style: 'Pole Art', level: 'Pro' })).toBe(
+        'Pole Art · Pro · 22 zawodniczki',
+      );
+    } finally {
+      (Intl as { PluralRules?: unknown }).PluralRules = original;
+    }
+  });
+
+  it('ensurePluralRules nie podmienia natywnego PluralRules', () => {
+    const native = Intl.PluralRules;
+    ensurePluralRules();
+    expect(Intl.PluralRules).toBe(native);
   });
 });

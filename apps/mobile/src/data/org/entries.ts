@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { EntryCreate, EntryRow } from '@polechamp/contracts';
 import { api, unwrap, type ApiError } from '../api';
 import { queryKeys } from '../query/keys';
@@ -17,6 +17,19 @@ export function useEntries(categoryId: string, q = '') {
         )
       ).items,
     placeholderData: keepPreviousData,
+  });
+}
+
+const fetchEntries = async (categoryId: string) =>
+  (await unwrap(api.GET('/v1/categories/{categoryId}/entries', { params: { path: { categoryId } } }))).items;
+
+/** Listy startowe wielu kategorii naraz (zawodniczki turnieju po kategoriach); klucze jak `useEntries`. */
+export function useCategoryEntries(categoryIds: readonly string[]) {
+  return useQueries({
+    queries: categoryIds.map((categoryId) => ({
+      queryKey: queryKeys.entries(categoryId, ''),
+      queryFn: () => fetchEntries(categoryId),
+    })),
   });
 }
 

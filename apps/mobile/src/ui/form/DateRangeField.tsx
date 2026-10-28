@@ -4,7 +4,6 @@ import DateTimePicker, { type DateTimePickerChangeEvent } from '@react-native-co
 import { color } from '@polechamp/tokens';
 import { formatTournamentDate } from '@polechamp/i18n';
 import { useT } from '../../i18n';
-import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { Text } from '../Text';
 import { ChoiceChipGroup } from './ChoiceChipGroup';
@@ -35,7 +34,65 @@ export interface DateRangeFieldProps {
 
 type Picking = 'start' | 'end' | null;
 
-/** Pole daty turnieju: „Jeden dzień / Kilka dni”, natywny picker, czyszczenie (TC-UI-027, FR-202). */
+/** Jedno okienko daty: ikona, tekst albo podpowiedź, opcjonalne czyszczenie. */
+function DateBox({
+  testID,
+  label,
+  text,
+  empty,
+  error,
+  onPress,
+  onClear,
+  clearLabel,
+}: {
+  testID: string;
+  label: string;
+  text: string;
+  empty: boolean;
+  error: boolean;
+  onPress: () => void;
+  onClear?: () => void;
+  clearLabel: string;
+}) {
+  return (
+    <View style={[styles.field, { borderColor: error ? color.accentRamp[300] : color.neutral[600] }]}>
+      <Pressable
+        testID={`${testID}-open`}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}: ${text}`}
+        onPress={onPress}
+        style={styles.value}
+      >
+        <Icon name="calendar-blank" size={18} color={color.neutral[400]} />
+        <Text
+          testID={`${testID}-value`}
+          variant="body"
+          color={empty ? color.neutral[500] : color.text}
+          numberOfLines={1}
+          style={styles.text}
+        >
+          {text}
+        </Text>
+      </Pressable>
+      {onClear ? (
+        <Pressable
+          testID={`${testID}-clear`}
+          accessibilityRole="button"
+          accessibilityLabel={clearLabel}
+          hitSlop={10}
+          onPress={onClear}
+        >
+          <Icon name="x-circle" size={20} color={color.neutral[500]} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * Pole daty turnieju: „Jeden dzień / Kilka dni”, natywny picker, czyszczenie (TC-UI-027, FR-202).
+ * „Kilka dni” pokazuje drugie okienko z datą zakończenia; po wyborze początku picker końca otwiera się sam.
+ */
 export function DateRangeField({
   label,
   value,
@@ -47,17 +104,19 @@ export function DateRangeField({
   const t = useT();
   const [multi, setMulti] = useState(!!value.end && value.end !== value.start);
   const [picking, setPicking] = useState<Picking>(null);
-  const empty = !value.start;
-  const text = empty
-    ? (placeholder ?? t('form.pickDate'))
-    : formatTournamentDate(value.start, multi ? value.end : null);
+  const startText = value.start
+    ? formatTournamentDate(value.start, null)
+    : (placeholder ?? t('form.pickDate'));
+  const endText = value.end ? formatTournamentDate(value.end, null) : t('form.endDate');
 
   const pick = (field: Exclude<Picking, null>, iso: string) => {
     if (field === 'start') {
-      const end = multi && value.end && value.end < iso ? iso : multi ? value.end : null;
+      // Koniec wcześniejszy niż nowy początek – wyczyszczony, do ponownego wyboru.
+      const end = multi && value.end && value.end >= iso ? value.end : null;
       onChange({ start: iso, end });
-      if (multi && !value.end) setPicking('end');
-      else setPicking(null);
+      setPicking(null);
+      // Android: dialog zamyka się po wyborze – drugi otwieramy po zamknięciu pierwszego.
+      if (multi && !end) setTimeout(() => setPicking('end'), 0);
     } else {
       onChange({ start: value.start ?? iso, end: iso });
       setPicking(null);
@@ -81,47 +140,37 @@ export function DateRangeField({
           if (v === 'single' && value.end) onChange({ start: value.start, end: null });
         }}
       />
-      <View style={[styles.field, { borderColor: error ? color.accentRamp[300] : color.neutral[600] }]}>
-        <Pressable
-          testID={`${testID}-open`}
-          accessibilityRole="button"
-          accessibilityLabel={`${label}: ${text}`}
-          onPress={() => setPicking('start')}
-          style={styles.value}
-        >
-          <Icon name="calendar-blank" size={18} color={color.neutral[400]} />
-          <Text
-            testID={`${testID}-value`}
-            variant="body"
-            color={empty ? color.neutral[500] : color.text}
-            numberOfLines={1}
-          >
-            {text}
-          </Text>
-        </Pressable>
-        {multi && value.start ? (
-          <Button
-            variant="ghost"
-            size={44}
-            label={t('form.endDate')}
-            onPress={() => setPicking('end')}
-            testID={`${testID}-end`}
+      <View style={styles.boxes}>
+        <View style={styles.box}>
+          <DateBox
+            testID={testID}
+            label={label}
+            text={startText}
+            empty={!value.start}
+            error={!!error}
+            onPress={() => setPicking('start')}
+            onClear={value.start ? () => onChange({ start: null, end: null }) : undefined}
+            clearLabel={t('form.clearDate')}
           />
-        ) : null}
-        {!empty ? (
-          <Pressable
-            testID={`${testID}-clear`}
-            accessibilityRole="button"
-            accessibilityLabel={t('form.clearDate')}
-            hitSlop={10}
-            onPress={() => onChange({ start: null, end: null })}
-          >
-            <Icon name="x-circle" size={20} color={color.neutral[500]} />
-          </Pressable>
+        </View>
+        {multi ? (
+          <View style={styles.box}>
+            <DateBox
+              testID={`${testID}-end`}
+              label={t('form.endDate')}
+              text={endText}
+              empty={!value.end}
+              error={!!error}
+              onPress={() => setPicking(value.start ? 'end' : 'start')}
+              onClear={value.end ? () => onChange({ start: value.start, end: null }) : undefined}
+              clearLabel={t('form.clearDate')}
+            />
+          </View>
         ) : null}
       </View>
       {picking && Platform.OS !== 'web' ? (
         <DateTimePicker
+          key={picking}
           testID={`${testID}-picker`}
           value={fromIsoDate(picking === 'end' ? (value.end ?? value.start) : value.start)}
           minimumDate={picking === 'end' && value.start ? fromIsoDate(value.start) : undefined}
@@ -150,4 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.bg,
   },
   value: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
+  text: { flexShrink: 1 },
+  boxes: { gap: 8 },
+  box: {},
 });

@@ -8,6 +8,7 @@ import { Icon } from '../../../ui/Icon';
 import { GroupedList, ListRow } from '../../../ui/list/GroupedList';
 import { SectionHeader } from '../../../ui/SectionHeader';
 import { Text } from '../../../ui/Text';
+import { formatNumber } from '../../../ui/form';
 
 /** Liczba z API (np. 1.5) → dziesiąte dla formaterów `@polechamp/scoring`. */
 export const toTenths = (value: number) => Math.round(value * 10);
@@ -62,7 +63,11 @@ export function CriteriaTab({
               key={c.id}
               testID={`criterion-${c.id}`}
               title={c.name}
-              subtitle={t('org:criteria.scale', { max: c.scaleMax })}
+              subtitle={
+                c.step === 0.5
+                  ? t('org:criteria.scale', { max: c.scaleMax })
+                  : t('org:criteria.scaleStep', { max: c.scaleMax, step: formatNumber(c.step) })
+              }
               trailing={<Badge variant="weight" value={toTenths(c.weight)} />}
               inactive={!editable}
               onPress={editable ? () => onEditCriterion(c) : undefined}

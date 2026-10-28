@@ -8,15 +8,25 @@ import type { CriterionBody } from '../../data/org/categories';
 import { useOnline } from '../../data/network/online';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
-import { NumberField, TextField, useZodForm } from '../../ui/form';
+import { NumberField, TextField, formatNumber, useZodForm } from '../../ui/form';
+import { FieldFrame } from '../../ui/form/FieldFrame';
+import { SegmentedControl } from '../../ui/SegmentedControl';
 import { ConfirmContent, Sheet, SheetHeader, SheetStep, useSheetStep } from '../../ui/sheet';
 import { toast } from '../../ui/Toast';
 import { toastSaveError } from './CategoryFormSheet';
 
 type Criterion = CategoryDetails['criteria'][number];
-type Values = { name: string; scaleMax: number | null; weight: number | null; description: string };
+type Step = 0.1 | 0.5 | 1;
+type Values = {
+  name: string;
+  scaleMax: number | null;
+  weight: number | null;
+  step: Step;
+  description: string;
+};
 
-const NEW: Values = { name: '', scaleMax: 10, weight: 1, description: '' };
+const NEW: Values = { name: '', scaleMax: 10, weight: 1, step: 0.5, description: '' };
+const STEPS: readonly Step[] = [0.1, 0.5, 1];
 
 export interface CriterionSheetProps {
   visible: boolean;
@@ -58,6 +68,7 @@ export function CriterionSheet({
             name: criterion.name,
             scaleMax: criterion.scaleMax,
             weight: criterion.weight,
+            step: criterion.step,
             description: criterion.description ?? '',
           }
         : (NEW as never),
@@ -153,6 +164,20 @@ export function CriterionSheet({
                 />
               </View>
             </View>
+            <Controller
+              control={form.control}
+              name="step"
+              render={({ field }) => (
+                <FieldFrame label={t('org:criterionForm.step')} testID="criterion-step">
+                  <SegmentedControl
+                    segments={STEPS.map((s) => ({ key: String(s), label: formatNumber(s) }))}
+                    value={String(field.value ?? 0.5)}
+                    onChange={(k) => field.onChange(Number(k))}
+                    testID="criterion-step-control"
+                  />
+                </FieldFrame>
+              )}
+            />
             <Controller
               control={form.control}
               name="description"

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { SYNC_REJECTION_CODES } from '../errors/codes.js';
-import { AggregationMethod, CategoryStatus, Level, Style } from './categories.js';
+import { AggregationMethod, CategoryStatus, CriterionStep, Level, Style } from './categories.js';
 import { Id, IsoDateTime, UuidV7 } from './common.js';
 import { EntryStatus } from './entries.js';
 import { TournamentStatus } from './tournaments.js';
@@ -30,7 +30,7 @@ export const SnapshotCriterion = z.object({
   name: z.string(),
   description: z.string().nullable().optional(),
   scaleMax: z.number().int(),
-  step: z.literal(0.5),
+  step: CriterionStep,
   weight: z.number(),
   position: z.number().int().positive(),
 });

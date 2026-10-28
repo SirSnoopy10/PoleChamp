@@ -135,8 +135,13 @@ export class ResultsService {
       .select({ tieBreak: category.tieBreakCriterionId })
       .from(category)
       .where(eq(category.id, categoryId));
-    const criteria = await conn
-      .select({ id: criterion.id, scaleMax: criterion.scaleMax, weightTenths: criterion.weightTenths })
+    const rows = await conn
+      .select({
+        id: criterion.id,
+        scaleMax: criterion.scaleMax,
+        weightTenths: criterion.weightTenths,
+        step: criterion.step,
+      })
       .from(criterion)
       .where(eq(criterion.categoryId, categoryId))
       .orderBy(asc(criterion.position));
@@ -149,6 +154,7 @@ export class ResultsService {
       .from(penaltyType)
       .where(eq(penaltyType.categoryId, categoryId))
       .orderBy(asc(penaltyType.position));
+    const criteria = rows.map(({ step, ...c }) => ({ ...c, stepTenths: Math.round(Number(step) * 10) }));
     return { criteria, penaltyTypes, tieBreakCriterionId: cat?.tieBreak ?? undefined };
   }
 

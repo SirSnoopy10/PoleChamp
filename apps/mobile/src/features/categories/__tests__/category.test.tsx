@@ -95,9 +95,10 @@ describe('SCR-ORG-09/10 kryteria i kary (IMP-263, IMP-264)', () => {
     await fireEvent.press(screen.getByTestId('criterion-save'));
     expect(await screen.findByText('Waga od 0,5 do 5 (co 0,5).')).toBeOnTheScreen();
     await fireEvent.changeText(screen.getByTestId('criterion-weight'), '1,5');
+    await fireEvent.press(screen.getByTestId('segment-1'));
     await fireEvent.press(screen.getByTestId('criterion-save'));
     expect(await screen.findByText('Dodano kryterium')).toBeOnTheScreen();
-    expect(created).toEqual({ name: 'Flow', scaleMax: 10, weight: 1.5, description: null });
+    expect(created).toEqual({ name: 'Flow', scaleMax: 10, weight: 1.5, step: 1, description: null });
 
     await fireEvent.press(screen.getByTestId('criterion-k1'));
     await fireEvent.press(await screen.findByTestId('criterion-delete'));

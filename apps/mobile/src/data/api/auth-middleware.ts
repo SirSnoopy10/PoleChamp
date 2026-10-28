@@ -83,24 +83,24 @@ export function createAuthMiddleware(options: AuthMiddlewareOptions): Middleware
       network.reportHttpSuccess();
       const minApp = response.headers.get('X-Min-App-Version');
       if (minApp) updateSignal.report({ minAppVersion: minApp });
-      if (response.status !== 401) return response;
+      if (response.status !== 401) return undefined;
       const problem = (await response
         .clone()
         .json()
         .catch(() => null)) as { code?: string } | null;
       if (problem?.code === 'DEVICE_REVOKED') {
         options.onDeviceRevoked?.();
-        return response;
+        return undefined;
       }
-      if (!original || NO_REFRESH.test(new URL(request.url).pathname)) return response;
+      if (!original || NO_REFRESH.test(new URL(request.url).pathname)) return undefined;
       if (problem?.code === 'TOKEN_REUSED' || !options.canRefresh()) {
         if (options.canRefresh()) await expire();
-        return response;
+        return undefined;
       }
       const tokens = await refresh();
       if (!tokens) {
         await expire();
-        return response;
+        return undefined;
       }
       const retry = original.clone();
       retry.headers.set('Authorization', `Bearer ${tokens.accessToken}`);

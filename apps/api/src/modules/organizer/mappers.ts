@@ -17,7 +17,7 @@ export const toCriterion = (c: typeof criterion.$inferSelect) => ({
   name: c.name,
   description: c.description,
   scaleMax: c.scaleMax,
-  step: 0.5 as const,
+  step: Number(c.step) as 0.1 | 0.5 | 1,
   weight: c.weightTenths / 10,
   position: c.position,
 });

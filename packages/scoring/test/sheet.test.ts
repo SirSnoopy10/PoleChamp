@@ -237,3 +237,44 @@ describe('przypadki obronne', () => {
     expect(mulTenths(85, 15)).toBe(1275);
   });
 });
+
+describe('konfigurowalny krok noty', () => {
+  const stepConfig = (stepTenths: number) => ({
+    criteria: [{ id: 'a', scaleMax: 10, weightTenths: 10, stepTenths }],
+    penaltyTypes: [],
+  });
+
+  it('krok 1 pkt: nota całkowita poprawna, 8,5 → INVALID_STEP', () => {
+    const cfg = stepConfig(10);
+    expect(validateSheet({ criteria: { a: 80 }, penalties: {} }, cfg).ok).toBe(true);
+    expect(validateSheet({ criteria: { a: 85 }, penalties: {} }, cfg)).toMatchObject({
+      code: 'INVALID_STEP',
+    });
+  });
+
+  it('krok 0,1 pkt: nota 8,3 poprawna', () => {
+    expect(validateSheet({ criteria: { a: 83 }, penalties: {} }, stepConfig(1)).ok).toBe(true);
+  });
+
+  it('defaultSheet: połowa skali w dół do kroku', () => {
+    const cfg = { criteria: [{ id: 'a', scaleMax: 5, weightTenths: 10, stepTenths: 10 }], penaltyTypes: [] };
+    expect(defaultSheet(cfg).criteria).toEqual({ a: 20 });
+    expect(defaultSheet(stepConfig(1)).criteria).toEqual({ a: 50 });
+  });
+
+  it('toTenths z krokiem i validateStepTenths w konfiguracji', () => {
+    expect(toTenths(8.3, 1)).toEqual({ ok: true, value: 83 });
+    expect(toTenths(8.5, 10)).toMatchObject({ code: 'INVALID_STEP' });
+    const base = { scaleMax: 10, weightTenths: 10 };
+    expect(validateCategoryConfig({ criteria: [{ ...base, stepTenths: 2 }], penaltyTypes: [] })).toEqual({
+      ok: false,
+      code: 'INVALID_STEP',
+      field: 'criteria.0.step',
+    });
+    for (const s of [1, 5, 10]) {
+      expect(validateCategoryConfig({ criteria: [{ ...base, stepTenths: s }], penaltyTypes: [] }).ok).toBe(
+        true,
+      );
+    }
+  });
+});

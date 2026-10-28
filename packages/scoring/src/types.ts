@@ -28,6 +28,8 @@ export interface CriterionConfig {
   /** Skala „0–max” w pełnych punktach (1–20). */
   scaleMax: number;
   weightTenths: Tenths;
+  /** Krok noty w dziesiątych (1, 5 albo 10); domyślnie 5 (0,5 pkt). */
+  stepTenths?: Tenths;
 }
 
 export interface PenaltyTypeConfig {

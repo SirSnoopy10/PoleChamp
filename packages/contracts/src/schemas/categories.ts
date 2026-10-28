@@ -9,6 +9,9 @@ import {
   TrimmedString,
 } from './common.js';
 
+/** Krok noty kryterium w punktach: 0,1, 0,5 albo 1. */
+export const CriterionStep = z.union([z.literal(0.1), z.literal(0.5), z.literal(1)]);
+
 /** Kategorie, kryteria i kary (03-api §3.3; FR-301, FR-305, FR-307, FR-309; IMP-061). */
 export const Style = z.enum(['POLE_SPORT', 'POLE_ART', 'EXOTIC', 'DOUBLES']);
 export const Level = z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'PRO', 'ELITE']);
@@ -39,6 +42,7 @@ export const CriterionInput = z.strictObject({
   name: TrimmedString(1, 60),
   scaleMax: IntInRange(1, 20),
   weight: DecimalStep05(0.5, 5),
+  step: CriterionStep.optional(),
   description: OptionalTrimmedString(200),
 });
 export const CriterionPatch = CriterionInput.partial();
@@ -55,7 +59,7 @@ export const Criterion = z.object({
   name: z.string(),
   description: z.string().nullable().optional(),
   scaleMax: z.number().int(),
-  step: z.literal(0.5),
+  step: CriterionStep,
   weight: z.number(),
   position: z.number().int().positive(),
 });

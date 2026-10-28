@@ -47,7 +47,7 @@ export interface CriterionFx {
   name: string;
   description: string | null;
   scaleMax: number;
-  step: 0.5;
+  step: 0.1 | 0.5 | 1;
   weight: number;
   position: number;
 }

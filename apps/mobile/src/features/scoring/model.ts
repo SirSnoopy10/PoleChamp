@@ -39,7 +39,7 @@ function draftValues(raw: unknown, base: FormValues, model: Pick<ScoreFormModel,
   const p = isRecord(raw.penalties) ? raw.penalties : {};
   for (const k of model.criteria) {
     const v = c[k.id];
-    if (typeof v === 'number' && v >= 0 && v <= k.scaleMax * 10 && v % 5 === 0) criteria[k.id] = v;
+    if (typeof v === 'number' && v >= 0 && v <= k.scaleMax * 10 && v % k.stepTenths === 0) criteria[k.id] = v;
   }
   for (const k of model.penalties) {
     const v = p[k.id];
@@ -58,7 +58,12 @@ export function readScoreFormModel(db: Db, judgeId: string, entryId: string): Sc
   if (!entry) return null;
   const { criteria, penalties } = readCategoryConfig(db, entry.categoryId);
   const config: CategoryConfig = {
-    criteria: criteria.map((c) => ({ id: c.id, scaleMax: c.scaleMax, weightTenths: c.weightTenths })),
+    criteria: criteria.map((c) => ({
+      id: c.id,
+      scaleMax: c.scaleMax,
+      weightTenths: c.weightTenths,
+      stepTenths: c.stepTenths,
+    })),
     penaltyTypes: penalties.map((p) => ({
       id: p.id,
       pointsTenths: p.pointsTenths,

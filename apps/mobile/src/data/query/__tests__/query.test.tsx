@@ -6,7 +6,8 @@ import { act, renderWithProviders, screen } from '../../../test-utils/render';
 import { Button } from '../../../ui/Button';
 import { OfflineBanner } from '../../../ui/OfflineBanner';
 import { ApiError } from '../../api/errors';
-import { HTTP_ONLINE_WINDOW_MS, network } from '../../network/online';
+import { renderHook } from '@testing-library/react-native';
+import { HTTP_ONLINE_WINDOW_MS, ONLINE_PROBE_MS, network, useOnlineProbe } from '../../network/online';
 import { useCanWrite } from '../../network/useCanWrite';
 import { queryKeys } from '../keys';
 import { clearQueryCache, createMmkvPersister, createQueryClient, shouldRetry } from '../queryClient';
@@ -41,6 +42,27 @@ describe('TanStack Query, cache MMKV i offline (IMP-215)', () => {
     network.setWsConnected(true);
     jest.advanceTimersByTime(HTTP_ONLINE_WINDOW_MS * 2);
     expect(network.isOnline()).toBe(true);
+  });
+
+  it('sonda bez WebSocketu podtrzymuje „online” na bezczynnym ekranie; brak odpowiedzi – offline', async () => {
+    jest.useFakeTimers();
+    let reachable = true;
+    const probe = jest.fn(async () => {
+      if (reachable) network.reportHttpSuccess();
+      else network.reportHttpFailure();
+    });
+    const hook = await renderHook(() => useOnlineProbe(probe));
+    network.reportHttpSuccess();
+    for (let i = 0; i < 4; i++) await act(async () => jest.advanceTimersByTime(ONLINE_PROBE_MS));
+    expect(probe).toHaveBeenCalledTimes(4);
+    expect(network.isOnline()).toBe(true);
+    reachable = false;
+    await act(async () => jest.advanceTimersByTime(ONLINE_PROBE_MS));
+    expect(network.isOnline()).toBe(false);
+    network.setWsConnected(true);
+    await act(async () => jest.advanceTimersByTime(ONLINE_PROBE_MS));
+    expect(probe).toHaveBeenCalledTimes(5);
+    await hook.unmount();
   });
 
   it('TC-STATE-011: offline – zapisy zablokowane, baner offline, odczyt z cache', async () => {

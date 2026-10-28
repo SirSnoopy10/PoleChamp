@@ -63,7 +63,7 @@ export const org = {
     namePlaceholder: 'np. Wiosenny Puchar PoleChamp',
     nameError: 'Podaj nazwę turnieju (min. 3 znaki).',
     date: 'Data',
-    datePlaceholder: '12 kwietnia 2027',
+    datePlaceholder: 'Data rozpoczęcia',
     venue: 'Miejsce',
     venuePlaceholder: 'Poznań, Arena',
     create: 'Utwórz turniej',
@@ -82,11 +82,20 @@ export const org = {
     athletes: 'Zawodniczki',
     judges: 'Sędziowie',
     judgesA11y: 'Sędziowie: {n}. Zarządzaj sędziami i urządzeniami',
+    athletesA11y: 'Zawodniczki: {n}. Lista według kategorii',
     start: 'Rozpocznij turniej',
     finish: 'Zakończ turniej',
     noCategories: 'Brak kategorii. Dodaj pierwszą, aby zacząć.',
     rejected: 'Odrzucone oceny ({n})',
     addCategoryA11y: 'Dodaj kategorię',
+  },
+  /** Zawodniczki turnieju według kategorii. */
+  athletes: {
+    title: 'Zawodniczki',
+    row: 'nr {nr} · {name}',
+    withdrawn: 'Wycofana',
+    empty: 'Brak zawodniczek w tej kategorii.',
+    noCategories: 'Brak kategorii w turnieju.',
   },
   /** SCR-ORG-04 – zakończenie turnieju. */
   finish: {
@@ -122,6 +131,7 @@ export const org = {
   criteria: {
     title: 'Kryteria oceny',
     scale: 'Skala 0–{max}',
+    scaleStep: 'Skala 0–{max}, co {step}',
     penalties: 'Kary punktowe',
     maxPerRun: 'maks. {n}× na występ',
     noPenalties: 'Brak kar punktowych.',
@@ -139,6 +149,7 @@ export const org = {
     scaleError: 'Skala od 1 do 20.',
     weight: 'Waga',
     weightError: 'Waga od 0,5 do 5 (co 0,5).',
+    step: 'Krok oceny (pkt)',
     description: 'Opis dla sędziów',
     descriptionPlaceholder: 'Opcjonalnie',
     save: 'Zapisz',

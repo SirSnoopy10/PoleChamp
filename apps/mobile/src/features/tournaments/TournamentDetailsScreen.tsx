@@ -41,6 +41,8 @@ export interface TournamentDetailsScreenProps {
   onEdit: () => void;
   onPdf: () => void;
   onJudges: () => void;
+  /** Kafelek „Zawodniczki” – lista według kategorii. */
+  onAthletes?: () => void;
   onStart: () => void;
   onFinish: () => void;
   onAddCategory: () => void;
@@ -64,6 +66,7 @@ export function TournamentDetailsScreen({
   onEdit,
   onPdf,
   onJudges,
+  onAthletes,
   onStart,
   onFinish,
   onAddCategory,
@@ -181,7 +184,12 @@ export function TournamentDetailsScreen({
         <StatTiles
           tiles={[
             { label: t('org:tournament.categories'), value: tour.stats.categories },
-            { label: t('org:tournament.athletes'), value: tour.stats.athletes },
+            {
+              label: t('org:tournament.athletes'),
+              value: tour.stats.athletes,
+              onPress: onAthletes,
+              accessibilityLabel: t('org:tournament.athletesA11y', { n: tour.stats.athletes }),
+            },
             {
               label: t('org:tournament.judges'),
               value: tour.stats.judges,

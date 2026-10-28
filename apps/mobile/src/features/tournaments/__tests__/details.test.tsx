@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import OrgLayout from '../../../../app/(org)/_layout';
 import TournamentsRoute from '../../../../app/(org)/index';
+import AthletesRoute from '../../../../app/(org)/athletes/[tournamentId]';
 import TournamentRoute from '../../../../app/(org)/t/[tournamentId]';
 import { i18n } from '../../../i18n';
 import { categoryItem, device, tournamentDetails } from '../../../test-utils/fixtures';
@@ -15,6 +16,7 @@ const routes = {
   '(org)/_layout': OrgLayout,
   '(org)/index': TournamentsRoute,
   '(org)/t/[tournamentId]': TournamentRoute,
+  '(org)/athletes/[tournamentId]': AthletesRoute,
 };
 const me = (emailVerified = true) =>
   http.get(`${API}/v1/me`, () =>
@@ -36,6 +38,41 @@ describe('SCR-ORG-03 szczegóły turnieju (IMP-257)', () => {
     expect(screen.getByText('173 z 215 ocen w rozpoczętych kategoriach')).toBeOnTheScreen();
     expect(within(screen.getByTestId('category-c3')).getByText('Trwa')).toBeOnTheScreen();
     expect(screen.getByTestId('tournament-finish')).toBeOnTheScreen();
+    await r.unmount();
+  });
+
+  it('kafel „Zawodniczki” otwiera listę z podziałem na kategorie', async () => {
+    const entry = (id: string, nr: number, fullName: string, status: 'ACTIVE' | 'WITHDRAWN' = 'ACTIVE') => ({
+      id,
+      startNumber: nr,
+      startOrder: nr,
+      status,
+      version: 1,
+      athlete: { id: `a${id}`, fullName, club: 'Klub', isMinor: false },
+      judged: { done: 0, expected: 0 },
+    });
+    server.use(
+      me(),
+      details(
+        tournamentDetails({
+          categories: [categoryItem('c1', { name: 'Kat A' }), categoryItem('c2', { name: 'Kat B' })],
+        }),
+      ),
+      http.get(`${API}/v1/categories/c1/entries`, () =>
+        HttpResponse.json({ items: [entry('e1', 12, 'Anna Nowak')] }),
+      ),
+      http.get(`${API}/v1/categories/c2/entries`, () =>
+        HttpResponse.json({ items: [entry('e2', 7, 'Ewa Kot', 'WITHDRAWN')] }),
+      ),
+    );
+    const r = await startOrg(routes, '/t/t1', state);
+    const tiles = await screen.findByTestId('stat-tiles');
+    await fireEvent.press(within(tiles).getByText('Zawodniczki'));
+    const a = await screen.findByTestId('athletes-category-c1');
+    expect(await within(a).findByText('nr 12 · Anna Nowak')).toBeOnTheScreen();
+    const b = screen.getByTestId('athletes-category-c2');
+    expect(await within(b).findByText('nr 7 · Ewa Kot')).toBeOnTheScreen();
+    expect(within(b).getByText('Wycofana')).toBeOnTheScreen();
     await r.unmount();
   });
 

@@ -75,7 +75,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         android: {
           minSdkVersion: 29,
           targetSdkVersion: 36,
-          compileSdkVersion: 36,
+          compileSdkVersion: 37,
           // IMP-506 (NFR-109): R8 i usuwanie nieużywanych zasobów w buildach release; podział ABI
           // robi Google Play (AAB).
           enableMinifyInReleaseBuilds: true,

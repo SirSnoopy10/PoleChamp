@@ -122,10 +122,18 @@ describe('pola formularzy (IMP-207)', () => {
     expect(screen.getByTestId('date-range-value')).toHaveTextContent('18 kwietnia 2027');
 
     await fireEvent.press(screen.getByRole('radio', { name: 'Kilka dni' }));
+    expect(screen.getByTestId('date-range-end-value')).toHaveTextContent('Data zakończenia');
     await fireEvent.press(screen.getByTestId('date-range-open'));
     await set(new Date(2026, 9, 3));
+    expect(screen.getByTestId('date-range-value')).toHaveTextContent('3 października 2026');
+    await fireEvent.press(screen.getByTestId('date-range-end-open'));
     await set(new Date(2026, 9, 4));
-    expect(screen.getByTestId('date-range-value')).toHaveTextContent('3–4 października 2026');
+    expect(screen.getByTestId('date-range-end-value')).toHaveTextContent('4 października 2026');
+
+    // Nowy początek po końcu – koniec wyczyszczony.
+    await fireEvent.press(screen.getByTestId('date-range-open'));
+    await set(new Date(2026, 9, 10));
+    expect(screen.getByTestId('date-range-end-value')).toHaveTextContent('Data zakończenia');
 
     await fireEvent.press(screen.getByRole('button', { name: 'Wyczyść datę' }));
     expect(screen.getByTestId('date-range-value')).toHaveTextContent('Data do ustalenia');

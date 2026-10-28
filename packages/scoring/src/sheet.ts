@@ -1,6 +1,10 @@
 import type { CategoryConfig, CriterionConfig, Hundredths, Result, SheetInput, Tenths } from './types.js';
 
 const MAX_COMMENT = 500;
+/** Domyślny krok noty: 0,5 pkt. */
+export const DEFAULT_STEP_TENTHS: Tenths = 5;
+/** Dozwolone kroki noty: 0,1, 0,5 i 1 pkt (w dziesiątych). */
+export const STEP_TENTHS_OPTIONS: readonly Tenths[] = [1, 5, 10];
 
 export interface SheetTotal {
   criteriaHundredths: Hundredths;
@@ -33,10 +37,15 @@ export function maxJudgeScore(
   return criteria.reduce((sum, c) => sum + c.scaleMax * 10 * c.weightTenths, 0);
 }
 
-/** Nowy formularz: noty = połowa skali, kary 0, komentarz pusty (D-SC-09, P14). */
+/** Nowy formularz: noty = połowa skali (w dół do kroku), kary 0, komentarz pusty (D-SC-09, P14). */
 export function defaultSheet(config: CategoryConfig): Required<SheetInput> {
   return {
-    criteria: Object.fromEntries(config.criteria.map((c) => [c.id, c.scaleMax * 5])),
+    criteria: Object.fromEntries(
+      config.criteria.map((c) => {
+        const step = c.stepTenths ?? DEFAULT_STEP_TENTHS;
+        return [c.id, Math.floor((c.scaleMax * 5) / step) * step];
+      }),
+    ),
     penalties: Object.fromEntries(config.penaltyTypes.map((p) => [p.id, 0])),
     comment: '',
   };
@@ -60,7 +69,7 @@ export function validateSheet(sheet: SheetInput, config: CategoryConfig): Result
   for (const c of config.criteria) {
     // Komplet kluczy sprawdzony wyżej.
     const v = sheet.criteria[c.id] as Tenths;
-    if (!Number.isInteger(v) || v % 5 !== 0)
+    if (!Number.isInteger(v) || v % (c.stepTenths ?? DEFAULT_STEP_TENTHS) !== 0)
       return { ok: false, code: 'INVALID_STEP', field: `criteria.${c.id}` };
     if (v < 0 || v > c.scaleMax * 10) return { ok: false, code: 'OUT_OF_RANGE', field: `criteria.${c.id}` };
   }

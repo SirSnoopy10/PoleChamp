@@ -7,7 +7,7 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [workspaceRoot];
+config.watchFolders = [workspaceRoot, ...(process.env.PNPM_STORE_DIR ? [process.env.PNPM_STORE_DIR] : [])];
 config.resolver.unstable_enableSymlinks = true;
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),

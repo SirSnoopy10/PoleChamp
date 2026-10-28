@@ -307,7 +307,11 @@ describe('kategorie, kryteria i kary (IMP-124, IMP-125, IMP-132)', () => {
       scaleMax: 10,
       weight: 1.5,
     });
-    expect(added.body).toMatchObject({ position: 6, weight: 1.5 });
+    expect(added.body).toMatchObject({ position: 6, weight: 1.5, step: 0.5 });
+    const stepped = await org.req('PATCH', `/v1/criteria/${added.body.id}`, { step: 1 });
+    expect(stepped.body.step).toBe(1);
+    const badStep = await org.req('PATCH', `/v1/criteria/${added.body.id}`, { step: 0.2 });
+    expect(badStep.status).toBe(422);
     expect((await org.req('GET', `/v1/categories/${c.id}`)).body.maxJudgeScore).toBe(80);
     const patched = await org.req('PATCH', `/v1/criteria/${added.body.id}`, { weight: 2.5 });
     expect(patched.body.weight).toBe(2.5);

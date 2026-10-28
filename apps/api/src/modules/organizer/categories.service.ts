@@ -323,6 +323,7 @@ export class CategoriesService {
             description: input.description ?? null,
             scaleMax: input.scaleMax,
             weightTenths: toTenths(input.weight),
+            step: String(input.step ?? 0.5),
             position: (last?.max ?? 0) + 1,
           })
           .returning(),
@@ -351,6 +352,7 @@ export class CategoriesService {
             ...(input.description !== undefined ? { description: input.description } : {}),
             ...(input.scaleMax !== undefined ? { scaleMax: input.scaleMax } : {}),
             ...(input.weight !== undefined ? { weightTenths: toTenths(input.weight) } : {}),
+            ...(input.step !== undefined ? { step: String(input.step) } : {}),
             updatedAt: new Date(),
           })
           .where(eq(criterion.id, criterionId))
