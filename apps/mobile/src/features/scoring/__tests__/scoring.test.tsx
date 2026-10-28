@@ -151,6 +151,35 @@ describe('IMP-308: kolejka (SCR-JDG-04)', () => {
     );
     expect(screen.getByText('Organizator zdecyduje o ich uwzględnieniu.')).toBeOnTheScreen();
   });
+
+  it('UX-01 / UX-15: ocena bez rozstrzygnięcia w „Wymaga uwagi”, wiersz otwiera formularz, Wstecz zamyka', async () => {
+    await signIn(env, 'jA');
+    await sheet('e2', 'PENDING');
+    await env.local.tx((db) =>
+      db.runSync(
+        `INSERT INTO outbox (mutation_id, type, judge_id, score_sheet_id, payload, created_at, attempts,
+           next_attempt_at, state) VALUES ('0190a000-0000-7000-8000-0000000000f1', 'SUBMIT_SCORE_SHEET', 'jA',
+           '0190a000-0000-7000-8000-000000000002', '{}', 0, 22, 9999999999999, 'QUEUED')`,
+      ),
+    );
+    await startJudge(JUDGE_ROUTES, '/categories');
+    const back = jest
+      .spyOn(RN.BackHandler, 'addEventListener')
+      .mockImplementation(() => ({ remove: () => undefined }));
+    await fireEvent.press(screen.getByTestId('sync-pill'));
+    expect(screen.getByTestId('sync-rejected')).toHaveTextContent(
+      /Wymaga uwagi.*#42 Zawodniczka 2 – serwer nie przyjął oceny \(22 próby\), ponawiamy/,
+    );
+    await act(async () => {
+      expect((back.mock.calls.at(-1)?.[1] as () => boolean)()).toBe(true);
+    });
+    back.mockRestore();
+    expect(screen.queryByTestId('sync-popover')).toBeNull();
+    await fireEvent.press(screen.getByTestId('sync-pill'));
+    await fireEvent.press(screen.getByTestId('sync-rejected-e2'));
+    expect(screen.queryByTestId('sync-popover')).toBeNull();
+    expect(screen).toHavePathname('/category/c1');
+  });
 });
 
 describe('IMP-309…312: formularz oceny (SCR-JDG-05)', () => {
@@ -519,14 +548,21 @@ describe('IMP-317: pigułka synchronizacji i popover (SCR-JDG-07)', () => {
     }
   });
 
-  it('TC-E2E-JDG-022: popover – ostatnia synchronizacja, kolejka, połączenie, „Synchronizuj teraz”', async () => {
+  it('TC-E2E-JDG-022 / UX-15: popover – ostatnia wysyłka i pobranie, kolejka, połączenie, „Synchronizuj teraz”', async () => {
     await signIn(env, 'jA');
     await startJudge(JUDGE_ROUTES, '/categories');
-    await act(async () => syncStore.setState({ online: false, lastSyncAt: env.clock.now() - 2 * 60_000 }));
+    await act(async () =>
+      syncStore.setState({
+        online: false,
+        lastPushAt: env.clock.now() - 2 * 60_000,
+        lastPullAt: env.clock.now() - 10_000,
+      }),
+    );
     await fireEvent.press(screen.getByTestId('sync-pill'));
     const popover = screen.getByTestId('sync-popover');
     expect(popover).toHaveTextContent(/Synchronizacja/);
-    expect(popover).toHaveTextContent(/Ostatnia synchronizacja: 2 min temu/);
+    expect(popover).toHaveTextContent(/Ostatnia wysyłka ocen: 2 min temu/);
+    expect(popover).toHaveTextContent(/Ostatnie pobranie zmian: przed chwilą/);
     expect(popover).toHaveTextContent(/Oceny w kolejce: 1/);
     expect(popover).toHaveTextContent(/Połączenie: offline/);
     expect(popover).toHaveTextContent(

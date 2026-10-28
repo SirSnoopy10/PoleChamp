@@ -96,7 +96,12 @@ export const judge = {
   /** SCR-JDG-07. */
   sync: {
     title: 'Synchronizacja',
-    lastSync: 'Ostatnia synchronizacja: {time}',
+    lastPush: 'Ostatnia wysyłka ocen: {time}',
+    lastPull: 'Ostatnie pobranie zmian: {time}',
+    attention: 'Wymaga uwagi',
+    stuckReason_one: 'serwer nie przyjął oceny ({count} próba), ponawiamy',
+    stuckReason_few: 'serwer nie przyjął oceny ({count} próby), ponawiamy',
+    stuckReason_many: 'serwer nie przyjął oceny ({count} prób), ponawiamy',
     never: 'jeszcze nie',
     justNow: 'przed chwilą',
     minutesAgo: '{count} min temu',

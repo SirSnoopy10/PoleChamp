@@ -167,7 +167,7 @@ describe('outbox (IMP-353)', () => {
   it('TC-OUTBOX-014: aktualizacja oceny po synchronizacji – nowa mutacja z baseRevision = 1', async () => {
     const first = await submitSheet(local, input(), NOW);
     await local.tx((db) => {
-      outbox.markDone(db, first.mutationId, NOW);
+      outbox.markDone(db, first.mutationId!, NOW);
       db.runSync(
         "UPDATE local_score_sheet SET sync_state = 'SYNCED', server_revision = 1 WHERE id = ?",
         first.scoreSheetId,
@@ -210,7 +210,7 @@ describe('outbox (IMP-353)', () => {
       second.mutationId,
     ]);
     await local.tx((db) => {
-      outbox.markDone(db, first.mutationId, NOW);
+      outbox.markDone(db, first.mutationId!, NOW);
       outbox.rebase(db, first.scoreSheetId, 1);
     });
     expect(outbox.pending(local.read)[0]!.mutation).toMatchObject({ payload: { baseRevision: 1 } });

@@ -16,15 +16,40 @@ export interface SubmitSheetInput {
   totalHundredths: number;
 }
 
+const key = (
+  criteria: SubmitSheetInput['criteria'],
+  penalties: SubmitSheetInput['penalties'],
+  comment: string,
+) =>
+  JSON.stringify([
+    [...criteria]
+      .sort((a, b) => a.criterionId.localeCompare(b.criterionId))
+      .map((c) => [c.criterionId, c.valueTenths]),
+    [...penalties]
+      .sort((a, b) => a.penaltyTypeId.localeCompare(b.penaltyTypeId))
+      .map((p) => [p.penaltyTypeId, p.count]),
+    comment,
+  ]);
+
 /**
  * Zatwierdzenie oceny (TC-OUTBOX-001, 014): arkusz `PENDING` i mutacja w outboxie w jednej transakcji.
  * `scoreSheetId` jest stały dla pary (start, sędzia); `baseRevision` = ostatnia znana rewizja serwera.
- * Obietnica kończy się po `COMMIT` – dopiero wtedy toast „Zapisano ocenę…”.
+ * Obietnica kończy się po `COMMIT` – dopiero wtedy toast „Zapisano ocenę…”. Ponowne zatwierdzenie tej samej
+ * treści (np. podwójne tapnięcie – UX-02) nie tworzy mutacji: `mutationId = null`.
  */
 export function submitSheet(local: LocalDb, input: SubmitSheetInput, now = Date.now()) {
   return local.tx((db) => {
     const repo = ScoreSheetRepo.forJudge(db, input.judgeId);
     const existing = repo.byEntry(input.entryId);
+    if (
+      existing &&
+      existing.syncState !== 'REJECTED' &&
+      key(existing.values, existing.penalties, existing.comment) ===
+        key(input.criteria, input.penalties, input.comment)
+    ) {
+      repo.deleteDraft(input.entryId);
+      return { scoreSheetId: existing.id, revision: existing.revision, mutationId: null };
+    }
     const scoreSheetId = existing?.id ?? uuidv7(now);
     const revision = (existing?.revision ?? 0) + 1;
     const baseRevision = existing?.serverRevision ?? 0;

@@ -13,6 +13,7 @@ import { idempotencyKey } from '../../db/schema.js';
 import type { AuthedRequest } from '../auth/auth.decorators.js';
 import { DomainError, validationFailed } from '../errors/domain-error.js';
 import { canonical, sha256Hex, UUID_RE } from '../ids.js';
+import { PUBLIC_IDEMPOTENT_PATHS, PublicIdempotency } from './public-idempotency.js';
 
 /** Wiersz w toku (odpowiedź jeszcze nie zapisana). */
 const IN_PROGRESS = 0;
@@ -26,20 +27,25 @@ const WAIT_MAX_MS = 5_000;
  */
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
-  constructor(@Inject(DB) private readonly db: Db) {}
+  constructor(
+    @Inject(DB) private readonly db: Db,
+    @Inject(PublicIdempotency) private readonly publicKeys: PublicIdempotency,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (context.getType() !== 'http') return next.handle();
     const request = context.switchToHttp().getRequest<AuthedRequest>();
     const header = request.headers['idempotency-key'];
-    if (request.method !== 'POST' || header === undefined || request.auth?.typ !== 'org')
-      return next.handle();
+    if (request.method !== 'POST' || header === undefined) return next.handle();
+    const path = request.url.split('?')[0] ?? request.url;
+    const isPublic = !request.auth && PUBLIC_IDEMPOTENT_PATHS.has(path);
+    if (request.auth?.typ !== 'org' && !isPublic) return next.handle();
     if (typeof header !== 'string' || !UUID_RE.test(header)) {
       throw validationFailed([{ field: 'Idempotency-Key', code: 'INVALID_FORMAT' }]);
     }
     const reply = context.switchToHttp().getResponse<FastifyReply>();
-    const userId = request.auth.sub;
-    const path = request.url.split('?')[0] ?? request.url;
+    if (isPublic) return this.interceptPublic(header, path, request.body, reply, next);
+    const userId = (request.auth as NonNullable<AuthedRequest['auth']>).sub;
     const requestHash = sha256Hex(`${request.method} ${path} ${canonical(request.body ?? null)}`);
     const where = and(eq(idempotencyKey.key, header), eq(idempotencyKey.userId, userId));
 
@@ -69,6 +75,36 @@ export class IdempotencyInterceptor implements NestInterceptor {
                     .set({ responseStatus: status, responseBody: null })
                     .where(where);
             return from(cleanup).pipe(switchMap(() => throwError(() => error)));
+          }),
+        );
+      }),
+    );
+  }
+
+  /** Publiczne trasy auth (bez treści odpowiedzi): powtórka → zapisany status. */
+  private interceptPublic(
+    key: string,
+    path: string,
+    body: unknown,
+    reply: FastifyReply,
+    next: CallHandler,
+  ): Observable<unknown> {
+    const hash = this.publicKeys.hash(path, body);
+    return from(this.publicKeys.reserve(key, hash)).pipe(
+      switchMap((status) => {
+        if (status !== null) {
+          void reply.status(status).header('Idempotent-Replayed', 'true');
+          return of(undefined);
+        }
+        return next.handle().pipe(
+          switchMap((result) =>
+            from(this.publicKeys.finish(key, hash, reply.statusCode)).pipe(switchMap(() => of(result))),
+          ),
+          catchError((error: unknown) => {
+            const code = error instanceof DomainError ? error.status : 500;
+            return from(this.publicKeys.finish(key, hash, code)).pipe(
+              switchMap(() => throwError(() => error)),
+            );
           }),
         );
       }),

@@ -22,6 +22,9 @@ const SESSION_END: Partial<Record<string, JudgeSessionEndReason>> = {
   JUDGE_INACTIVE: 'JUDGE_INACTIVE',
 };
 
+/** Kody wracające do formularza oceny (baner nad formularzem). */
+const FORM_CODES = new Set(['STALE_REVISION', 'SCHEMA_MISMATCH', 'ENTRY_WITHDRAWN']);
+
 /** Kody pokazywane w banerze odrzuceń kolejki SCR-JDG-04 (TL-11). */
 export const QUEUE_BANNER_CODES = ['CATEGORY_LOCKED', 'TOURNAMENT_FINISHED'] as const;
 
@@ -34,8 +37,7 @@ export function planRejection(code: string): RejectionPlan {
   const endSession = SESSION_END[code] ?? null;
   let banner: RejectionBanner = 'queue';
   if (endSession) banner = 'session';
-  else if (code === 'STALE_REVISION' || code === 'SCHEMA_MISMATCH' || code === 'ENTRY_WITHDRAWN')
-    banner = 'form';
+  else if (FORM_CODES.has(code)) banner = 'form';
   return { messageKey: `errors:${code}`, banner, endSession, snapshot: code === 'SCHEMA_MISMATCH' };
 }
 

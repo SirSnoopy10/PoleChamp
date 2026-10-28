@@ -10,6 +10,8 @@ import type { SyncDeps } from './pull';
 /** Limit czasu `POST /sync/push` (06-offline §3.2). */
 export const PUSH_TIMEOUT_MS = 15_000;
 const MAX_DELAY_MS = 60_000;
+/** Odpowiedzi 4xx, po których paczka wraca do kolejki (reszta 4xx = błąd trwały paczki). */
+const RETRYABLE_4XX = new Set([401, 408, 409, 413, 429]);
 
 /** Backoff `min(60 s, 1 s × 2^attempts) ± 20%` (TC-OUTBOX-007). */
 export function nextDelay(attempts: number, random: () => number = Math.random): number {
@@ -36,6 +38,8 @@ export type PushOutcome =
   | { status: 'empty' }
   | { status: 'ok'; sent: number; rejections: Rejection[]; more: boolean; serverCursor: number }
   | { status: 'retry'; error: string }
+  /** Trwały błąd całej paczki (4xx) – mutacje odrzucone z kodem, kolejka nie stoi (UX-01). */
+  | { status: 'failed'; error: string; rejections: Rejection[] }
   | { status: 'revoked' };
 
 type Result = PushResponse['results'][number];
@@ -44,6 +48,19 @@ function requeue(db: Db, batch: OutboxEntry[]): void {
   for (const e of batch) db.runSync("UPDATE outbox SET state = 'QUEUED' WHERE mutation_id = ?", e.mutationId);
 }
 
+function reject(db: Db, e: OutboxEntry, code: string): Rejection {
+  outbox.markFailedPermanent(db, e.mutationId, code);
+  if (e.scoreSheetId) {
+    db.runSync(
+      "UPDATE local_score_sheet SET sync_state = 'REJECTED', reject_code = ? WHERE id = ?",
+      code,
+      e.scoreSheetId,
+    );
+  }
+  return rejection(e, code);
+}
+
+/** Ponowienie z backoffem (po 20 próbach popover pokazuje mutację w „Wymaga uwagi” – TC-OUTBOX-010). */
 function retry(db: Db, e: OutboxEntry, now: number, error: string, random: () => number) {
   outbox.markRetry(db, e.mutationId, e.attempts + 1, now + nextDelay(e.attempts, random), error);
 }
@@ -84,7 +101,8 @@ function rejection(e: OutboxEntry, code: string): Rejection {
 /**
  * Jedna paczka (IMP-354): do 100 mutacji FIFO → `POST /v1/sync/push` (15 s) → stan outboxu i arkuszy.
  * `401 UNAUTHENTICATED` → odświeżenie tokenu i ponowienie; `413` → paczka o połowę mniejsza;
- * sieć / 5xx / limit czasu → całość wraca do kolejki z backoffem; `DEVICE_REVOKED` → kolejka bez zmian.
+ * sieć / 5xx / limit czasu → całość wraca do kolejki z backoffem; inne 4xx (poza 401/408/409/413/429) →
+ * odrzucenie paczki z kodem błędu; `DEVICE_REVOKED` → kolejka bez zmian.
  */
 export async function pushOnce(deps: PushDeps, limit = OUTBOX_BATCH): Promise<PushOutcome> {
   const random = deps.random ?? Math.random;
@@ -131,6 +149,10 @@ export async function pushOnce(deps: PushDeps, limit = OUTBOX_BATCH): Promise<Pu
       return pushOnce(deps, Math.floor(batch.length / 2));
     }
     const now = deps.clock.now();
+    if (response.status >= 400 && response.status < 500 && !RETRYABLE_4XX.has(response.status)) {
+      const rejected = await deps.local.tx((db) => batch.map((e) => reject(db, e, error.code)));
+      return { status: 'failed', error: error.code, rejections: rejected };
+    }
     await deps.local.tx((db) => batch.forEach((e) => retry(db, e, now, error.code, random)));
     return { status: 'retry', error: error.code };
   }
@@ -142,27 +164,22 @@ export async function pushOnce(deps: PushDeps, limit = OUTBOX_BATCH): Promise<Pu
   const serverDate = response.headers.get('Date');
   const rejections = await deps.local.tx((db) => {
     const out: Rejection[] = [];
+    let accepted = 0;
     for (const e of batch) {
       const r = byId.get(e.mutationId);
       if (!r || r.status === 'RETRY') {
         retry(db, e, now, r ? 'RETRY' : 'NO_RESULT', random);
       } else if (r.status === 'REJECTED') {
-        outbox.markFailedPermanent(db, e.mutationId, r.code);
-        if (e.scoreSheetId) {
-          db.runSync(
-            "UPDATE local_score_sheet SET sync_state = 'REJECTED', reject_code = ? WHERE id = ?",
-            r.code,
-            e.scoreSheetId,
-          );
-        }
-        out.push(rejection(e, r.code));
+        out.push(reject(db, e, r.code));
       } else {
+        accepted++;
         outbox.markDone(db, e.mutationId, now);
         const sheetId = r.scoreSheetId ?? e.scoreSheetId;
         if (sheetId && r.revision !== undefined) applyAccepted(db, sheetId, r.revision, r.serverTotal);
       }
     }
-    const patch: Parameters<typeof writeMeta>[1] = { lastPushAt: nowIso };
+    // „Ostatnia wysyłka” w popoverze = ostatnia przyjęta mutacja, nie ostatnia odpowiedź serwera (UX-15).
+    const patch: Parameters<typeof writeMeta>[1] = accepted ? { lastPushAt: nowIso } : {};
     if (serverDate && !Number.isNaN(Date.parse(serverDate)))
       patch.serverTimeOffsetMs = Date.parse(serverDate) - now;
     writeMeta(db, patch);

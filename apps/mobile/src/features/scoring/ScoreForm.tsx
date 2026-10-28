@@ -161,6 +161,9 @@ export function ScoreForm({
 
   const submit = async () => {
     const state = store.getState();
+    // UX-02: blokada od pierwszego tapnięcia do końca transakcji lokalnej (stan synchroniczny – drugie
+    // `onPress` w tej samej klatce widzi `submitting`); późniejsze tapnięcie z tą samą treścią
+    // nie tworzy mutacji (`submitSheet`).
     if (state.submitting) return;
     store.setState({ submitting: true });
     draft.current?.cancel();

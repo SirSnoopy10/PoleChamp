@@ -207,6 +207,50 @@ describe('wysyłka (IMP-354)', () => {
     expect(selectSyncPillState(syncStore.getState())).toEqual({ kind: 'attention' });
   });
 
+  it('UX-02: ponowne zatwierdzenie tej samej treści (także w trakcie wysyłki) → bez nowej mutacji', async () => {
+    const a = await submit(local, 'e1', 80);
+    await outbox.nextBatch(local, 100, clock.now());
+    const again = await submit(local, 'e1', 80);
+    expect(again.mutationId).toBeNull();
+    expect(again.scoreSheetId).toBe(a.scoreSheetId);
+    expect(outbox.countPending(local.read)).toBe(1);
+    const changed = await submit(local, 'e1', 85);
+    expect(changed.mutationId).not.toBeNull();
+    expect(outbox.countPending(local.read)).toBe(2);
+  });
+
+  it('UX-01: trwały błąd 4xx paczki → oceny odrzucone z kodem, kolejka nie stoi', async () => {
+    await submit(local, 'e1');
+    const out = await pushOnce(deps(() => problemResponse(422, 'VALIDATION_FAILED')).deps);
+    expect(out).toMatchObject({ status: 'failed', error: 'VALIDATION_FAILED' });
+    expect(rows(local)).toMatchObject([{ state: 'FAILED_PERMANENT', last_error: 'VALIDATION_FAILED' }]);
+    const sheet = local.read.getFirstSync<{ sync_state: string }>(
+      "SELECT sync_state FROM local_score_sheet WHERE entry_id = 'e1'",
+    );
+    expect(sheet?.sync_state).toBe('REJECTED');
+    expect(outbox.countPending(local.read)).toBe(0);
+  });
+
+  it('UX-15: „Ostatnia wysyłka” tylko po przyjętej mutacji, nie po samym RETRY', async () => {
+    const a = await submit(local, 'e1');
+    await pushOnce(
+      deps(() => json({ results: [{ mutationId: a.mutationId, status: 'RETRY' }], cursor: 0 })).deps,
+    );
+    expect(readMeta(local.read).lastPushAt).toBeNull();
+    clock.advance(70_000);
+    await pushOnce(
+      deps(() =>
+        json({
+          results: [
+            { mutationId: a.mutationId, status: 'APPLIED', scoreSheetId: a.scoreSheetId, revision: 1 },
+          ],
+          cursor: 1,
+        }),
+      ).deps,
+    );
+    expect(readMeta(local.read).lastPushAt).not.toBeNull();
+  });
+
   it('TC-OUTBOX-012: 401 DEVICE_REVOKED – kolejka zostaje, stan „odłączone”', async () => {
     await submit(local, 'e1');
     await submit(local, 'e2');
@@ -308,7 +352,7 @@ describe('wysyłka (IMP-354)', () => {
     await outbox.recoverInFlight(local);
     const server = fakeSyncServer();
     await pushOnce(deps(server.handler).deps);
-    expect(server.state.processed.has(a.mutationId)).toBe(true);
+    expect(server.state.processed.has(a.mutationId!)).toBe(true);
     expect(ScoreSheetRepo.forJudge(local.read, 'jA').byEntry('e1')?.syncState).toBe('SYNCED');
   });
 

@@ -229,6 +229,14 @@ export class SyncEngine implements SyncEngineHooks {
         diagLog.add({ event: 'push', status: 'retry', code: out.error, pending });
         break;
       }
+      if (out.status === 'failed') {
+        // Odrzucone mutacje zwalniają kolejkę – reszta idzie w następnej paczce (UX-01).
+        diagLog.add({ event: 'push', status: 'error', code: out.error, pending });
+        rejections.push(...out.rejections);
+        this.refresh();
+        if (pending > 0 && out.rejections.length) continue;
+        break;
+      }
       diagLog.add({ event: 'push', status: 'ok', http: 200, sent: out.sent, pending });
       rejections.push(...out.rejections);
       pullNeeded ||= needsPull(this.deps, out.serverCursor);

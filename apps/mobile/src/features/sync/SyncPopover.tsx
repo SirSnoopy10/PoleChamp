@@ -1,7 +1,9 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
 import { color, layout, radius, shadow } from '@polechamp/tokens';
-import { listRejected } from '../../data/judge/queries';
+import { listRejected, listStuck } from '../../data/judge/queries';
+import { ATTENTION_ATTEMPTS } from '../../data/outbox/outbox';
 import { judgeRuntime } from '../../data/judge/runtime';
 import { activeJudgeId } from '../../data/judge/session';
 import { useLocalQuery } from '../../data/judge/useLocalQuery';
@@ -23,10 +25,17 @@ export function SyncPopover({ onClose }: { onClose: () => void }) {
   const t = useT();
   const online = useSyncStore((s) => s.online);
   const pending = useSyncStore((s) => s.pending);
-  const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
+  const lastPushAt = useSyncStore((s) => s.lastPushAt);
+  const lastPullAt = useSyncStore((s) => s.lastPullAt);
+  const router = useRouter();
   const isSyncing = useSyncStore((s) => s.isSyncing);
   const judgeId = activeJudgeId();
   const rejected = useLocalQuery((db) => (judgeId ? listRejected(db, judgeId) : []), [judgeId]);
+  const stuck = useLocalQuery((db) => (judgeId ? listStuck(db, judgeId, ATTENTION_ATTEMPTS) : []), [judgeId]);
+  const attention = [
+    ...rejected.map((r) => ({ ...r, reason: t(`errors:${r.code}` as never) })),
+    ...stuck.map((r) => ({ ...r, reason: t('judge:sync.stuckReason', { count: r.attempts }) })),
+  ];
   const [now, setNow] = useState(() => judgeRuntime().clock.now());
   const [running, setRunning] = useState(false);
 
@@ -34,6 +43,20 @@ export function SyncPopover({ onClose }: { onClose: () => void }) {
     const id = setInterval(() => setNow(judgeRuntime().clock.now()), TICK_MS);
     return () => clearInterval(id);
   }, []);
+
+  // UX-15: systemowe „Wstecz” zamyka popover, zamiast opuszczać ekran.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onClose]);
+
+  const openSheet = (categoryId: string, entryId: string) => {
+    onClose();
+    router.push(`/category/${categoryId}?entry=${entryId}`);
+  };
 
   const syncNow = async () => {
     setRunning(true);
@@ -59,7 +82,12 @@ export function SyncPopover({ onClose }: { onClose: () => void }) {
           {t('judge:sync.title')}
         </Text>
         <View style={styles.rows}>
-          <Text variant="meta">{t('judge:sync.lastSync', { time: relativeTime(t, lastSyncAt, now) })}</Text>
+          <Text variant="meta" testID="sync-last-push">
+            {t('judge:sync.lastPush', { time: relativeTime(t, lastPushAt, now) })}
+          </Text>
+          <Text variant="meta" testID="sync-last-pull">
+            {t('judge:sync.lastPull', { time: relativeTime(t, lastPullAt, now) })}
+          </Text>
           <Text variant="meta" tabular>
             {t('judge:queueCount', { count: pending })}
           </Text>
@@ -67,16 +95,27 @@ export function SyncPopover({ onClose }: { onClose: () => void }) {
             {t('judge:sync.connection', { state: t(online ? 'judge:sync.online' : 'judge:sync.offline') })}
           </Text>
         </View>
-        {rejected.length ? (
+        {attention.length ? (
           <View testID="sync-rejected" style={styles.rows}>
-            {rejected.map((r) => (
-              <Text key={r.entryId} variant="meta" color={color.accentRamp[300]} numberOfLines={2}>
-                {t('judge:sync.rejectedRow', {
-                  number: r.startNumber,
-                  name: r.fullName,
-                  reason: t(`errors:${r.code}` as never),
-                })}
-              </Text>
+            <Text variant="meta" color={color.accentRamp[300]} accessibilityRole="header">
+              {t('judge:sync.attention')}
+            </Text>
+            {attention.map((r) => (
+              <Pressable
+                key={r.entryId}
+                testID={`sync-rejected-${r.entryId}`}
+                accessibilityRole="button"
+                onPress={() => openSheet(r.categoryId, r.entryId)}
+                hitSlop={8}
+              >
+                <Text variant="meta" color={color.accentRamp[300]} numberOfLines={2}>
+                  {t('judge:sync.rejectedRow', {
+                    number: r.startNumber,
+                    name: r.fullName,
+                    reason: r.reason,
+                  })}
+                </Text>
+              </Pressable>
             ))}
             {rejected.some((r) => r.code === 'CATEGORY_LOCKED') ? (
               <Text variant="caption" color={color.neutral[400]}>

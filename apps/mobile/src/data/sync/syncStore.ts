@@ -4,6 +4,9 @@ import type { Db } from '../local/LocalDb';
 import type { SheetSyncState } from '../local/scoreSheets';
 import { ATTENTION_ATTEMPTS, outbox } from '../outbox/outbox';
 import { diagLog } from './diagLog';
+import { readMeta } from './meta';
+
+const ms = (iso: string | null) => (iso ? Date.parse(iso) : null);
 
 /** Stan synchronizacji tabletu (IMP-358) – jedno źródło dla `SyncPill`, `QueuePanel` i `LogoutDialog`. */
 export interface SyncState {
@@ -17,6 +20,9 @@ export interface SyncState {
   /** Najwięcej prób wśród niewysłanych (≥ 20 → „Wymaga uwagi”). */
   maxAttempts: number;
   lastSyncAt: number | null;
+  /** Ostatnia przyjęta wysyłka i ostatnie pobranie zmian (`sync_meta`, UX-15). */
+  lastPushAt: number | null;
+  lastPullAt: number | null;
   isSyncing: boolean;
   /** `DEVICE_REVOKED` – SCR-JDG-10, wysyłka zatrzymana. */
   revoked: boolean;
@@ -31,6 +37,8 @@ const initial = (): SyncState => ({
   rejected: 0,
   maxAttempts: 0,
   lastSyncAt: null,
+  lastPushAt: null,
+  lastPullAt: null,
   isSyncing: false,
   revoked: false,
   entries: {},
@@ -63,7 +71,10 @@ export function refreshFromDb(db: Db, judgeId: string | null = null): void {
       entries[r.entry_id] = r.sync_state;
     }
   }
+  const meta = readMeta(db);
   syncStore.setState({
+    lastPushAt: ms(meta.lastPushAt),
+    lastPullAt: ms(meta.lastPullAt),
     pending: outbox.countPending(db),
     inFlight,
     rejected: outbox.countFailed(db),

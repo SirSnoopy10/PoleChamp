@@ -2,6 +2,7 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { eq, sql } from 'drizzle-orm';
 import { decodeJwt, decodeProtectedHeader, SignJWT, generateKeyPair } from 'jose';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { uuidv7 } from '../../src/common/ids.js';
 import type { DbHandle } from '../../src/db/client.js';
 import * as s from '../../src/db/schema.js';
 import { startApp } from '../support/app.js';
@@ -400,5 +401,53 @@ describe('IMP-112: limity zapytań (TC-API-104, TC-API-105)', () => {
     for (let i = 0; i < 5; i++) await limits.consume('login:account', 'a@b.pl');
     await expect(limits.consume('login:account', 'a@b.pl')).rejects.toMatchObject({ code: 'RATE_LIMITED' });
     expect(limits.fallbackCount).toBe(6);
+  });
+});
+
+describe('IMP-715: powtórzone żądania uwierzytelniania', () => {
+  const key = () => ({ 'idempotency-key': uuidv7() });
+
+  it('UX-38: rejestracja, kod e-mail i reset hasła powtórzone z tym samym kluczem → ten sam sukces', async () => {
+    const email = uniqueEmail();
+    const reg = key();
+    const first = await call('POST', '/v1/auth/register', { body: registration(email), headers: reg });
+    const again = await call('POST', '/v1/auth/register', { body: registration(email), headers: reg });
+    expect([first.status, again.status]).toEqual([201, 201]);
+    expect(again.headers['idempotent-replayed']).toBe('true');
+    const users = await handle.db.execute(
+      sql`SELECT count(*)::int AS n FROM app_user WHERE email = ${email}`,
+    );
+    expect(users.rows[0]).toEqual({ n: 1 });
+
+    const code = (await lastEmail(email))!.params.code;
+    const verify = key();
+    const v1 = await call('POST', '/v1/auth/verify-email', { body: { email, code }, headers: verify });
+    const v2 = await call('POST', '/v1/auth/verify-email', { body: { email, code }, headers: verify });
+    expect([v1.status, v2.status]).toEqual([204, 204]);
+
+    const mismatch = await call('POST', '/v1/auth/verify-email', {
+      body: { email, code: '000000' },
+      headers: verify,
+    });
+    expect(mismatch.body).toMatchObject({ code: 'IDEMPOTENCY_KEY_REUSED' });
+  });
+
+  it('UX-38: błąd 4xx nie jest zapamiętany – poprawione żądanie z tym samym kluczem wykonuje się', async () => {
+    const email = uniqueEmail();
+    await call('POST', '/v1/auth/register', { body: registration(email) });
+    const code = (await lastEmail(email))!.params.code;
+    const k = key();
+    const wrong = code === '111111' ? '222222' : '111111';
+    for (let i = 0; i < 2; i++) {
+      const bad = await call('POST', '/v1/auth/verify-email', { body: { email, code: wrong }, headers: k });
+      expect(bad.body.code).toBe('CODE_INVALID');
+      expect(bad.headers['idempotent-replayed']).toBeUndefined();
+    }
+    const [row] = await handle.db
+      .select({ attempts: s.authEmailToken.attempts })
+      .from(s.authEmailToken)
+      .innerJoin(s.appUser, eq(s.appUser.id, s.authEmailToken.userId))
+      .where(eq(s.appUser.email, email));
+    expect(row!.attempts).toBe(2);
   });
 });

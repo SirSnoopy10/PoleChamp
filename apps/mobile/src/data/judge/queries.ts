@@ -88,7 +88,7 @@ export interface JudgeCategory {
   status: CategoryStatus;
   /** Aktywne starty kategorii (wycofane nie są pokazywane – FR-404). */
   total: number;
-  /** Oceny tego sędziego (arkusz w dowolnym stanie – TL-46). */
+  /** Oceny tego sędziego wysłane lub czekające (TL-46); odrzucone się nie liczą (UX-35). */
   scored: number;
 }
 
@@ -113,7 +113,8 @@ export function visibleCategories(db: Db, judgeId: string): JudgeCategory[] {
       `SELECT c.id, c.name, c.style, c.level, c.status, c.panel_judge_ids,
          (SELECT COUNT(*) FROM local_entry e WHERE e.category_id = c.id AND e.status = 'ACTIVE') AS total,
          (SELECT COUNT(*) FROM local_score_sheet s JOIN local_entry e ON e.id = s.entry_id
-           WHERE s.category_id = c.id AND s.judge_id = ? AND e.status = 'ACTIVE') AS scored
+           WHERE s.category_id = c.id AND s.judge_id = ? AND e.status = 'ACTIVE'
+             AND s.sync_state <> 'REJECTED') AS scored
        FROM local_category c ORDER BY c.position, c.id`,
       judgeId,
     )
@@ -168,6 +169,26 @@ export const listRejected = (db: Db, judgeId: string): RejectedSheet[] =>
      FROM local_score_sheet s JOIN local_entry e ON e.id = s.entry_id
      WHERE s.judge_id = ? AND s.sync_state = 'REJECTED' ORDER BY e.start_number`,
     judgeId,
+  );
+
+export interface StuckSheet {
+  entryId: string;
+  categoryId: string;
+  startNumber: number;
+  fullName: string;
+  attempts: number;
+}
+
+/** Oceny bez rozstrzygnięcia po `minAttempts` próbach wysyłki (UX-01) – „Wymaga uwagi” w popoverze. */
+export const listStuck = (db: Db, judgeId: string, minAttempts: number): StuckSheet[] =>
+  db.getAllSync<StuckSheet>(
+    `SELECT s.entry_id AS entryId, s.category_id AS categoryId, e.start_number AS startNumber,
+       e.full_name AS fullName, o.attempts AS attempts
+     FROM outbox o JOIN local_score_sheet s ON s.id = o.score_sheet_id JOIN local_entry e ON e.id = s.entry_id
+     WHERE o.judge_id = ? AND o.state IN ('QUEUED', 'IN_FLIGHT') AND o.attempts >= ?
+     ORDER BY e.start_number`,
+    judgeId,
+    minAttempts,
   );
 
 export interface FormCriterion {
