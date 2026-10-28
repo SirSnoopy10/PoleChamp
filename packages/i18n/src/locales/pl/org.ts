@@ -92,8 +92,9 @@ export const org = {
   /** Zawodniczki turnieju według kategorii. */
   athletes: {
     title: 'Zawodniczki',
-    row: 'nr {nr} · {name}',
-    withdrawn: 'Wycofana',
+    total_one: '{count} zawodniczka',
+    total_few: '{count} zawodniczki',
+    total_many: '{count} zawodniczek',
     empty: 'Brak zawodniczek w tej kategorii.',
     noCategories: 'Brak kategorii w turnieju.',
   },

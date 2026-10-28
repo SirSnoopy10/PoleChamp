@@ -41,16 +41,16 @@ describe('SCR-ORG-03 szczegóły turnieju (IMP-257)', () => {
     await r.unmount();
   });
 
-  it('kafel „Zawodniczki” otwiera listę z podziałem na kategorie', async () => {
-    const entry = (id: string, nr: number, fullName: string, status: 'ACTIVE' | 'WITHDRAWN' = 'ACTIVE') => ({
-      id,
-      startNumber: nr,
-      startOrder: nr,
-      status,
-      version: 1,
-      athlete: { id: `a${id}`, fullName, club: 'Klub', isMinor: false },
-      judged: { done: 0, expected: 0 },
-    });
+  const athlete = (id: string, nr: number, fullName: string, status: 'ACTIVE' | 'WITHDRAWN' = 'ACTIVE') => ({
+    id,
+    startNumber: nr,
+    startOrder: nr,
+    status,
+    version: 1,
+    athlete: { id: `a${id}`, fullName, club: id === 'e1' ? 'PoleFit Kraków' : 'Klub', isMinor: false },
+    judged: { done: 0, expected: 0 },
+  });
+  const athletesWorld = () =>
     server.use(
       me(),
       details(
@@ -59,20 +59,57 @@ describe('SCR-ORG-03 szczegóły turnieju (IMP-257)', () => {
         }),
       ),
       http.get(`${API}/v1/categories/c1/entries`, () =>
-        HttpResponse.json({ items: [entry('e1', 12, 'Anna Nowak')] }),
+        HttpResponse.json({ items: [athlete('e1', 12, 'Anna Nowak'), athlete('e3', 61, 'Iga Lis')] }),
       ),
       http.get(`${API}/v1/categories/c2/entries`, () =>
-        HttpResponse.json({ items: [entry('e2', 7, 'Ewa Kot', 'WITHDRAWN')] }),
+        HttpResponse.json({ items: [athlete('e2', 7, 'Ewa Kot', 'WITHDRAWN')] }),
       ),
     );
+
+  it('kafel „Zawodniczki” – lista z podziałem na kategorie, wspólny wiersz (UX-28)', async () => {
+    athletesWorld();
     const r = await startOrg(routes, '/t/t1', state);
     const tiles = await screen.findByTestId('stat-tiles');
     await fireEvent.press(within(tiles).getByText('Zawodniczki'));
     const a = await screen.findByTestId('athletes-category-c1');
-    expect(await within(a).findByText('nr 12 · Anna Nowak')).toBeOnTheScreen();
+    expect(await within(a).findByText('Anna Nowak')).toBeOnTheScreen();
     const b = screen.getByTestId('athletes-category-c2');
-    expect(await within(b).findByText('nr 7 · Ewa Kot')).toBeOnTheScreen();
+    expect(await within(b).findByText('Ewa Kot')).toBeOnTheScreen();
     expect(within(b).getByText('Wycofana')).toBeOnTheScreen();
+    expect(screen.getByTestId('athletes-total')).toHaveTextContent('3 zawodniczki');
+    await r.unmount();
+  });
+
+  it('UX-37: tap zawodniczki otwiera jej arkusz w miejscu; wycofaną można przywrócić', async () => {
+    athletesWorld();
+    let restored = false;
+    server.use(
+      http.post(`${API}/v1/entries/e2/restore`, () => {
+        restored = true;
+        return HttpResponse.json(athlete('e2', 7, 'Ewa Kot'));
+      }),
+    );
+    const r = await startOrg(routes, '/athletes/t1', state);
+    await fireEvent.press(await screen.findByTestId('entry-e2'));
+    expect(r.getPathname()).toBe('/athletes/t1');
+    await fireEvent.press(await screen.findByTestId('entry-restore'));
+    await waitFor(() => expect(restored).toBe(true));
+    await r.unmount();
+  });
+
+  it('UX-43: wyszukiwanie po numerze, nazwisku i klubie – sekcje bez wyników ukryte', async () => {
+    athletesWorld();
+    const r = await startOrg(routes, '/athletes/t1', state);
+    const search = await screen.findByTestId('athletes-search');
+    await fireEvent.changeText(search, '61');
+    expect(screen.getByText('Iga Lis')).toBeOnTheScreen();
+    expect(screen.queryByText('Anna Nowak')).toBeNull();
+    expect(screen.queryByTestId('athletes-category-c2')).toBeNull();
+    await fireEvent.changeText(search, 'kraków');
+    expect(screen.getByText('Anna Nowak')).toBeOnTheScreen();
+    await fireEvent.changeText(search, 'kot');
+    expect(screen.getByText('Ewa Kot')).toBeOnTheScreen();
+    expect(screen.queryByTestId('athletes-category-c1')).toBeNull();
     await r.unmount();
   });
 

@@ -104,7 +104,7 @@
 ## SCR-ORG-06 / 07 / 08 – Szczegóły kategorii (wspólna rama)
 - **Cel:** konfiguracja i nadzór nad kategorią. **FR:** FR-302…312, FR-401…404, FR-701…705.
 - **Rama (od góry):**
-  1. Wiersz nawigacji 44 dp: „‹ Turniej” → SCR-ORG-03; po prawej przycisk 36 dp `pencil-simple` → SCR-ORG-05 (edycja; ukryty w turnieju Zakończona).
+  1. Wiersz nawigacji 44 dp: „‹ Turniej” → SCR-ORG-03 (decyzja PO 28.10.2026, IMP-704: wstecz = poprzedni ekran; po wejściu z ekranu „Zawodniczki” turnieju etykieta „‹ Zawodniczki”); po prawej przycisk 36 dp `pencil-simple` → SCR-ORG-05 (edycja; ukryty w turnieju Zakończona).
   2. Meta „{styl} · {poziom} · {grupa wiekowa}” (12,5 dp, neutral-400) – w jednej linii, wielokropek (UI-11).
   3. Nazwa kategorii (26 dp, 500, marginesy 4/10).
   4. Pigułka statusu kategorii.

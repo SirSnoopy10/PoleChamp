@@ -15,6 +15,7 @@ import { suggestStartNumber, useEntries, useEntryMutations } from '../../../src/
 import { useResolveRejected, useRejected } from '../../../src/data/org/rejected';
 import { useResults } from '../../../src/data/org/results';
 import { useTournament } from '../../../src/data/org/tournament';
+import { useT } from '../../../src/i18n';
 import { useOrgRealtime } from '../../../src/data/realtime/useOrgRealtime';
 import { CategoryFormSheet, toastSaveError } from '../../../src/features/categories/CategoryFormSheet';
 import { CategoryScreen, type CategoryTab } from '../../../src/features/categories/CategoryScreen';
@@ -54,7 +55,8 @@ function useDebounced<T>(value: T, ms = 250): T {
 
 /** SCR-ORG-06/07/08 – szczegóły kategorii z zakładkami i arkuszami SCR-ORG-05, 09, 10, 11, 17, 18. */
 export default function CategoryRoute() {
-  const params = useLocalSearchParams<{ categoryId: string; tab?: string }>();
+  const t = useT();
+  const params = useLocalSearchParams<{ categoryId: string; tab?: string; from?: string }>();
   const id = params.categoryId;
   const tab: CategoryTab = TABS.includes(params.tab as CategoryTab)
     ? (params.tab as CategoryTab)
@@ -155,6 +157,7 @@ export default function CategoryRoute() {
       tab={tab}
       onTab={(next) => router.setParams({ tab: next })}
       busy={busy}
+      backLabel={params.from === 'athletes' ? t('org:athletes.title') : undefined}
       onBack={() => (router.canGoBack() ? router.back() : router.replace(`/t/${tournamentId}`))}
       onRetry={() => void Promise.all([query.refetch(), tournament.refetch()])}
       onEdit={editSheet.open}

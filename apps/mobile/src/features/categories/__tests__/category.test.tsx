@@ -368,6 +368,18 @@ describe('SCR-ORG-07/11/17 zawodniczki (IMP-265…267)', () => {
     await r.unmount();
   });
 
+  it('UX-11: wejście z ekranu „Zawodniczki” – etykieta wstecz „Zawodniczki”, domyślnie „Turniej”', async () => {
+    mockCategory(categoryDetails({ status: 'IN_PROGRESS', entryCount: 0 }));
+    server.use(http.get(`${API}/v1/categories/c3/entries`, () => HttpResponse.json({ items: [] })));
+    let r = await startOrg(routes, '/c/c3?tab=entries&from=athletes', state);
+    expect(await screen.findByText('Zawodniczki', { exact: false })).toBeOnTheScreen();
+    expect(screen.queryByText('Turniej')).toBeNull();
+    await r.unmount();
+    r = await startOrg(routes, '/c/c3?tab=entries', state);
+    expect(await screen.findByText('Turniej')).toBeOnTheScreen();
+    await r.unmount();
+  });
+
   it('UX-40: turniej zakończony – „Usuń dane osobowe” także dla zawodniczki bez ocen', async () => {
     mockCategory(categoryDetails({ status: 'LOCKED', entryCount: 1 }), 'FINISHED');
     const unscored = entry(45, 'Oliwia Wrona', { judged: { done: 0, expected: 5 } });

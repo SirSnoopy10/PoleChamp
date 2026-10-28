@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { color } from '@polechamp/tokens';
 import { useT } from '../i18n';
 import { Button } from './Button';
@@ -10,16 +10,39 @@ export interface SectionHeaderProps {
   onAdd?: () => void;
   addLabel?: string;
   addAccessibilityLabel?: string;
+  /** Tytuł jako link (np. kategoria na ekranie „Zawodniczki” – UX-37). */
+  onPressTitle?: () => void;
+  titleTestID?: string;
 }
 
 /** Nagłówek sekcji: kicker + opcjonalna akcja (09-design-system §4.17). */
-export function SectionHeader({ title, onAdd, addLabel, addAccessibilityLabel }: SectionHeaderProps) {
+export function SectionHeader({
+  title,
+  onAdd,
+  addLabel,
+  addAccessibilityLabel,
+  onPressTitle,
+  titleTestID,
+}: SectionHeaderProps) {
   const t = useT();
+  const kicker = (
+    <Text
+      variant="kicker"
+      color={onPressTitle ? color.accentRamp[300] : color.neutral[400]}
+      accessibilityRole="header"
+    >
+      {title}
+    </Text>
+  );
   return (
     <View style={styles.row}>
-      <Text variant="kicker" color={color.neutral[400]} accessibilityRole="header">
-        {title}
-      </Text>
+      {onPressTitle ? (
+        <Pressable testID={titleTestID} accessibilityRole="link" onPress={onPressTitle} hitSlop={12}>
+          {kicker}
+        </Pressable>
+      ) : (
+        kicker
+      )}
       {onAdd ? (
         <Button
           variant="ghost"

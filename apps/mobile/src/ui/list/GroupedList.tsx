@@ -27,6 +27,8 @@ export interface ListRowProps {
   /** Wysokość: 56 (konfiguracja) / 60 (osoby). */
   minHeight?: 56 | 60;
   inactive?: boolean;
+  /** Wyszarzony tytuł przy zachowanej akcji (np. zawodniczka wycofana – neutral-500, UX-28). */
+  muted?: boolean;
   accessibilityLabel?: string;
   testID?: string;
 }
@@ -39,6 +41,7 @@ export function ListRow({
   onPress,
   minHeight = 56,
   inactive,
+  muted,
   accessibilityLabel,
   testID,
 }: ListRowProps) {
@@ -54,7 +57,12 @@ export function ListRow({
     >
       {leading}
       <View style={styles.texts}>
-        <Text variant="body" numberOfLines={1} style={styles.title}>
+        <Text
+          variant="body"
+          numberOfLines={1}
+          style={styles.title}
+          color={muted ? color.neutral[500] : undefined}
+        >
           {title}
         </Text>
         {subtitle ? (

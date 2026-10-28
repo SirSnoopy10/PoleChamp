@@ -30,6 +30,8 @@ export interface CategoryScreenProps {
   onTab: (tab: CategoryTab) => void;
   busy: CategoryAction | null;
   onBack: () => void;
+  /** Etykieta wstecz wg poprzedniego ekranu (domyślnie „Turniej” – UX-11). */
+  backLabel?: string;
   onRetry: () => void;
   onEdit: () => void;
   onAction: (action: CategoryAction) => void;
@@ -54,6 +56,7 @@ export function CategoryScreen({
   onTab,
   busy,
   onBack,
+  backLabel,
   onRetry,
   onEdit,
   onAction,
@@ -66,7 +69,7 @@ export function CategoryScreen({
   const ready = category && tournamentStatus;
   const header = (
     <ScreenHeader
-      back={{ label: t('nav.tournament'), onPress: onBack }}
+      back={{ label: backLabel ?? t('nav.tournament'), onPress: onBack }}
       actions={
         ready && tournamentStatus !== 'FINISHED' ? (
           <Button

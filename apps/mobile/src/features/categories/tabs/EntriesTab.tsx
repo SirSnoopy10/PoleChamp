@@ -1,16 +1,14 @@
 import { StyleSheet, View } from 'react-native';
-import { color, layout } from '@polechamp/tokens';
+import { layout } from '@polechamp/tokens';
 import type { EntryRow } from '@polechamp/contracts';
 import { orderEntries } from '../../../data/org/entries';
 import { useT } from '../../../i18n';
-import { Badge } from '../../../ui/Badge';
 import { EmptyState } from '../../../ui/EmptyState';
 import { SearchField } from '../../../ui/form';
-import { Icon } from '../../../ui/Icon';
-import { GroupedList, ListRow } from '../../../ui/list/GroupedList';
+import { GroupedList } from '../../../ui/list/GroupedList';
+import { EntryListRow } from '../../entries/EntryListRow';
 import { SectionHeader } from '../../../ui/SectionHeader';
 import { SkeletonRow } from '../../../ui/Skeleton';
-import { Text } from '../../../ui/Text';
 
 /** Wyszukiwarka od tylu pozycji (SCR-ORG-07). */
 export const SEARCH_FROM = 15;
@@ -28,28 +26,6 @@ export interface EntriesTabProps {
   onAdd: () => void;
   onOpen: (entry: EntryRow) => void;
   onRetry: () => void;
-}
-
-function Counter({ done, expected }: { done: number; expected: number }) {
-  const t = useT();
-  const complete = expected > 0 && done >= expected;
-  return (
-    <View
-      style={styles.counter}
-      accessible
-      accessibilityLabel={t('org:entries.judgedA11y', { done, expected })}
-    >
-      <Icon
-        name={complete ? 'check-circle' : 'circle-dashed'}
-        weight={complete ? 'fill' : 'regular'}
-        size={16}
-        color={complete ? color.accentRamp[300] : color.neutral[500]}
-      />
-      <Text variant="caption" tabular color={complete ? color.accentRamp[300] : color.neutral[400]}>
-        {t('org:entries.judged', { done, expected })}
-      </Text>
-    </View>
-  );
 }
 
 /**
@@ -86,31 +62,9 @@ export function EntriesTab({
   } else {
     body = (
       <GroupedList testID="entries-list">
-        {orderEntries(entries).map((e) => {
-          const withdrawn = e.status === 'WITHDRAWN';
-          return (
-            <ListRow
-              key={e.id}
-              testID={`entry-${e.id}`}
-              minHeight={60}
-              title={e.athlete.fullName}
-              subtitle={e.athlete.club ?? undefined}
-              leading={
-                <Badge variant="number" value={e.startNumber} tone={withdrawn ? 'neutral' : 'accent'} />
-              }
-              trailing={
-                withdrawn ? (
-                  <Text variant="caption" color={color.neutral[500]}>
-                    {t('org:entries.withdrawn')}
-                  </Text>
-                ) : (
-                  <Counter done={e.judged.done} expected={e.judged.expected} />
-                )
-              }
-              onPress={() => onOpen(e)}
-            />
-          );
-        })}
+        {orderEntries(entries).map((e) => (
+          <EntryListRow key={e.id} entry={e} onPress={() => onOpen(e)} />
+        ))}
       </GroupedList>
     );
   }
@@ -137,5 +91,4 @@ export function EntriesTab({
 
 const styles = StyleSheet.create({
   root: { gap: layout[8] },
-  counter: { flexDirection: 'row', alignItems: 'center', gap: layout[4] },
 });
