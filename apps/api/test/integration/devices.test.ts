@@ -106,15 +106,13 @@ describe('parowanie i urządzenia (IMP-140, IMP-141)', () => {
   it('TC-API-064: limit 20 urządzeń', async () => {
     const t = await org.tournament();
     for (let i = 0; i < TOURNAMENT_LIMITS.devices; i++) {
-      await handle.db
-        .insert(s.device)
-        .values({
-          tournamentId: t.id,
-          name: `T${i}`,
-          platform: 'ios',
-          secretHash: Buffer.alloc(32),
-          pepper: Buffer.alloc(32),
-        });
+      await handle.db.insert(s.device).values({
+        tournamentId: t.id,
+        name: `T${i}`,
+        platform: 'ios',
+        secretHash: Buffer.alloc(32),
+        pepper: Buffer.alloc(32),
+      });
     }
     const code = (await org.req('POST', `/v1/tournaments/${t.id}/pairing-codes`)).body.code;
     const res = await call('POST', '/v1/devices/pair', {
@@ -315,5 +313,22 @@ describe('sesje sędziów (IMP-143)', () => {
       sql`SELECT count(*)::int AS n FROM judge_session WHERE judge_id = ${j.id}`,
     );
     expect(count.rows[0]).toEqual({ n: 0 });
+  });
+});
+
+describe('tablet po zakończeniu turnieju (IMP-717)', () => {
+  it('UX-41: heartbeat działa, organizator odłącza tablet w turnieju zakończonym', async () => {
+    const t = await org.tournament();
+    const tablet = await pairTablet(call, org, t.id);
+    await handle.db.update(s.tournament).set({ status: 'FINISHED' }).where(eq(s.tournament.id, t.id));
+    const beat = await call('POST', '/v1/devices/me/heartbeat', {
+      token: tablet.token,
+      body: { pendingMutations: 0, lastSyncCursor: 0, batteryLevel: 0.5, activeJudgeId: null },
+    });
+    expect(beat.status).toBe(204);
+    const revoked = await org.req('DELETE', `/v1/devices/${tablet.deviceId}`);
+    expect(revoked.status).toBe(204);
+    const [d] = await handle.db.select().from(s.device).where(eq(s.device.id, tablet.deviceId));
+    expect(d!.revokedAt).toBeInstanceOf(Date);
   });
 });

@@ -22,7 +22,9 @@ export type LoginResult =
   | { kind: 'lockedReset' }
   | { kind: 'needsOnline' }
   | { kind: 'inactive' }
-  | { kind: 'revoked' };
+  | { kind: 'revoked' }
+  /** Inny błąd serwera (np. `TOURNAMENT_FINISHED`) – komunikat z katalogu zamiast „Połącz tablet…” (UX-41). */
+  | { kind: 'error'; code: string; messageKey: string };
 
 const judgeInput = (j: LocalJudge) => ({
   id: j.id,
@@ -65,8 +67,12 @@ async function loginOnline(rt: JudgeRuntime, judge: LocalJudge, pin: string): Pr
         return { kind: 'inactive' };
       case 'DEVICE_REVOKED':
         return { kind: 'revoked' };
+      case 'TOURNAMENT_FINISHED':
+        // Tablet mógł nie pobrać jeszcze zakończenia – pull pokaże ekran TL-47 na SCR-JDG-01.
+        void rt.engine.pullNow().catch(() => undefined);
+        return { kind: 'error', code: error.code, messageKey: error.messageKey };
       default:
-        return { kind: 'needsOnline' };
+        return { kind: 'error', code: error.code, messageKey: error.messageKey };
     }
   } finally {
     clearTimeout(timer);

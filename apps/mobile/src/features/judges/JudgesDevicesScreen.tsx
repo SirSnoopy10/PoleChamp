@@ -37,6 +37,8 @@ export interface JudgesDevicesScreenProps {
   tab: JudgesTab;
   onTab: (tab: JudgesTab) => void;
   canWrite: boolean;
+  /** Akcje urządzeń (nazwa, odłączenie) – także w turnieju zakończonym, tylko online (UX-41). */
+  canManageDevices: boolean;
   /** Turniej Zakończona – bez „Dodaj” i „Sparuj tablet”. */
   finished: boolean;
   /** Bieżący czas (odświeżany co 30 s – „Offline od …”). */
@@ -59,6 +61,7 @@ export function JudgesDevicesScreen({
   tab,
   onTab,
   canWrite,
+  canManageDevices,
   finished,
   now,
   onBack,
@@ -172,7 +175,7 @@ export function JudgesDevicesScreen({
                   </View>
                 ) : undefined
               }
-              onPress={canWrite ? () => onOpenDevice(d) : undefined}
+              onPress={canManageDevices ? () => onOpenDevice(d) : undefined}
             />
           ))}
         </GroupedList>

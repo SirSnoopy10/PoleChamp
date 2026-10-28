@@ -74,6 +74,7 @@ export function applyChanges(db: Db, page: ChangePage, now: string): SyncEvent[]
         const t = e as unknown as TournamentData;
         putTournament(db, t);
         writeMeta(db, { tournamentFinishedAt: finishedAt(db, t.status, now) });
+        events.push({ type: 'tournamentChanged', status: t.status });
         break;
       }
       case 'category':

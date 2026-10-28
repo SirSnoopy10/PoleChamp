@@ -16,7 +16,11 @@ import { MEDIUM } from './styles';
 /** Nagłówek zalogowanego sędziego: turniej z lokalnej bazy, sesja i pigułka synchronizacji. */
 export function JudgeHeader({ onLogout }: { onLogout: () => void }) {
   const judge = useJudgeSession((s) => s.active);
-  const tournament = useLocalQuery(readTournament, [], (e) => e.type === 'snapshotApplied');
+  const tournament = useLocalQuery(
+    readTournament,
+    [],
+    (e) => e.type === 'snapshotApplied' || e.type === 'tournamentChanged',
+  );
   return (
     <JudgeHeaderView
       tournamentName={tournament?.name ?? ''}

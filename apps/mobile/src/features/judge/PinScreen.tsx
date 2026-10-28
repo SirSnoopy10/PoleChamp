@@ -103,6 +103,8 @@ export function PinScreen({ judgeId, reauth = false }: { judgeId: string; reauth
     } else if (result.kind === 'lockedReset') {
       setLockedReset(true);
       setMessage(null);
+    } else if (result.kind === 'error') {
+      setMessage({ key: result.messageKey });
     } else {
       setMessage({ key: MESSAGE[result.kind] ?? 'errors:PIN_INVALID' });
     }

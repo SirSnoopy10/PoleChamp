@@ -7,6 +7,8 @@ export type SyncEvent =
   | { type: 'judgeLocked'; judgeId: string }
   | { type: 'sheetsChanged'; judgeIds: string[] }
   | { type: 'snapshotApplied' }
+  /** Nazwa, status lub ustawienia turnieju z `pull` (TL-47: ekran zakończonego turnieju – UX-41). */
+  | { type: 'tournamentChanged'; status: string }
   /** Odrzucona mutacja (IMP-357): baner z `messageKey`, ikona `warning-circle` w kolejce. */
   | {
       type: 'rejected';

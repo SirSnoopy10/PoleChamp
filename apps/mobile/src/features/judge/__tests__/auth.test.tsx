@@ -10,6 +10,7 @@ import {
 import { network } from '../../../data/network/online';
 import { outbox } from '../../../data/outbox/outbox';
 import { syncEvents } from '../../../data/sync/events';
+import { applyChanges } from '../../../data/sync/pull';
 import { readMeta } from '../../../data/sync/meta';
 import { refreshFromDb } from '../../../data/sync/syncStore';
 import {
@@ -130,6 +131,49 @@ describe('IMP-303: wybór profilu (SCR-JDG-01)', () => {
     await fireEvent.press(screen.getByTestId('pair-new-confirm'));
     await waitFor(() => expect(screen.getByTestId('pair-screen')).toBeOnTheScreen());
     expect(readTournament(env.local.read)).toBeNull();
+  });
+});
+
+describe('IMP-717: tablet po zakończeniu turnieju', () => {
+  it('UX-41: zakończenie turnieju z pull → ekran TL-47 bez przeładowania', async () => {
+    await startJudge(JUDGE_ROUTES, '/profiles');
+    expect(screen.queryByTestId('profiles-finished')).toBeNull();
+    const t = readTournament(env.local.read)!;
+    await act(async () => {
+      const events = await env.local.tx((db) =>
+        applyChanges(
+          db,
+          {
+            changes: [
+              {
+                seq: 999,
+                entityType: 'tournament',
+                op: 'U',
+                entity: { id: t.id, name: t.name, status: 'FINISHED', allowOfflinePinLogin: true },
+              },
+            ],
+            cursor: 999,
+            hasMore: false,
+          } as never,
+          '2026-10-28T12:00:00.000Z',
+        ),
+      );
+      syncEvents.emit(events);
+    });
+    expect(screen.getByTestId('profiles-finished')).toBeOnTheScreen();
+  });
+
+  it('UX-41: błąd logowania spoza listy → komunikat z katalogu, nie „Połącz tablet…”', async () => {
+    network.reportHttpSuccess();
+    env.routes.set('POST /v1/judge-sessions', () => problemResponse(409, 'TOURNAMENT_FINISHED'));
+    await startJudge(JUDGE_ROUTES, '/pin/jA');
+    await typePin('1234');
+    await waitFor(() =>
+      expect(screen.getByTestId('pin-message')).toHaveTextContent('Turniej jest zakończony.'),
+    );
+    env.routes.set('POST /v1/judge-sessions', () => problemResponse(404, 'NOT_FOUND'));
+    await typePin('1234');
+    await waitFor(() => expect(screen.getByTestId('pin-message')).toHaveTextContent('Nie znaleziono.'));
   });
 });
 

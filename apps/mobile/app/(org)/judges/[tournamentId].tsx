@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import type { DeviceRow, JudgeRow } from '@polechamp/contracts';
 import { useCanWrite } from '../../../src/data/network/useCanWrite';
+import { useOnline } from '../../../src/data/network/online';
 import { useDeviceMutations, useJudgeMutations, useJudges } from '../../../src/data/org/judges';
 import { useDevices, useTournament } from '../../../src/data/org/tournament';
 import { useOrgRealtime } from '../../../src/data/realtime/useOrgRealtime';
@@ -23,6 +24,7 @@ export default function JudgesRoute() {
   const judges = useJudges(id);
   const devices = useDevices(id);
   const canWrite = useCanWrite(tournament.data?.status);
+  const online = useOnline();
   const judgeMutations = useJudgeMutations(id);
   const deviceMutations = useDeviceMutations(id);
   const judgeSheet = useSheet();
@@ -46,6 +48,7 @@ export default function JudgesRoute() {
       tab={tab}
       onTab={(next) => router.setParams({ tab: next })}
       canWrite={canWrite}
+      canManageDevices={online}
       finished={tournament.data?.status === 'FINISHED'}
       now={now}
       onBack={() => (router.canGoBack() ? router.back() : router.replace(`/t/${id}`))}

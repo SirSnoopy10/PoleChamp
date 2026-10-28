@@ -138,6 +138,7 @@ function Judges({ empty }: { empty?: boolean }) {
       tab={tab}
       onTab={setTab}
       canWrite
+      canManageDevices
       finished={false}
       now={Date.parse('2026-10-03T10:05:00Z')}
       onBack={noop}
