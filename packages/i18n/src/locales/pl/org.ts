@@ -367,6 +367,7 @@ export const org = {
     anonymize: 'Usuń dane osobowe',
     anonymizeTitle: 'Usunąć dane osobowe?',
     anonymizeText: 'W wynikach pozostanie „Zawodniczka nr {nr}”. Tej operacji nie można cofnąć.',
+    anonymizeTextUnscored: 'Imię, nazwisko i klub zostaną usunięte. Tej operacji nie można cofnąć.',
     anonymizeConfirm: 'Usuń dane',
   },
   /** SCR-ORG-05 – nowa / edycja kategorii. */

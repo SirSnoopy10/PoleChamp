@@ -368,6 +368,30 @@ describe('SCR-ORG-07/11/17 zawodniczki (IMP-265…267)', () => {
     await r.unmount();
   });
 
+  it('UX-40: turniej zakończony – „Usuń dane osobowe” także dla zawodniczki bez ocen', async () => {
+    mockCategory(categoryDetails({ status: 'LOCKED', entryCount: 1 }), 'FINISHED');
+    const unscored = entry(45, 'Oliwia Wrona', { judged: { done: 0, expected: 5 } });
+    let anonymized = false;
+    server.use(
+      http.get(`${API}/v1/categories/c3/entries`, () => HttpResponse.json({ items: [unscored] })),
+      http.post(`${API}/v1/entries/e45/anonymize`, () => {
+        anonymized = true;
+        return HttpResponse.json(unscored);
+      }),
+    );
+    const r = await startOrg(routes, '/c/c3?tab=entries', state);
+    await fireEvent.press(await screen.findByTestId('entry-e45'));
+    expect(screen.queryByTestId('entry-remove')).toBeNull();
+    await fireEvent.press(screen.getByTestId('entry-anonymize'));
+    expect(
+      await screen.findByText('Imię, nazwisko i klub zostaną usunięte. Tej operacji nie można cofnąć.'),
+    ).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('entry-confirm'));
+    expect(await screen.findByText('Usunięto dane osobowe')).toBeOnTheScreen();
+    expect(anonymized).toBe(true);
+    await r.unmount();
+  });
+
   it('TC-E2E-ORG-022: wyszukiwarka od 15 pozycji, zapytanie `q` do API', async () => {
     mockCategory(categoryDetails({ status: 'IN_PROGRESS', entryCount: 15 }));
     const queries: (string | null)[] = [];

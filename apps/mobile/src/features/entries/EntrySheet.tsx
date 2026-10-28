@@ -38,6 +38,8 @@ export interface EntrySheetProps {
   numberLocked: boolean;
   /** Zmiana listy (wycofanie, dodanie) – niedostępna w kategorii/turnieju Zakończona i offline. */
   canChangeList: boolean;
+  /** Turniej Zakończony – „Usuń dane osobowe” dla każdej zawodniczki, także bez ocen (FR-904, UX-40). */
+  tournamentFinished?: boolean;
   onCreate: (body: EntryCreate, idempotencyKey: string) => Promise<unknown>;
   onUpdate: (entry: EntryRow, body: EntryPatchBody) => Promise<unknown>;
   onWithdraw: (entry: EntryRow) => Promise<unknown>;
@@ -49,7 +51,7 @@ export interface EntrySheetProps {
 /**
  * SCR-ORG-11 / SCR-ORG-17 – zawodniczka (IMP-266, IMP-267): numer z podpowiedzią, zgoda opiekuna
  * dla niepełnoletniej, „Dodaj kolejną”; w edycji wycofanie/przywrócenie, „Usuń z listy” (bez ocen)
- * albo „Usuń dane osobowe” (po ocenach) – każda akcja z drugim krokiem.
+ * albo „Usuń dane osobowe” (po ocenach, w turnieju zakończonym – zawsze) – każda akcja z drugim krokiem.
  */
 export function EntrySheet({
   visible,
@@ -58,6 +60,7 @@ export function EntrySheet({
   suggestedNumber,
   numberLocked,
   canChangeList,
+  tournamentFinished = false,
   onCreate,
   onUpdate,
   onWithdraw,
@@ -180,7 +183,9 @@ export function EntrySheet({
     anonymize: {
       icon: 'trash' as const,
       title: t('org:entryForm.anonymizeTitle'),
-      text: t('org:entryForm.anonymizeText', { nr: entry?.startNumber ?? '' }),
+      text: scored
+        ? t('org:entryForm.anonymizeText', { nr: entry?.startNumber ?? '' })
+        : t('org:entryForm.anonymizeTextUnscored'),
       label: t('org:entryForm.anonymizeConfirm'),
       onPress: () => void run(onAnonymize, 'toasts:athleteAnonymized'),
     },
@@ -326,7 +331,7 @@ export function EntrySheet({
                     />
                   )
                 ) : null}
-                {scored ? (
+                {scored || tournamentFinished ? (
                   <Button
                     testID="entry-anonymize"
                     variant="ghost"

@@ -35,6 +35,7 @@ async function finished() {
   const c = await org.category(t.id);
   const e47 = await org.entry(c.id, 47, 'Natalia Kamińska');
   const e50 = await org.entry(c.id, 50, 'Zuzanna Król');
+  const e52 = await org.entry(c.id, 52, 'Oliwia Wrona');
   await org.req(
     'PATCH',
     `/v1/entries/${e50.id}`,
@@ -61,10 +62,22 @@ async function finished() {
     'if-match': `W/"${current.version}"`,
   });
   expect(fin.status).toBe(200);
-  return { t, c, e47, e50 };
+  return { t, c, e47, e50, e52 };
 }
 
 describe('„Usuń dane osobowe” (IMP-177)', () => {
+  it('UX-40: turniej zakończony – zawodniczka bez ocen też może zostać zanonimizowana', async () => {
+    const { e52 } = await finished();
+    const res = await org.req('POST', `/v1/entries/${e52.id}/anonymize`);
+    expect(res.status).toBe(200);
+    const [athlete] = await handle.db
+      .select()
+      .from(s.athlete)
+      .innerJoin(s.entry, eq(s.entry.athleteId, s.athlete.id))
+      .where(eq(s.entry.id, e52.id));
+    expect(athlete!.athlete.pseudonymizedAt).toBeInstanceOf(Date);
+  });
+
   it('TC-API-054, TC-PDF-007: turniej zakończony – pseudonim, wynik i miejsce bez zmian, PDF, ponownie 409', async () => {
     const { t, c, e50 } = await finished();
     const before = (await org.req('GET', `/v1/categories/${c.id}/results`)).body;
