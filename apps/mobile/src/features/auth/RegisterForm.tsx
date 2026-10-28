@@ -28,7 +28,7 @@ export function RegisterForm({ onSubmit, onOpenTerms, onOpenDpa, onLogin, ready 
   const t = useT();
   const form = useZodForm(RegisterFields, {
     defaultValues: { displayName: '', email: '', password: '' },
-    errorParams: { displayName: { min: 2, max: 60 }, password: { min: 10, max: 128 } },
+    errorParams: { displayName: { min: 2, max: 60 }, password: { min: 10, max: 128, kind: 'password' } },
   });
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);

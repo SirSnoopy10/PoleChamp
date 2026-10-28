@@ -241,8 +241,10 @@ export class CategoriesService {
       if (c.status !== 'DRAFT') throw new DomainError('INVALID_STATE_TRANSITION');
       const count = async (q: Promise<{ n: number }[]>) => (await q)[0]?.n ?? 0;
       const n = sql<number>`count(*)::int`;
+      // Wszystkie braki naraz (UX-18): `detail` = pierwszy (zgodność), `missing` = pełna lista.
+      const missing: string[] = [];
       if ((await count(tx.select({ n }).from(criterion).where(eq(criterion.categoryId, c.id)))) === 0) {
-        throw new DomainError('START_REQUIREMENTS_NOT_MET', 'NO_CRITERIA');
+        missing.push('NO_CRITERIA');
       }
       if (
         (await count(
@@ -252,13 +254,16 @@ export class CategoriesService {
             .where(and(eq(entry.categoryId, c.id), eq(entry.status, 'ACTIVE'))),
         )) === 0
       ) {
-        throw new DomainError('START_REQUIREMENTS_NOT_MET', 'NO_ACTIVE_ENTRIES');
+        missing.push('NO_ACTIVE_ENTRIES');
       }
       const activeJudges = await tx
         .select({ id: judge.id })
         .from(judge)
         .where(and(eq(judge.tournamentId, t.id), eq(judge.isActive, true)));
-      if (activeJudges.length === 0) throw new DomainError('START_REQUIREMENTS_NOT_MET', 'NO_ACTIVE_JUDGES');
+      if (activeJudges.length === 0) missing.push('NO_ACTIVE_JUDGES');
+      if (missing.length) {
+        throw new DomainError('START_REQUIREMENTS_NOT_MET', missing[0], { body: { missing } });
+      }
       if (t.status === 'DRAFT') await this.tournaments.startWithinTx(tx, t, ownerId);
 
       const updated = one(

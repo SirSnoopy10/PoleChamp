@@ -24,7 +24,7 @@ export function NewPasswordForm({ onSubmit, onRequestNewLink, initialError = nul
   const t = useT();
   const form = useZodForm(NewPasswordFields, {
     defaultValues: { newPassword: '' },
-    errorParams: { newPassword: { min: 10, max: 128 } },
+    errorParams: { newPassword: { min: 10, max: 128, kind: 'password' } },
   });
   const [error, setError] = useState<ApiError | null>(initialError);
 

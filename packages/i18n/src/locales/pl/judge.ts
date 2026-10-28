@@ -42,7 +42,8 @@ export const judge = {
   pin: {
     hint: 'Wpisz 4-cyfrowy PIN',
     changeJudge: 'Zmień sędziego',
-    logout: 'Wyloguj',
+    /** Nakładka ponownego PIN-u – ta sama etykieta co na ekranie PIN (UX-46). */
+    logout: 'Zmień sędziego',
     needsOnline: 'Połącz tablet z internetem, aby się zalogować.',
     demo: 'Demo · PIN-y: {pins}',
     digit: 'Cyfra {digit}',

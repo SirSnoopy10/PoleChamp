@@ -15,7 +15,7 @@ type T = TFunction<['ui', 'org']>;
 /** Treść SCR-ORG-18 z odpowiedzi `409 LOCK_WARNINGS` (TC-STATE-013). */
 export function lockWarningsModel(t: T, warnings: LockWarnings, now = Date.now()) {
   return {
-    missing: warnings.missingSheets > 0 ? t('org:lock.missing', { n: warnings.missingSheets }) : null,
+    missing: warnings.missingSheets > 0 ? t('org:lock.missing', { count: warnings.missingSheets }) : null,
     devices: [
       ...warnings.devicesWithPending.map((d) =>
         t('org:lock.pending', { name: d.name, count: d.pendingMutations }),

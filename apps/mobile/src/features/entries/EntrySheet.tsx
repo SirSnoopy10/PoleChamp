@@ -107,7 +107,10 @@ export function EntrySheet({
   }, [visible, entry?.id]);
 
   const fail = (e: unknown) => {
-    if (e instanceof ApiError && e.fieldErrors.length) applyFormError(form as never, e, t as never);
+    if (e instanceof ApiError && e.fieldErrors.length)
+      applyFormError(form as never, e, t as never, {
+        nr: String(form.getValues('startNumber') ?? ''),
+      });
     else toastSaveError(e);
   };
 

@@ -46,6 +46,8 @@ export const ui = {
     pickDate: 'Wybierz datę',
     startDate: 'Data rozpoczęcia',
     endDate: 'Data zakończenia',
+    from: 'Od',
+    to: 'Do',
     unavailable: 'Niedostępne',
   },
   banner: {

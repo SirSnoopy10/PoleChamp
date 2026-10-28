@@ -141,10 +141,7 @@ export function AccountScreen({
             </Text>
             {me.emailVerified ? (
               <View style={styles.verified}>
-                <Badge variant="scored" />
-                <Text variant="caption" color={color.accentRamp[300]}>
-                  {t('org:account.verified')}
-                </Text>
+                <Badge variant="scored" label={t('org:account.verified')} />
               </View>
             ) : (
               <Button

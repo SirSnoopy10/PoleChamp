@@ -99,7 +99,7 @@ export function ToastHost() {
         style={[
           styles.toast,
           theme.shadow.md,
-          { backgroundColor: theme.color.surface, borderRadius: theme.radius.pill },
+          { backgroundColor: theme.color.surface, borderRadius: theme.radius.lg },
         ]}
       >
         <Icon
@@ -108,7 +108,7 @@ export function ToastHost() {
           color={success ? theme.color.accent : theme.color.accentRamp[300]}
           size={18}
         />
-        <Text variant="bodyS" style={{ fontSize: 13.5, lineHeight: 18 }}>
+        <Text variant="bodyS" numberOfLines={4} style={styles.text}>
           {text}
         </Text>
       </Animated.View>
@@ -128,4 +128,6 @@ const styles = StyleSheet.create({
     paddingRight: 18,
     maxWidth: 440,
   },
+  /** Zawijanie zamiast wyjścia poza ekran (UX-18). */
+  text: { fontSize: 13.5, lineHeight: 18, flexShrink: 1 },
 });

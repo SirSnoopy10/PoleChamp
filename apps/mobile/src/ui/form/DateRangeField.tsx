@@ -142,6 +142,11 @@ export function DateRangeField({
       />
       <View style={styles.boxes}>
         <View style={styles.box}>
+          {multi ? (
+            <Text variant="caption" color={color.neutral[400]} testID={`${testID}-from-label`}>
+              {t('form.from')}
+            </Text>
+          ) : null}
           <DateBox
             testID={testID}
             label={label}
@@ -155,6 +160,9 @@ export function DateRangeField({
         </View>
         {multi ? (
           <View style={styles.box}>
+            <Text variant="caption" color={color.neutral[400]} testID={`${testID}-to-label`}>
+              {t('form.to')}
+            </Text>
             <DateBox
               testID={`${testID}-end`}
               label={t('form.endDate')}
@@ -201,5 +209,5 @@ const styles = StyleSheet.create({
   value: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
   text: { flexShrink: 1 },
   boxes: { gap: 8 },
-  box: {},
+  box: { gap: 4 },
 });

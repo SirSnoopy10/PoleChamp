@@ -54,10 +54,12 @@ export const errors = {
   },
   field: {
     REQUIRED: 'To pole jest wymagane.',
-    TOO_SHORT: 'Za krótki tekst (min. {min} znaki).',
-    TOO_LONG: 'Za długi tekst (maks. {max} znaków).',
+    TOO_SHORT: 'Za krótki tekst (min. {min} {chars}).',
+    /** Pole hasła (`errorParams: { kind: 'password' }`) – UX-45. */
+    PASSWORD_TOO_SHORT: 'Hasło musi mieć min. {min} {chars}.',
+    TOO_LONG: 'Za długi tekst (maks. {max} {maxChars}).',
     OUT_OF_RANGE: 'Wartość spoza zakresu {min}–{max}.',
-    INVALID_STEP: 'Wartość musi być wielokrotnością 0,5.',
+    INVALID_STEP: 'Wartość musi być wielokrotnością {step}.',
     INVALID_FORMAT: 'Nieprawidłowy format.',
     PASSWORD_BREACHED: 'To hasło wyciekło w innym serwisie. Wybierz inne.',
     DATE_RANGE: 'Data zakończenia nie może być wcześniejsza niż data rozpoczęcia.',

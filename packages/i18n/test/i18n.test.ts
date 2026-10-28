@@ -163,3 +163,16 @@ describe('liczebniki bez Intl.PluralRules (Hermes)', () => {
     expect(Intl.PluralRules).toBe(native);
   });
 });
+
+describe('UX-20 / UX-45: odmiana w komunikatach pól', () => {
+  it('„znak / znaki / znaków” i komunikat hasła', () => {
+    expect(fieldErrorMessage('TOO_SHORT', { min: 1 })).toBe('Za krótki tekst (min. 1 znak).');
+    expect(fieldErrorMessage('TOO_SHORT', { min: 3 })).toBe('Za krótki tekst (min. 3 znaki).');
+    expect(fieldErrorMessage('TOO_SHORT', { min: 12 })).toBe('Za krótki tekst (min. 12 znaków).');
+    expect(fieldErrorMessage('TOO_SHORT', { min: 10, kind: 'password' })).toBe(
+      'Hasło musi mieć min. 10 znaków.',
+    );
+    expect(fieldErrorMessage('TOO_LONG', { max: 22 })).toBe('Za długi tekst (maks. 22 znaki).');
+    expect(fieldErrorMessage('INVALID_STEP')).toBe('Wartość musi być wielokrotnością 0,5.');
+  });
+});

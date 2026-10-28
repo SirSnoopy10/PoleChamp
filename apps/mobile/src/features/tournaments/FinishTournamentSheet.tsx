@@ -27,7 +27,7 @@ export function finishModel(
   const missing = live.reduce((sum, c) => sum + Math.max(0, c.progress.expected - c.progress.done), 0);
   const queued = devices.filter((d) => d.pendingMutations > 0);
   const warnings: string[] = [];
-  if (missing > 0) warnings.push(t('org:finish.missing', { k: missing }));
+  if (missing > 0) warnings.push(t('org:finish.missing', { count: missing }));
   if (queued.length) {
     const list = queued.map((d) => t('org:finish.deviceItem', { name: d.name, n: d.pendingMutations }));
     warnings.push(t('org:finish.devices', { list: list.join(', ') }));

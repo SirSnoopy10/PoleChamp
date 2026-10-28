@@ -47,10 +47,15 @@ export function applyFormError(
   },
   e: ApiError,
   t: (key: never, params?: Record<string, string | number>) => string,
+  /** Parametry tekstu spoza odpowiedzi API, np. `{ nr }` dla `START_NUMBER_TAKEN` (UX-08). */
+  extra: Record<string, string | number> = {},
 ) {
   if (e.code === 'VALIDATION_FAILED') return form.applyApiErrors(e.fieldErrors);
   for (const issue of e.fieldErrors) {
-    form.setError(issue.field as never, { type: 'api', message: t(e.messageKey as never, e.messageParams) });
+    form.setError(issue.field as never, {
+      type: 'api',
+      message: t(e.messageKey as never, { ...extra, ...e.messageParams }),
+    });
   }
 }
 

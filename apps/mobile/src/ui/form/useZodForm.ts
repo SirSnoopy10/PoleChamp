@@ -43,9 +43,15 @@ export function useZodForm<S extends z.ZodType<FieldValues, FieldValues>>(
   const fieldError = (name: Path<T>) => {
     const error = get(errors, name) as FieldError | undefined;
     if (!error) return undefined;
-    return error.type === 'api' && error.message
-      ? error.message
-      : fieldErrorMessage(toCode(error.message), errorParams?.[name] ?? {});
+    if (error.type === 'api' && error.message) return error.message;
+    const code = toCode(error.message);
+    // Puste pole: „To pole jest wymagane.” przed „Nieprawidłowy format.” (np. e-mail – UX-22).
+    const value: unknown = form.getValues(name);
+    const empty = value === undefined || value === null || (typeof value === 'string' && !value.trim());
+    return fieldErrorMessage(
+      code === 'INVALID_FORMAT' && empty ? 'REQUIRED' : code,
+      errorParams?.[name] ?? {},
+    );
   };
   const applyApiErrors = (issues: readonly FieldIssue[]) => {
     for (const issue of issues) {

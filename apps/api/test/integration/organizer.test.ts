@@ -388,6 +388,8 @@ describe('start kategorii (IMP-126)', () => {
       'START_REQUIREMENTS_NOT_MET',
       'NO_ACTIVE_ENTRIES',
     ]);
+    // UX-18: wszystkie braki naraz.
+    expect(noEntries.body.missing).toEqual(['NO_ACTIVE_ENTRIES', 'NO_ACTIVE_JUDGES']);
     await org.entry(c.id, 1);
     const noJudges = await org.req('POST', `/v1/categories/${c.id}/start`);
     expect(noJudges.body.detail).toBe('NO_ACTIVE_JUDGES');

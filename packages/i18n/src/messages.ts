@@ -23,7 +23,25 @@ export function errorMessage(
   return interpolate(template, params);
 }
 
-/** Komunikat pod polem formularza dla `errors[].code` (03-api §1.3). */
+/** „znak / znaki / znaków” wg polskich reguł liczby mnogiej (UX-20). */
+export function charsWord(n: number): string {
+  if (n === 1) return 'znak';
+  const d = n % 10;
+  const dd = n % 100;
+  return d >= 2 && d <= 4 && (dd < 12 || dd > 14) ? 'znaki' : 'znaków';
+}
+
+/**
+ * Komunikat pod polem formularza dla `errors[].code` (03-api §1.3). Odmiana „znaków” z `min`/`max`;
+ * `kind: 'password'` – „Hasło musi mieć min. …”; krok domyślnie 0,5.
+ */
 export function fieldErrorMessage(code: FieldErrorCode, params: Params = {}): string {
-  return interpolate(errors.field[code], params);
+  const template =
+    code === 'TOO_SHORT' && params.kind === 'password' ? errors.field.PASSWORD_TOO_SHORT : errors.field[code];
+  return interpolate(template, {
+    step: '0,5',
+    ...params,
+    ...(typeof params.min === 'number' ? { chars: charsWord(params.min) } : {}),
+    ...(typeof params.max === 'number' ? { maxChars: charsWord(params.max) } : {}),
+  });
 }

@@ -25,6 +25,8 @@ export const toasts = {
     criteria: 'Dodaj co najmniej jedno kryterium.',
     entries: 'Dodaj co najmniej jedną zawodniczkę.',
     judges: 'Dodaj co najmniej jednego sędziego.',
+    /** Kilka braków naraz (UX-18). */
+    many: 'Przed startem: {list}',
   },
   sessionReplaced: 'Zalogowano Cię na innym urządzeniu.',
   pinCopied: 'Skopiowano PIN',

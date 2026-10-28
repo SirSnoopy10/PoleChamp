@@ -103,7 +103,7 @@ describe('SCR-ORG-15 sędzia (IMP-274)', () => {
     await fireEvent.press(screen.getByTestId('judge-save'));
     expect(await screen.findByText('Sędzia o tym imieniu i nazwisku już istnieje.')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('judge-save'));
-    expect(await screen.findByText('PIN dla Katarzyna Nowak')).toBeOnTheScreen();
+    expect(await screen.findByText('PIN – Katarzyna Nowak')).toBeOnTheScreen();
     for (const d of ['4', '8', '2', '1']) expect(screen.getByText(d)).toBeOnTheScreen();
     expect(screen.getByText('Zapisz PIN – nie będzie można go ponownie wyświetlić.')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('pin-copy'));
@@ -152,7 +152,7 @@ describe('SCR-ORG-15 sędzia (IMP-274)', () => {
     await fireEvent.press(screen.getByTestId('judge-reset'));
     expect(await screen.findByText('Sędzia zostanie wylogowany ze wszystkich tabletów.')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('judge-reset-confirm'));
-    expect(await screen.findByText('PIN dla Ewa Lis')).toBeOnTheScreen();
+    expect(await screen.findByText('PIN – Ewa Lis')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('pin-done'));
 
     await fireEvent.press(await screen.findByTestId('judge-j1'));

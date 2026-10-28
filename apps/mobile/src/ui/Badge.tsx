@@ -13,7 +13,8 @@ export type BadgeProps =
       compact?: boolean;
     }
   | { variant: 'number'; value: number; size?: 38 | 56; tone?: 'accent' | 'neutral' }
-  | { variant: 'scored' };
+  /** `label` – inny tekst z tą samą ikoną (np. „Zweryfikowany” na Koncie – UX-19). */
+  | { variant: 'scored'; label?: string };
 
 /** Odznaki (09-design-system §4.3, IMP-204). Liczby przez formatery `@polechamp/scoring`. */
 export function Badge(props: BadgeProps) {
@@ -84,7 +85,7 @@ export function Badge(props: BadgeProps) {
         >
           <Icon name="check-circle" weight="fill" size={13} color={color.accentRamp[300]} />
           <Text variant="caption" color={color.accentRamp[300]} numberOfLines={1} style={{ lineHeight: 16 }}>
-            {t('badge.scored')}
+            {props.label ?? t('badge.scored')}
           </Text>
         </View>
       );

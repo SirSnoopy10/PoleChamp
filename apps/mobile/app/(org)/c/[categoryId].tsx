@@ -132,8 +132,15 @@ export default function CategoryRoute() {
         toast.success(action === 'start' ? 'toasts:categoryStarted' : 'toasts:categoryUnlocked'),
       onError: (e) => {
         if (e.code === 'START_REQUIREMENTS_NOT_MET') {
-          const key = START_REQUIREMENT[e.problem?.detail as keyof typeof START_REQUIREMENT];
-          return key ? toast.error(key) : toastSaveError(e);
+          const codes = Array.isArray(e.problem?.missing)
+            ? (e.problem.missing as string[])
+            : [e.problem?.detail as string];
+          const keys = codes
+            .map((c) => START_REQUIREMENT[c as keyof typeof START_REQUIREMENT])
+            .filter((k) => k !== undefined);
+          if (keys.length > 1)
+            return toast.error('toasts:startRequirement.many', { list: keys.map((k) => t(k)).join(' ') });
+          return keys[0] ? toast.error(keys[0]) : toastSaveError(e);
         }
         // Podwójny tap – kategoria już rozpoczęta (TC-EDGE-031).
         if (e.code === 'INVALID_STATE_TRANSITION') return void query.refetch();

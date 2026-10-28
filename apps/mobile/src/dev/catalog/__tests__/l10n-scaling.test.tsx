@@ -77,4 +77,26 @@ describe('pseudolokalizacja i skalowanie tekstu (IMP-504)', () => {
       expect(over).toEqual([]);
     },
   );
+
+  it('UX-08 / UX-20: żaden wyrenderowany tekst katalogu (komponenty i ekrany) nie zawiera surowej {zmiennej}', async () => {
+    const raw: string[] = [];
+    const all = catalogSections().flatMap((sec) =>
+      sec.cases.map((c) => ({ section: sec.id, id: c.id, render: c.render })),
+    );
+    let rendered = 0;
+    const silence = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    for (const c of all) {
+      // Ekrany z hookami Expo Router (useFocusEffect) wymagają drzewa tras – pomijane.
+      const view = await renderWithProviders(<>{c.render()}</>).catch(() => null);
+      if (!view) continue;
+      rendered++;
+      for (const t of texts(screen.root as unknown as HostNode)) {
+        if (/\{[A-Za-z]\w*\}/.test(label(t))) raw.push(`${c.section}/${c.id}: ${label(t)}`);
+      }
+      await view.unmount();
+    }
+    silence.mockRestore();
+    expect(rendered).toBeGreaterThan(50);
+    expect(raw).toEqual([]);
+  });
 });

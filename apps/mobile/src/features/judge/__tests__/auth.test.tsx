@@ -409,7 +409,9 @@ describe('IMP-306: sesja sędziego i wylogowanie (SCR-JDG-09)', () => {
     await act(async () => requireReauth());
     expect(screen.getByTestId('reauth-overlay')).toBeOnTheScreen();
     expect(screen.getByTestId('pin-logout')).toBeOnTheScreen();
-    expect(screen.queryByText('Zmień sędziego')).toBeNull();
+    // UX-46: ta sama etykieta co na ekranie PIN; akcja kończy sesję (testID `pin-logout`).
+    expect(screen.getByTestId('pin-logout')).toHaveTextContent('Zmień sędziego');
+    expect(screen.queryByTestId('pin-change-judge')).toBeNull();
     await typePin('1234');
     await waitFor(() => expect(screen.queryByTestId('reauth-overlay')).toBeNull());
     // Ten sam ekran i formularz z wpisaną wartością; nic nie zatwierdzono automatycznie.
