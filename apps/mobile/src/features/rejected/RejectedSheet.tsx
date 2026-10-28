@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { color, layout } from '@polechamp/tokens';
 import type { RejectedSubmission } from '@polechamp/contracts';
@@ -35,6 +35,8 @@ export interface RejectedSheetProps {
   canWrite: boolean;
   onAccept: (item: RejectedSubmission) => Promise<unknown>;
   onDiscard: (item: RejectedSubmission) => Promise<unknown>;
+  /** Odświeżenie listy i statusów kategorii przy otwarciu arkusza (UX-03). */
+  onOpen?: () => void;
 }
 
 /**
@@ -51,8 +53,13 @@ export function RejectedSheet({
   canWrite,
   onAccept,
   onDiscard,
+  onOpen,
 }: RejectedSheetProps) {
   const t = useT();
+  useEffect(() => {
+    // Tylko przy otwarciu (zmiana `visible`), nie przy każdej nowej funkcji `onOpen`.
+    if (visible) onOpen?.();
+  }, [visible]);
   const [confirm, setConfirm] = useState<{ item: RejectedSubmission; action: 'accept' | 'discard' } | null>(
     null,
   );
@@ -175,6 +182,15 @@ export function RejectedSheet({
                           onPress={() => setConfirm({ item, action: 'discard' })}
                         />
                       </View>
+                      {locked && canWrite ? (
+                        <Text
+                          variant="caption"
+                          color={color.neutral[400]}
+                          testID={`rejected-locked-${item.id}`}
+                        >
+                          {t('org:rejected.unlockFirst', { category: item.category.name })}
+                        </Text>
+                      ) : null}
                     </View>
                   );
                 })

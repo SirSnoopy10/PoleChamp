@@ -169,6 +169,29 @@ describe('warstwa API klienta (IMP-214)', () => {
     expect(timeout.code).toBe('TIMEOUT');
   });
 
+  it('UX-04: limit czasu odpowiedzi nie przełącza aplikacji w offline; błąd sieci – tak', async () => {
+    server.use(
+      http.get(`${BASE}/v1/me`, async () => {
+        await new Promise((r) => setTimeout(r, 200));
+        return HttpResponse.json({});
+      }),
+    );
+    network.reportHttpSuccess();
+    const middleware = createAuthMiddleware({
+      baseUrl: BASE,
+      getToken: () => null,
+      canRefresh: () => false,
+      onSessionExpired: jest.fn(),
+    });
+    const slow = createApiClient({ baseUrl: BASE, fetch: fetchWithTimeout(50), middleware: [middleware] });
+    const timeout = (await unwrap(slow.GET('/v1/me')).catch((e: unknown) => e)) as ApiError;
+    expect(timeout.code).toBe('TIMEOUT');
+    expect(network.isOnline()).toBe(true);
+    server.use(http.get(`${BASE}/v1/me`, () => HttpResponse.error()));
+    await unwrap(slow.GET('/v1/me')).catch(() => undefined);
+    expect(network.isOnline()).toBe(false);
+  });
+
   it('X-Min-App-Version wyższa niż wersja aplikacji → sygnał updateRequired', async () => {
     server.use(
       http.get(`${BASE}/v1/tournaments`, () =>

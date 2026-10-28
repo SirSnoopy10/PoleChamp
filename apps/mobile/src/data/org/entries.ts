@@ -69,7 +69,7 @@ function useEntryAction(path: EntryActionPath, refresh: () => Promise<unknown>) 
   });
 }
 
-/** Mutacje zawodniczek (IMP-266, IMP-267) – każda odświeża listę, wyniki i kategorię. */
+/** Mutacje zawodniczek (IMP-266, IMP-267) – każda odświeża listę, wyniki, kategorię i turniej. */
 export function useEntryMutations(categoryId: string) {
   const queryClient = useQueryClient();
   const refresh = () =>
@@ -77,6 +77,9 @@ export function useEntryMutations(categoryId: string) {
       queryClient.invalidateQueries({ queryKey: ['entries', categoryId] }),
       queryClient.invalidateQueries({ queryKey: queryKeys.results(categoryId) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.category(categoryId) }),
+      // Liczniki zawodniczek w szczegółach turnieju i kartach kategorii (UX-10).
+      queryClient.invalidateQueries({ queryKey: ['tournament'] }),
+      queryClient.invalidateQueries({ queryKey: ['tournamentAthletes'] }),
     ]);
   return {
     create: useMutation<EntryRow, ApiError, { body: EntryCreate; idempotencyKey: string }>({

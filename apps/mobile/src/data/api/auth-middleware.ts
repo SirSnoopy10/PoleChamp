@@ -60,9 +60,13 @@ export function createAuthMiddleware(options: AuthMiddlewareOptions): Middleware
   }
 
   return {
-    onError({ id }) {
+    onError({ id, error }) {
       pending.delete(id);
-      network.reportHttpFailure();
+      // Limit czasu ≠ brak sieci (UX-04): wolna odpowiedź nie przełącza aplikacji w offline – rozstrzyga
+      // sonda / kolejne żądanie.
+      const timedOut =
+        error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+      if (!timedOut) network.reportHttpFailure();
     },
     onRequest({ request, id }) {
       const token = options.getToken();

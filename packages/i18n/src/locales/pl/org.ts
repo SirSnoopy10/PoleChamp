@@ -231,6 +231,7 @@ export const org = {
     meta: '{category} · {reason}',
     sent: 'wysłano {time}',
     accept: 'Przyjmij',
+    unlockFirst: 'Aby przyjąć, odblokuj kategorię „{category}”.',
     discard: 'Odrzuć',
     discardTitle: 'Odrzucić ocenę?',
     discardText: 'Ocena sędziego {judge} dla #{nr} {athlete} nie trafi do wyników.',

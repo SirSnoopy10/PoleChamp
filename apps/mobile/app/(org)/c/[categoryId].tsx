@@ -217,6 +217,7 @@ export default function CategoryRoute() {
               canWrite={canWrite}
               onAccept={(item) => resolve.accept.mutateAsync(item)}
               onDiscard={(item) => resolve.discard.mutateAsync(item)}
+              onOpen={() => void Promise.all([rejected.refetch(), query.refetch()])}
             />
             <EntryScoresSheet
               row={scoresRow}

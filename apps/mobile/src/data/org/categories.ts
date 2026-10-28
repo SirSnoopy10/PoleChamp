@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CategoryCreate, CategoryDetails, CriterionInput, PenaltyTypeInput } from '@polechamp/contracts';
-import { api, unwrap, type ApiError } from '../api';
+import { api, ApiError, unwrap } from '../api';
 import { queryKeys } from '../query/keys';
 import { ifMatch, refreshOnConflict } from './tournament';
 
@@ -76,8 +76,30 @@ function useCategoryInvalidation(category: Pick<CategoryDetails, 'id' | 'tournam
       queryClient.invalidateQueries({ queryKey: queryKeys.category(category.id) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.results(category.id) }),
       queryClient.invalidateQueries({ queryKey: queryKeys.tournament(category.tournamentId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.rejected(category.tournamentId) }),
     ]);
   };
+}
+
+const readCategory = (categoryId: string) =>
+  unwrap(api.GET('/v1/categories/{categoryId}', { params: { path: { categoryId } } }));
+
+/**
+ * Akcja statusu kategorii z weryfikacją po przekroczeniu czasu (UX-04): serwer mógł zapisać zmianę mimo braku
+ * odpowiedzi – świeży odczyt kategorii ze statusem docelowym = sukces, inaczej pierwotny błąd.
+ */
+export async function confirmOnTimeout(
+  run: () => Promise<unknown>,
+  check: () => Promise<{ status: string } | undefined>,
+  expected: readonly string[],
+) {
+  try {
+    await run();
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.code !== 'TIMEOUT') throw error;
+    const fresh = await check().catch(() => undefined);
+    if (!fresh || !expected.includes(fresh.status)) throw error;
+  }
 }
 
 /** `POST /v1/categories/{id}/start` (IMP-261) – warunki FR-308 w `START_REQUIREMENTS_NOT_MET.detail`. */
@@ -85,8 +107,13 @@ export function useStartCategory(category: Pick<CategoryDetails, 'id' | 'tournam
   const invalidate = useCategoryInvalidation(category);
   return useMutation<unknown, ApiError>({
     mutationFn: async () => {
-      await unwrap(
-        api.POST('/v1/categories/{categoryId}/start', { params: { path: { categoryId: category.id } } }),
+      await confirmOnTimeout(
+        () =>
+          unwrap(
+            api.POST('/v1/categories/{categoryId}/start', { params: { path: { categoryId: category.id } } }),
+          ),
+        () => readCategory(category.id),
+        ['IN_PROGRESS'],
       );
       await invalidate();
     },
@@ -98,11 +125,16 @@ export function useLockCategory(category: Pick<CategoryDetails, 'id' | 'tourname
   const invalidate = useCategoryInvalidation(category);
   return useMutation<unknown, ApiError, { force: boolean }>({
     mutationFn: async ({ force }) => {
-      await unwrap(
-        api.POST('/v1/categories/{categoryId}/lock', {
-          params: { path: { categoryId: category.id } },
-          body: { force },
-        }),
+      await confirmOnTimeout(
+        () =>
+          unwrap(
+            api.POST('/v1/categories/{categoryId}/lock', {
+              params: { path: { categoryId: category.id } },
+              body: { force },
+            }),
+          ),
+        () => readCategory(category.id),
+        ['LOCKED'],
       );
       await invalidate();
     },
@@ -114,11 +146,16 @@ export function useUnlockCategory(category: Pick<CategoryDetails, 'id' | 'tourna
   const invalidate = useCategoryInvalidation(category);
   return useMutation<unknown, ApiError>({
     mutationFn: async () => {
-      await unwrap(
-        api.POST('/v1/categories/{categoryId}/unlock', {
-          params: { path: { categoryId: category.id } },
-          body: {},
-        }),
+      await confirmOnTimeout(
+        () =>
+          unwrap(
+            api.POST('/v1/categories/{categoryId}/unlock', {
+              params: { path: { categoryId: category.id } },
+              body: {},
+            }),
+          ),
+        () => readCategory(category.id),
+        ['IN_PROGRESS'],
       );
       await invalidate();
     },

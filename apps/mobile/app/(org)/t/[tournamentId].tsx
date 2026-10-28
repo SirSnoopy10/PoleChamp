@@ -134,6 +134,7 @@ export default function TournamentRoute() {
             canWrite={canWrite}
             onAccept={(item) => resolve.accept.mutateAsync(item)}
             onDiscard={(item) => resolve.discard.mutateAsync(item)}
+            onOpen={() => void Promise.all([rejected.refetch(), query.refetch()])}
           />
           <CategoryFormSheet
             {...categorySheet.props}
