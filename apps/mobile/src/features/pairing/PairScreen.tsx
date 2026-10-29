@@ -12,6 +12,7 @@ import { TextField } from '../../ui/form';
 import { ScreenGlow } from '../../ui/layout/ScreenGlow';
 import { Text } from '../../ui/Text';
 import { MEDIUM } from '../judge/styles';
+import { ChangeModeLink } from '../system/ChangeModeLink';
 import {
   DEVICE_LIMIT,
   maskPairingCode,
@@ -197,6 +198,7 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
             />
           </View>
         </View>
+        <ChangeModeLink from="judge" />
       </KeyboardAwareScrollView>
     </View>
   );

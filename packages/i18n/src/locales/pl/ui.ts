@@ -85,6 +85,21 @@ export const ui = {
     judge: 'Tablet sędziowski',
     judgeHint: 'Sparuj tablet z turniejem i oceniaj występy.',
     judgeRequiresTablet: 'Panel sędziego wymaga tabletu.',
+    /** Zmiana trybu (UX-05) – do akceptacji IMP-650. */
+    changeLater: 'Tryb zmienisz później na ekranie logowania lub parowania.',
+    change: 'Zmień tryb urządzenia',
+    changeTitle: 'Zmienić tryb urządzenia?',
+    changeText: 'Wrócisz do wyboru: organizator albo tablet sędziowski.',
+    changeTextJudge: 'Dane turnieju zostaną usunięte z tabletu. Wrócisz do wyboru trybu.',
+    changeConfirm: 'Zmień tryb',
+    changeBlockedTitle: 'Najpierw wyślij oceny',
+    changeBlocked_one:
+      'Na tablecie jest {count} niewysłana ocena. Połącz tablet z internetem albo wyeksportuj ją przed zmianą trybu.',
+    changeBlocked_few:
+      'Na tablecie są {count} niewysłane oceny. Połącz tablet z internetem albo wyeksportuj je przed zmianą trybu.',
+    changeBlocked_many:
+      'Na tablecie jest {count} niewysłanych ocen. Połącz tablet z internetem albo wyeksportuj je przed zmianą trybu.',
+    exportScores: 'Eksportuj oceny',
   },
   orientation: {
     title: 'Obróć tablet do pozycji poziomej.',

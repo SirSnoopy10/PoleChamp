@@ -52,6 +52,9 @@ export function ModeScreen({ onSelect, capabilities }: ModeScreenProps) {
           onPress={caps.supportsJudge ? () => onSelect('judge') : undefined}
         />
       </View>
+      <Text variant="caption" align="center" color={color.neutral[400]} testID="mode-change-later">
+        {t('mode.changeLater')}
+      </Text>
     </View>
   );
 }

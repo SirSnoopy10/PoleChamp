@@ -127,6 +127,31 @@ describe('IMP-301: parowanie tabletu (SCR-JDG-06)', () => {
   });
 });
 
+describe('UX-05: zmiana trybu na tablecie', () => {
+  it('UX-05: niewysłane oceny blokują zmianę trybu (liczba + eksport); bez nich – potwierdzenie', async () => {
+    await unpaired();
+    // Niewysłana ocena z poprzedniego turnieju (zostaje po „Sparuj ponownie”).
+    await env.local.tx((db) =>
+      outbox.enqueue(
+        db,
+        {
+          type: 'PIN_ATTEMPTS_REPORT',
+          judgeId: 'jA',
+          authMode: 'OFFLINE_PIN',
+          payload: { failedCount: 5, lockedUntil: null },
+        },
+        Date.now(),
+      ),
+    );
+    expect(outbox.countPending(env.local.read)).toBe(1);
+    await startJudge(JUDGE_ROUTES, '/pair');
+    await fireEvent.press(await screen.findByTestId('change-mode'));
+    expect(await screen.findByTestId('change-mode-blocked')).toBeOnTheScreen();
+    expect(screen.getByText(/niewysłan/)).toBeOnTheScreen();
+    expect(screen.getByTestId('change-mode-export')).toBeOnTheScreen();
+  });
+});
+
 describe('IMP-302: rozruch tabletu (SCR-JDG-00)', () => {
   it('TC-E2E-JDG-003: online – token, odtworzenie IN_FLIGHT, push i pull; etapy splashu', async () => {
     await signIn(env, 'jA');

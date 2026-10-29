@@ -189,7 +189,29 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
     ]);
   });
 
-  it('TC-E2E-ORG-011: start → toast; zakończ → anuluj; zakończ z If-Match → toast', async () => {
+  it('UX-06: pusty turniej – „Rozpocznij turniej” nieaktywny z podpisem', async () => {
+    server.use(
+      me(),
+      http.get(`${API}/v1/tournaments/t1`, () =>
+        HttpResponse.json(
+          tournamentDetails({
+            status: 'DRAFT',
+            stats: { categories: 0, athletes: 0, judges: 0 },
+            categories: [],
+            progress: { done: 0, expected: 0, percent: 0, startedCategories: 0 },
+          }),
+        ),
+      ),
+    );
+    const r = await startOrg(routes, '/t/t1', state);
+    expect(await screen.findByTestId('tournament-start')).toBeDisabled();
+    expect(screen.getByTestId('tournament-start-hint')).toHaveTextContent(
+      'Aby rozpocząć, dodaj co najmniej jedną kategorię i jednego sędziego.',
+    );
+    await r.unmount();
+  });
+
+  it('TC-E2E-ORG-011 / UX-06: start z potwierdzeniem → toast; zakończ → anuluj; zakończ z If-Match → toast', async () => {
     let current = tournamentDetails({
       status: 'DRAFT',
       progress: { done: 0, expected: 0, percent: 0, startedCategories: 0 },
@@ -218,6 +240,8 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
     );
     const r = await startOrg(routes, '/t/t1', state);
     await fireEvent.press(await screen.findByTestId('tournament-start'));
+    expect(await screen.findByText('Rozpocząć turniej?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('start-confirm'));
     expect(await screen.findByText('Turniej rozpoczęty')).toBeOnTheScreen();
     await fireEvent.press(await screen.findByTestId('tournament-finish'));
     expect(await screen.findByText('Zakończyć turniej?')).toBeOnTheScreen();
@@ -226,7 +250,7 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
         '„Mistrzostwa Polski Pole Sport 2026” zostanie zamknięty, a wyniki zapisane jako ostateczne.',
       ),
     ).toBeOnTheScreen();
-    await fireEvent.press(screen.getByText('Anuluj'));
+    await fireEvent.press(screen.getAllByText('Anuluj').at(-1)!);
     await waitFor(() => expect(screen.queryByText('Zakończyć turniej?')).toBeNull());
     await fireEvent.press(screen.getByTestId('tournament-finish'));
     await fireEvent.press(await screen.findByTestId('finish-confirm'));

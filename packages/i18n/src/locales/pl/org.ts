@@ -86,6 +86,7 @@ export const org = {
     athletesA11y: 'Aktywne zawodniczki: {n}. Lista według kategorii',
     tilesNote: 'Bez wycofanych zawodniczek i nieaktywnych sędziów.',
     start: 'Rozpocznij turniej',
+    startHint: 'Aby rozpocząć, dodaj co najmniej jedną kategorię i jednego sędziego.',
     finish: 'Zakończ turniej',
     noCategories: 'Brak kategorii. Dodaj pierwszą, aby zacząć.',
     rejected: 'Odrzucone oceny ({n})',
@@ -100,6 +101,12 @@ export const org = {
     total_many: '{count} zawodniczek',
     empty: 'Brak zawodniczek w tej kategorii.',
     noCategories: 'Brak kategorii w turnieju.',
+  },
+  /** Potwierdzenie startu turnieju (IMP-705c, UX-06) – do akceptacji IMP-650. */
+  startTournament: {
+    title: 'Rozpocząć turniej?',
+    text: '„{name}” ({date}) przejdzie w status Trwa. Startu nie można cofnąć.',
+    confirm: 'Rozpocznij',
   },
   /** SCR-ORG-04 – zakończenie turnieju. */
   finish: {
@@ -308,6 +315,13 @@ export const org = {
     copy: 'Kopiuj',
     pinWarning: 'Zapisz PIN – nie będzie można go ponownie wyświetlić.',
     done: 'Gotowe',
+    pinSavedTitle: 'Zapisałeś PIN?',
+    pinSavedText: 'Po zamknięciu PIN-u nie da się ponownie wyświetlić – trzeba będzie go zresetować.',
+    pinSavedConfirm: 'Tak, zamknij',
+    pinShowAgain: 'Pokaż PIN',
+    deactivateTitle: 'Dezaktywować sędziego: {name}?',
+    deactivateText:
+      'Sędzia zniknie z listy profili na tabletach i nie zaloguje się. Oceny zostaną w wynikach.',
   },
   /** SCR-ORG-16 – parowanie tabletu. */
   pairing: {

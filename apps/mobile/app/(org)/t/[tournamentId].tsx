@@ -18,6 +18,7 @@ import { CategoryFormSheet, toastSaveError } from '../../../src/features/categor
 import { PdfPreviewSheet } from '../../../src/features/exports/PdfPreviewSheet';
 import { RejectedSheet } from '../../../src/features/rejected/RejectedSheet';
 import { EditTournamentSheet } from '../../../src/features/tournaments/EditTournamentSheet';
+import { StartTournamentSheet } from '../../../src/features/tournaments/StartTournamentSheet';
 import { FinishTournamentSheet } from '../../../src/features/tournaments/FinishTournamentSheet';
 import { TournamentDetailsScreen } from '../../../src/features/tournaments/TournamentDetailsScreen';
 import { useSheet } from '../../../src/ui/sheet';
@@ -34,6 +35,7 @@ export default function TournamentRoute() {
   const me = useMe();
   const canWrite = useCanWrite(tournament?.status);
   const finishSheet = useSheet();
+  const startSheet = useSheet();
   const editSheet = useSheet();
   const categorySheet = useSheet();
   const pdfSheet = useSheet();
@@ -52,9 +54,13 @@ export default function TournamentRoute() {
 
   const onStart = () =>
     start.mutate(undefined, {
-      onSuccess: () => toast.success('toasts:tournamentStarted'),
+      onSuccess: () => {
+        startSheet.close();
+        toast.success('toasts:tournamentStarted');
+      },
       onError: (e) => {
         // Podwójny tap: turniej już trwa – bez komunikatu (TC-EDGE-031).
+        startSheet.close();
         if (e.code === 'INVALID_STATE_TRANSITION') return void query.refetch();
         toastSaveError(e);
         if (e.code === 'EMAIL_NOT_VERIFIED') router.push('/verify-email');
@@ -92,7 +98,7 @@ export default function TournamentRoute() {
       onPdf={pdfSheet.open}
       onJudges={() => router.push(`/judges/${id}`)}
       onAthletes={() => router.push(`/athletes/${id}`)}
-      onStart={onStart}
+      onStart={startSheet.open}
       onFinish={finishSheet.open}
       onAddCategory={categorySheet.open}
       onOpenCategory={(categoryId) => router.push(`/c/${categoryId}`)}
@@ -109,6 +115,12 @@ export default function TournamentRoute() {
     >
       {tournament ? (
         <>
+          <StartTournamentSheet
+            {...startSheet.props}
+            tournament={tournament}
+            busy={start.isPending}
+            onConfirm={onStart}
+          />
           <FinishTournamentSheet
             {...finishSheet.props}
             tournament={tournament}

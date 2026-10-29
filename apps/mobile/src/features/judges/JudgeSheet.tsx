@@ -21,7 +21,7 @@ const JudgeFields = z.object({
   fullName: JudgePatch.shape.fullName.unwrap(),
   initials: JudgePatch.shape.initials,
 });
-type Step = 'form' | 'reset' | 'delete' | 'pin';
+type Step = 'form' | 'reset' | 'delete' | 'deactivate' | 'pin' | 'pinConfirm';
 
 /** Krok PIN (IMP-274): 4 cyfry, „Kopiuj”, ostrzeżenie – PIN tylko w stanie arkusza. */
 export function PinRevealStep({ judge, onDone }: { judge: JudgeWithPin; onDone: () => void }) {
@@ -144,12 +144,78 @@ export function JudgeSheet({
     setPin(null);
     onClose();
   };
+  // PIN widoczny tylko raz – tło, „×” i wstecz pytają „Zapisałeś PIN?”; „Gotowe” zamyka od razu (UX-07).
+  const requestClose = () => (step === 'pin' && pin ? setStep('pinConfirm') : close());
+  const toggleActive = (target: JudgeRow) =>
+    void act(
+      () => onUpdate(target, { isActive: !target.isActive }),
+      () => {
+        close();
+        toast.success(target.isActive ? 'toasts:judgeDeactivated' : 'toasts:judgeActivated');
+      },
+    );
   const title = t(judge ? 'org:judgeForm.editTitle' : 'org:judgeForm.newTitle');
   const nameError = form.fieldError('fullName');
 
   let content;
   if (step === 'pin' && pin) {
     content = <PinRevealStep judge={pin} onDone={close} />;
+  } else if (step === 'pinConfirm' && pin) {
+    content = (
+      <ConfirmContent
+        icon="key"
+        title={t('org:judgeForm.pinSavedTitle')}
+        text={t('org:judgeForm.pinSavedText')}
+        actions={
+          <>
+            <Button
+              testID="judge-pin-close-confirm"
+              variant="secondary"
+              label={t('org:judgeForm.pinSavedConfirm')}
+              size={48}
+              fullWidth
+              onPress={close}
+            />
+            <Button
+              testID="judge-pin-show"
+              variant="ghost"
+              label={t('org:judgeForm.pinShowAgain')}
+              size={48}
+              fullWidth
+              onPress={() => setStep('pin')}
+            />
+          </>
+        }
+      />
+    );
+  } else if (step === 'deactivate' && judge) {
+    content = (
+      <ConfirmContent
+        icon="user-minus"
+        title={t('org:judgeForm.deactivateTitle', { name: judge.fullName })}
+        text={t('org:judgeForm.deactivateText')}
+        actions={
+          <>
+            <Button
+              testID="judge-deactivate-confirm"
+              variant="secondary"
+              destructive
+              label={t('org:judgeForm.deactivate')}
+              size={48}
+              fullWidth
+              onPress={() => toggleActive(judge)}
+            />
+            <Button
+              variant="ghost"
+              label={t('common:cancel')}
+              size={48}
+              fullWidth
+              onPress={() => setStep('form')}
+            />
+          </>
+        }
+      />
+    );
   } else if (step === 'reset' && judge) {
     content = (
       <ConfirmContent
@@ -286,15 +352,8 @@ export function JudgeSheet({
               size={48}
               fullWidth
               disabled={!canWrite}
-              onPress={() =>
-                void act(
-                  () => onUpdate(judge, { isActive: !judge.isActive }),
-                  () => {
-                    close();
-                    toast.success('toasts:changesSaved');
-                  },
-                )
-              }
+              icon={judge.isActive ? 'user-minus' : undefined}
+              onPress={() => (judge.isActive ? setStep('deactivate') : toggleActive(judge))}
             />
             {judge.sheetCount === 0 ? (
               <Button
@@ -315,7 +374,7 @@ export function JudgeSheet({
   }
 
   return (
-    <Sheet visible={visible} onClose={close} accessibilityLabel={title} testID="judge-sheet">
+    <Sheet visible={visible} onClose={requestClose} accessibilityLabel={title} testID="judge-sheet">
       <SheetStep stepKey={step}>{content}</SheetStep>
     </Sheet>
   );

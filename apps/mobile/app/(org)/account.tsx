@@ -3,6 +3,7 @@ import { openBrowserAsync } from 'expo-web-browser';
 import { appVersion } from '../../src/data/api/app-version';
 import { useAppConfig, useDeleteAccount, useLogout, useMe } from '../../src/data/auth/orgSession';
 import { useOnline } from '../../src/data/network/online';
+import { useTournaments } from '../../src/data/org/tournaments';
 import { AccountScreen } from '../../src/features/account/AccountScreen';
 import { toastSaveError } from '../../src/features/categories/CategoryFormSheet';
 import { toast } from '../../src/ui/Toast';
@@ -14,6 +15,7 @@ export default function AccountRoute() {
   const logout = useLogout();
   const remove = useDeleteAccount();
   const online = useOnline();
+  const active = useTournaments('active');
   return (
     <AccountScreen
       me={me.data}
@@ -22,6 +24,7 @@ export default function AccountRoute() {
       error={me.isError}
       version={appVersion()}
       canWrite={online}
+      hasActiveTournament={!!active.data?.some((x) => x.status === 'IN_PROGRESS')}
       loggingOut={logout.isPending}
       onBack={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       onRetry={() => void me.refetch()}

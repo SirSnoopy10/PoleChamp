@@ -110,7 +110,11 @@ describe('SCR-ORG-15 sędzia (IMP-274)', () => {
     expect(screen.getByText('Zapisz PIN – nie będzie można go ponownie wyświetlić.')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('pin-copy'));
     expect(await screen.findByText('Skopiowano PIN')).toBeOnTheScreen();
-    await fireEvent.press(screen.getByTestId('pin-done'));
+    // UX-07: tło nie zamyka PIN-u bez pytania; „Pokaż PIN” wraca, „Gotowe” zamyka.
+    await fireEvent.press(screen.getByTestId('judge-sheet-backdrop', { includeHiddenElements: true }));
+    expect(await screen.findByText('Zapisałeś PIN?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('judge-pin-show'));
+    await fireEvent.press(await screen.findByTestId('pin-done'));
     await fireEvent.press(await screen.findByTestId('judge-j9'));
     expect(await screen.findByText('Edytuj sędziego')).toBeOnTheScreen();
     expect(screen.queryByText('4821')).toBeNull();
@@ -159,7 +163,10 @@ describe('SCR-ORG-15 sędzia (IMP-274)', () => {
 
     await fireEvent.press(await screen.findByTestId('judge-j1'));
     await fireEvent.press(await screen.findByTestId('judge-toggle'));
-    expect(await screen.findByText('Zapisano zmiany')).toBeOnTheScreen();
+    // UX-16: dezaktywacja z potwierdzeniem skutków i własnym toastem.
+    expect(await screen.findByText('Dezaktywować sędziego: Ewa Lis?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('judge-deactivate-confirm'));
+    expect(await screen.findByText('Dezaktywowano sędziego')).toBeOnTheScreen();
 
     await fireEvent.press(await screen.findByTestId('judge-j2'));
     await fireEvent.press(await screen.findByTestId('judge-delete'));

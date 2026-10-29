@@ -9,6 +9,8 @@ import { tokenStore } from '../../../data/api/tokens';
 import { network } from '../../../data/network/online';
 import { categoryDetails, tournamentDetails } from '../../../test-utils/fixtures';
 import { API, noContent, problem, setupOrgServer, startOrg } from '../../../test-utils/org';
+import { matchesWord } from '../AccountScreen';
+import { readStoredMode } from '../../../mode/mode';
 import { act, fireEvent, screen, waitFor } from '../../../test-utils/render';
 
 jest.mock('../../../data/realtime/useOrgRealtime', () => ({ useOrgRealtime: () => undefined }));
@@ -101,6 +103,41 @@ describe('SCR-ORG-21 konto (IMP-277)', () => {
     await waitFor(() => expect(r.getPathname()).toBe('/login'));
     expect(tokenStore.getState().org).toBeNull();
     await r.unmount();
+  });
+});
+
+describe('UX-05: zmiana trybu urządzenia', () => {
+  it('UX-05: logowanie organizatora – „Zmień tryb urządzenia” z potwierdzeniem czyści tryb', async () => {
+    const r = await startOrg(routes, '/login', state, { loggedIn: false });
+    await fireEvent.press(await screen.findByTestId('change-mode'));
+    expect(await screen.findByText('Zmienić tryb urządzenia?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('change-mode-confirm'));
+    // Trasa `/mode` spoza zestawu testu – sprawdzamy wyczyszczony tryb.
+    await waitFor(() => expect(readStoredMode()).toBeNull());
+    await r.unmount();
+  });
+});
+
+describe('UX-17: usunięcie konta', () => {
+  it('UX-17: turniej Trwa – blokada z komunikatem bez arkusza; „USUN” bez polskiej litery akceptowane', async () => {
+    mockAccount(false);
+    let active = true;
+    server.use(
+      http.get(`${API}/v1/tournaments`, () =>
+        HttpResponse.json({
+          items: active ? [{ ...tournamentDetails(), status: 'IN_PROGRESS' }] : [],
+        }),
+      ),
+    );
+    const r = await startOrg(routes, '/account', state);
+    await fireEvent.press(await screen.findByTestId('account-delete'));
+    await waitFor(() => expect(screen.getByText('Najpierw zakończ trwający turniej.')).toBeOnTheScreen());
+    expect(screen.queryByTestId('delete-word')).toBeNull();
+    await r.unmount();
+    expect(matchesWord('usun', 'USUŃ')).toBe(true);
+    expect(matchesWord(' USUŃ ', 'USUŃ')).toBe(true);
+    expect(matchesWord('USUNĄĆ', 'USUŃ')).toBe(false);
+    active = false;
   });
 });
 

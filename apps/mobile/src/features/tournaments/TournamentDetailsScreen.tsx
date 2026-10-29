@@ -135,15 +135,23 @@ export function TournamentDetailsScreen({
     : t('org:noStartedCategories');
   const statusAction =
     tour.status === 'DRAFT' ? (
-      <Button
-        testID="tournament-start"
-        label={t('org:tournament.start')}
-        icon="play"
-        size={44}
-        disabled={!canWrite}
-        loading={starting}
-        onPress={onStart}
-      />
+      // Start tylko z ≥ 1 kategorią i ≥ 1 aktywnym sędzią, z potwierdzeniem (decyzja PO IMP-705c, UX-06).
+      <View style={styles.startAction}>
+        <Button
+          testID="tournament-start"
+          label={t('org:tournament.start')}
+          icon="play"
+          size={44}
+          disabled={!canWrite || !tour.stats.categories || !tour.stats.judges}
+          loading={starting}
+          onPress={onStart}
+        />
+        {!tour.stats.categories || !tour.stats.judges ? (
+          <Text variant="caption" color={color.neutral[400]} testID="tournament-start-hint">
+            {t('org:tournament.startHint')}
+          </Text>
+        ) : null}
+      </View>
     ) : tour.status === 'IN_PROGRESS' ? (
       <Button
         testID="tournament-finish"
@@ -263,6 +271,7 @@ export function TournamentDetailsScreen({
 }
 
 const styles = StyleSheet.create({
+  startAction: { gap: layout[6] },
   loading: { gap: layout[12] },
   head: { gap: layout[8] },
   pill: { flexDirection: 'row' },

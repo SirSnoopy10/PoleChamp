@@ -16,6 +16,7 @@ import { OfflineBanner } from '../../ui/OfflineBanner';
 import { ConfirmContent, Sheet } from '../../ui/sheet';
 import { Skeleton } from '../../ui/Skeleton';
 import { Text } from '../../ui/Text';
+import { toast } from '../../ui/Toast';
 
 type LegalKey = keyof AppConfig['legal'];
 
@@ -34,6 +35,8 @@ export interface AccountScreenProps {
   onLogout: () => void;
   /** Usunięcie konta – rzuca `ApiError` (np. `ACTIVE_TOURNAMENT_EXISTS`). */
   onDelete: () => Promise<unknown>;
+  /** Turniej „Trwa” – usunięcie konta zablokowane z komunikatem (UX-17). */
+  hasActiveTournament?: boolean;
 }
 
 const DOCS: { key: LegalKey; label: string }[] = [
@@ -43,7 +46,13 @@ const DOCS: { key: LegalKey; label: string }[] = [
   { key: 'supportUrl', label: 'org:account.support' },
 ];
 
-/** Arkusz usunięcia konta: przycisk aktywny dopiero po wpisaniu „USUŃ”. */
+/** „USUŃ” albo „USUN” – bez wymogu polskiej litery na klawiaturze (UX-17). */
+export const matchesWord = (typed: string, word: string) => {
+  const plain = (v: string) => v.trim().toLocaleUpperCase('pl').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return plain(typed) === plain(word);
+};
+
+/** Arkusz usunięcia konta: przycisk aktywny dopiero po wpisaniu „USUŃ” (lub „USUN”). */
 function DeleteAccountSheet({
   visible,
   onClose,
@@ -96,7 +105,7 @@ function DeleteAccountSheet({
               label={t('org:account.deleteConfirm')}
               size={48}
               fullWidth
-              disabled={typed.trim().toLocaleUpperCase('pl') !== word}
+              disabled={!matchesWord(typed, word)}
               loading={busy}
               onPress={() => void confirm()}
             />
@@ -123,6 +132,7 @@ export function AccountScreen({
   onOpenLink,
   onLogout,
   onDelete,
+  hasActiveTournament = false,
 }: AccountScreenProps) {
   const t = useT();
   const [deleting, setDeleting] = useState(false);
@@ -194,7 +204,9 @@ export function AccountScreen({
             size={44}
             label={t('org:account.delete')}
             disabled={!canWrite}
-            onPress={() => setDeleting(true)}
+            onPress={() =>
+              hasActiveTournament ? toast.error('errors:ACTIVE_TOURNAMENT_EXISTS') : setDeleting(true)
+            }
             style={styles.center}
           />
         </View>
