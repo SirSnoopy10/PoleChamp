@@ -105,7 +105,7 @@ Indeksy lokalne: `local_entry(category_id, start_order)`, `local_score_sheet(jud
 ## 6. Blokada kategorii a sędzia offline
 
 1. **Zapobieganie:** przed blokadą serwer zwraca `LOCK_WARNINGS`, jeśli brakuje ocen albo istnieją nieunieważnione urządzenia turnieju, które od startu kategorii miały kontakt z serwerem (`last_seen_at ≥ category.started_at`) i mają `pending_mutations > 0` lub nie odezwały się dłużej niż 2 min (doprecyzowanie TL-19 – zgodne z FR-309; warunek „aktywnej sesji” usunięto, bo serwer nie zna sesji offline). Organizator widzi listę tabletów i liczbę zaległych ocen (SCR-ORG-18) i może poczekać.
-2. **Szybka propagacja:** zdarzenie `category.locked` przez WS. Tablet online natychmiast przechodzi w tryb tylko-do-odczytu (baner „Kategoria zablokowana — tylko podgląd”, formularz przygaszony). Ocena, którą sędzia właśnie zatwierdzał, jeśli była już w outboxie, i tak zostanie wysłana i ewentualnie odrzucona.
+2. **Szybka propagacja:** zdarzenie `category.locked` przez WS. Tablet online natychmiast przechodzi w tryb tylko-do-odczytu (baner „Kategoria zakończona — tylko podgląd”, formularz przygaszony). Ocena, którą sędzia właśnie zatwierdzał, jeśli była już w outboxie, i tak zostanie wysłana i ewentualnie odrzucona.
 3. **Po fakcie:** oceny, które dotarły po blokadzie, nie zmieniają wyników ostatecznych. Trafiają do `rejected_submission` (PENDING). Organizator może:
    - **Odblokować** kategorię i **przyjąć** zgłoszenie (arkusz powstaje z treści od sędziego, rewizja z `actor_type = ORGANIZER`, audyt), a potem zablokować ponownie – powstają nowe wyniki ostateczne i nowa suma kontrolna;
    - albo **odrzucić** zgłoszenie (zostaje w audycie).

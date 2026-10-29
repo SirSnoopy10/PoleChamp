@@ -1,4 +1,4 @@
-# TC-E2E-JDG-022 – pigułka i popover: 3 oceny offline → „Synchronizuj teraz” → „Zsynchronizowano”.
+# TC-E2E-JDG-022 – pigułka i popover: 3 oceny offline → „Synchronizuj teraz” → „Wysłano”.
 appId: app.polechamp
 tags: [p1, nightly, judge]
 ---

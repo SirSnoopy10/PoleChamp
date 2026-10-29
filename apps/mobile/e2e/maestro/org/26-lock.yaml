@@ -1,4 +1,4 @@
-# TC-E2E-ORG-026 – „Zakończ i zablokuj” z ostrzeżeniem o brakach (c3: 15 brakujących ocen), potem odblokowanie.
+# TC-E2E-ORG-026 – „Zakończ kategorię” z ostrzeżeniem o brakach (c3: 15 brakujących ocen), potem odblokowanie.
 # Niewysłane oceny „Tablet stół 2” wymagają tabletu offline z kolejką – sprawdzane w full/ (IMP-457).
 appId: app.polechamp
 tags: [p1, nightly, org]

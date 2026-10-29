@@ -129,7 +129,7 @@ FR: FR-309 · Ekrany: SCR-ORG-06, SCR-ORG-18
 - **Given** wszystkie oceny są złożone i tablety zsynchronizowane **When** tapnę „Zakończ i zablokuj” **Then** status zmienia się na „Zakończona”, przycisk zmienia się na „Odblokuj”, a ja widzę toast „Kategoria zakończona”.
 - **Given** brakuje 15 ocen, a „Tablet stół 2” ma 3 niewysłane oceny **When** tapnę „Zakończ i zablokuj” **Then** widzę arkusz z „Brakuje 15 ocen” i „Tablet stół 2 – 3 niewysłane oceny” oraz przyciskami „Zablokuj mimo to” i „Anuluj”.
 - **Given** arkusz ostrzeżenia **When** wybiorę „Zablokuj mimo to” **Then** kategoria zostaje zablokowana, a późniejsze oceny z tabletu trafiają do „Odrzucone oceny”.
-- **Given** tablet online **When** kategoria zostaje zablokowana **Then** w ≤ 3 s sędzia widzi baner „Kategoria zablokowana — tylko podgląd” i nieaktywny formularz.
+- **Given** tablet online **When** kategoria zostaje zablokowana **Then** w ≤ 3 s sędzia widzi baner „Kategoria zakończona — tylko podgląd” i nieaktywny formularz.
 
 ### US-027 – Odblokowanie kategorii · **Must**
 Jako **organizatorka** chcę odblokować kategorię, aby sędzia mógł poprawić omyłkę.
@@ -285,7 +285,7 @@ FR: FR-608 · Ekrany: SCR-JDG-05
 ### US-061 – Podgląd w zablokowanej kategorii · **Must**
 Jako **sędzia** chcę przejrzeć swoje oceny w zablokowanej kategorii bez ryzyka ich zmiany.
 FR: FR-609 · Ekrany: SCR-JDG-04, SCR-JDG-05
-- **Given** kategoria zablokowana **When** otwieram ocenioną zawodniczkę **Then** widzę baner „Kategoria zablokowana — tylko podgląd”, przygaszony formularz z moimi wartościami i brak stopki z przyciskiem.
+- **Given** kategoria zablokowana **When** otwieram ocenioną zawodniczkę **Then** widzę baner „Kategoria zakończona — tylko podgląd”, przygaszony formularz z moimi wartościami i brak stopki z przyciskiem.
 - **Given** formularz zablokowany **When** próbuję przesunąć suwak lub tapnąć „+” **Then** nic się nie zmienia.
 
 ### US-062 – Niezależność sędziów · **Must**

@@ -92,9 +92,9 @@ describe('@polechamp/i18n (IMP-069)', () => {
   it('TC-I18N-008: teksty z liczbą mnogą w panelu sędziego', () => {
     const i18n = createI18n();
     expect([1, 3, 5].map((count) => i18n.t('judge:rejectedBanner', { count }))).toEqual([
-      '1 ocena nie została przyjęta – kategoria zablokowana',
-      '3 oceny nie zostały przyjęte – kategoria zablokowana',
-      '5 ocen nie zostało przyjętych – kategoria zablokowana',
+      '1 ocena nie została przyjęta – kategoria zakończona',
+      '3 oceny nie zostały przyjęte – kategoria zakończona',
+      '5 ocen nie zostało przyjętych – kategoria zakończona',
     ]);
     expect([1, 2, 5].map((count) => i18n.t('judge:logoutUnsent', { count }).split('.')[0])).toEqual([
       'Masz 1 niewysłaną ocenę',

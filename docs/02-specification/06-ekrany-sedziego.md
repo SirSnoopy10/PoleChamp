@@ -71,7 +71,7 @@
 ## SCR-JDG-04 – Kategoria: kolejka (panel prawy pusty)
 - **FR:** FR-602, FR-609, FR-805. **US:** US-056, US-061, US-083.
 - **Układ – panel boczny (300 dp, tło surface 45% nad bg, prawa krawędź 1 dp divider):**
-  1. Blok górny (padding 14/16, odstęp 8): link „‹ Kategorie” (`caret-left` 16 dp + 13,5 dp accent) → SCR-JDG-03; nazwa kategorii (18 dp/500); pasek 4 dp + „{x}/{y} ocenione”; baner blokady (tylko gdy zablokowana): tło accent-900, tekst accent-200, ikona `lock-simple` 15 dp, 12 dp, radius md, padding 8/10 – „Kategoria zablokowana — tylko podgląd”.
+  1. Blok górny (padding 14/16, odstęp 8): link „‹ Kategorie” (`caret-left` 16 dp + 13,5 dp accent) → SCR-JDG-03; nazwa kategorii (18 dp/500); pasek 4 dp + „{x}/{y} ocenione”; baner blokady (tylko gdy zablokowana): tło accent-900, tekst accent-200, ikona `lock-simple` 15 dp, 12 dp, radius md, padding 8/10 – „Kategoria zakończona — tylko podgląd”.
   2. **⟡** Baner odrzuceń (gdy dotyczy): jak wyżej, ikona `warning-circle`, „{n} {ocena|oceny|ocen} nie {została|zostały|zostało} {przyjęta|przyjęte|przyjętych} – kategoria zablokowana” → SCR-JDG-07.
   3. Kolejka (przewijana, padding 0/10/16, odstęp 4): wiersz min. 60 dp, padding 10, radius 12, odstęp 12: odznaka 38 dp (radius 11; oceniona: accent-900 / accent-200; nieoceniona: neutral-900 / neutral-200) z numerem (14 dp/500 tabelarycznie); kolumna: nazwisko (14,5 dp, wielokropek), klub (12 dp neutral-400, wielokropek); ikona stanu 18 dp:
      | Stan | Ikona | Kolor |
