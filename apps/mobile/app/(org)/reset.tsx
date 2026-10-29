@@ -22,6 +22,7 @@ export default function ResetRoute() {
           router.replace('/login');
         }}
         onRequestNewLink={() => router.replace('/forgot-password')}
+        onBackToLogin={() => router.replace('/login')}
       />
     </ScreenContainer>
   );

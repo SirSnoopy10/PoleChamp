@@ -17,7 +17,8 @@ const LOCK_CODES = new Set(['ACCOUNT_LOCKED', 'RATE_LIMITED']);
 export interface LoginFormProps {
   /** Wywołanie API; odrzucenie `ApiError` pokazuje komunikat pod formularzem. */
   onSubmit: (values: LoginRequest) => Promise<unknown>;
-  onForgotPassword: () => void;
+  /** Z wpisanym adresem – „Nie pamiętasz hasła?” go przejmuje (UX-45). */
+  onForgotPassword: (email: string) => void;
   onRegister: () => void;
   /** Stan początkowy błędu (DevCatalog). */
   initialError?: ApiError | null;
@@ -119,7 +120,7 @@ export function LoginForm({ onSubmit, onForgotPassword, onRegister, initialError
         variant="ghost"
         size={44}
         label={t('org:auth.forgotPassword')}
-        onPress={onForgotPassword}
+        onPress={() => onForgotPassword(form.getValues('email')?.trim() ?? '')}
         style={styles.center}
       />
       <View style={styles.register}>

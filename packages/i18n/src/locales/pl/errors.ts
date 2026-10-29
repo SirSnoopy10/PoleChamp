@@ -62,6 +62,7 @@ export const errors = {
     INVALID_STEP: 'Wartość musi być wielokrotnością {step}.',
     INVALID_FORMAT: 'Nieprawidłowy format.',
     PASSWORD_BREACHED: 'To hasło wyciekło w innym serwisie. Wybierz inne.',
+    PASSWORD_INCORRECT: 'Nieprawidłowe hasło.',
     DATE_RANGE: 'Data zakończenia nie może być wcześniejsza niż data rozpoczęcia.',
     UNKNOWN_FIELD: 'Nieznane pole.',
   },

@@ -59,6 +59,12 @@ export const MePatch = z.strictObject({
   locale: z.enum(['pl', 'en']).optional(),
 });
 
+/** Zmiana adresu e-mail (przed weryfikacją i na Koncie) – ponowna weryfikacja nowego adresu (UX-45). */
+export const MeEmailChange = z.strictObject({
+  email: Email,
+  currentPassword: z.string().min(1, { error: 'REQUIRED' }).max(128, { error: 'TOO_LONG' }),
+});
+
 export const AppConfig = z.object({
   minAppVersion: z.string(),
   minSyncAppVersion: z.string(),

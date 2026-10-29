@@ -64,6 +64,17 @@ export function useResendCode() {
   });
 }
 
+/** `PUT /v1/me/email` (UX-45): nowy adres do ponownej weryfikacji – kod wysyła API. */
+export function useChangeEmail() {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, ApiError, { email: string; currentPassword: string }>({
+    mutationFn: async (body) => {
+      await unwrap(api.PUT('/v1/me/email', { body }));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.me() }),
+  });
+}
+
 /** `POST /v1/auth/password/forgot` (IMP-253) – odpowiedź zawsze neutralna. */
 export function useForgotPassword() {
   return useMutation<unknown, ApiError, { email: string }>({

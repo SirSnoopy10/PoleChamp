@@ -62,7 +62,8 @@ export const email = {
     'Ktoś (być może Ty) próbował założyć konto PoleChamp na ten adres e-mail. Konto już istnieje – zaloguj się w aplikacji albo zresetuj hasło. Jeśli to nie Ty, zignoruj tę wiadomość.',
   resetSubject: 'Ustaw nowe hasło w PoleChamp',
   resetBody:
-    'Aby ustawić nowe hasło, otwórz link: {link}. Link jest ważny przez 1 godzinę. Jeśli to nie Ty prosiłaś/prosiłeś o zmianę hasła, zignoruj tę wiadomość.',
+    // Link w osobnej linii, bez znaku po URL – klient poczty nie dokleja kropki do adresu (UX-45).
+    'Aby ustawić nowe hasło, otwórz link:\n{link}\nLink jest ważny przez 1 godzinę. Jeśli to nie Ty prosiłaś/prosiłeś o zmianę hasła, zignoruj tę wiadomość.',
   deletionSubject: 'Twoje konto PoleChamp zostanie usunięte',
   deletionBody:
     'Przyjęliśmy wniosek o usunięcie konta. Konto jest już nieaktywne, a dane zostaną trwale usunięte {date}.',

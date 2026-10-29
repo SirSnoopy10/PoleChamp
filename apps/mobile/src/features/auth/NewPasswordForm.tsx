@@ -16,11 +16,18 @@ export interface NewPasswordFormProps {
   onSubmit: (newPassword: string) => Promise<unknown>;
   /** `RESET_TOKEN_INVALID` – przejście do „Nie pamiętasz hasła?”. */
   onRequestNewLink: () => void;
+  /** „Wróć do logowania” (UX-45). */
+  onBackToLogin?: () => void;
   initialError?: ApiError | null;
 }
 
 /** SCR-ORG-13 – nowe hasło z linku `/reset?token=` (IMP-253). */
-export function NewPasswordForm({ onSubmit, onRequestNewLink, initialError = null }: NewPasswordFormProps) {
+export function NewPasswordForm({
+  onSubmit,
+  onRequestNewLink,
+  onBackToLogin,
+  initialError = null,
+}: NewPasswordFormProps) {
   const t = useT();
   const form = useZodForm(NewPasswordFields, {
     defaultValues: { newPassword: '' },
@@ -87,10 +94,21 @@ export function NewPasswordForm({ onSubmit, onRequestNewLink, initialError = nul
           onPress={() => void submit()}
         />
       )}
+      {onBackToLogin ? (
+        <Button
+          testID="reset-back-login"
+          variant="ghost"
+          size={44}
+          label={t('org:auth.backToLogin')}
+          onPress={onBackToLogin}
+          style={styles.center}
+        />
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { gap: layout[16] },
+  center: { alignSelf: 'center' },
 });

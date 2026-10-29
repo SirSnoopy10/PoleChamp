@@ -371,6 +371,38 @@ export class AuthService {
     return this.me(userId);
   }
 
+  /**
+   * Zmiana adresu e-mail (UX-45): bieżące hasło, nowy adres niezweryfikowany i nowy kod weryfikacyjny.
+   * Adres zajęty przez inne konto – bez zmiany i z e-mailem „konto już istnieje” na ten adres
+   * (anty-enumeracja jak przy rejestracji). Sesje zostają.
+   */
+  async changeEmail(userId: string, email: string, currentPassword: string): Promise<void> {
+    const user = await this.userById(userId);
+    if (!(await this.passwords.verify(user.passwordHash, currentPassword))) {
+      throw validationFailed([{ field: 'currentPassword', code: 'PASSWORD_INCORRECT' }]);
+    }
+    if (email === user.email) return this.resendVerification(userId);
+    const taken = await this.findActiveUser(email);
+    if (taken) {
+      await this.email.enqueue('account-exists', taken.email, { name: taken.displayName });
+      return;
+    }
+    const code = await withTx(this.db, async (tx) => {
+      await tx
+        .update(appUser)
+        .set({ email, emailVerifiedAt: null, updatedAt: new Date() })
+        .where(eq(appUser.id, userId));
+      await this.audit.record(tx, {
+        action: 'EMAIL_CHANGED',
+        entityType: 'app_user',
+        entityId: userId,
+        before: { verified: user.emailVerifiedAt !== null },
+      });
+      return this.issueEmailToken(tx, userId, 'VERIFY_EMAIL');
+    });
+    await this.email.enqueue('verify-code', email, { name: user.displayName, code });
+  }
+
   async deleteMe(userId: string): Promise<void> {
     const user = await this.userById(userId);
     const [active] = await this.db

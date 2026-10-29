@@ -37,7 +37,8 @@ const CONTENT: Record<EmailTemplate, { subject: string; body: string }> = {
 export function renderEmail(template: EmailTemplate, params: EmailParams): RenderedEmail {
   const values = { ...params };
   const { subject, body } = CONTENT[template];
-  const lines = [fill(t.greeting, values), fill(body, values), t.signature];
+  // Treść może mieć kilka linii – np. link resetu w osobnej linii, bez kropki po URL (UX-45).
+  const lines = [fill(t.greeting, values), ...fill(body, values).split('\n'), t.signature];
   const html = `<!doctype html><html lang="pl"><body style="font-family:Inter,Arial,sans-serif">${lines
     .map((line) => `<p>${escapeHtml(line)}</p>`)
     .join('')}</body></html>`;

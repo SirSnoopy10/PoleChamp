@@ -105,6 +105,39 @@ describe('IMP-114: rejestracja', () => {
   });
 });
 
+describe('UX-45: zmiana adresu e-mail', () => {
+  it('UX-45: błędne hasło → pole; nowy adres niezweryfikowany z kodem, weryfikacja nowego; zajęty – bez zmiany', async () => {
+    const { accessToken: token, email } = await registerAndLogin(call);
+    const wrong = await call('PUT', '/v1/me/email', {
+      token,
+      body: { email: uniqueEmail(), currentPassword: 'zle-haslo-123' },
+    });
+    expect(wrong.status).toBe(422);
+    expect(wrong.body.errors).toEqual([{ field: 'currentPassword', code: 'PASSWORD_INCORRECT' }]);
+
+    const next = uniqueEmail();
+    const ok = await call('PUT', '/v1/me/email', {
+      token,
+      body: { email: next, currentPassword: STRONG_PASSWORD },
+    });
+    expect(ok.status).toBe(204);
+    expect(await userByEmail(email)).toBeUndefined();
+    expect((await userByEmail(next))?.emailVerifiedAt).toBeNull();
+    const code = (await lastEmail(next))!.params.code;
+    expect((await call('POST', '/v1/auth/verify-email', { body: { email: next, code } })).status).toBe(204);
+    expect((await call('GET', '/v1/me', { token })).body).toMatchObject({ email: next, emailVerified: true });
+
+    const other = await registerAndLogin(call);
+    const taken = await call('PUT', '/v1/me/email', {
+      token,
+      body: { email: other.email, currentPassword: STRONG_PASSWORD },
+    });
+    expect(taken.status).toBe(204);
+    expect((await lastEmail(other.email))?.template).toBe('account-exists');
+    expect((await call('GET', '/v1/me', { token })).body.email).toBe(next);
+  });
+});
+
 describe('IMP-115: weryfikacja e-maila', () => {
   it('TC-API-005: poprawny kod potwierdza adres', async () => {
     const email = uniqueEmail();

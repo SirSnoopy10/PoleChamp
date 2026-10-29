@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { useLogin } from '../../src/data/auth/orgSession';
+import { authDraft } from '../../src/features/auth/authDraft';
 import { LoginForm } from '../../src/features/auth/LoginForm';
 import { ChangeModeLink } from '../../src/features/system/ChangeModeLink';
 import { ScreenContainer } from '../../src/ui/layout/ScreenContainer';
@@ -11,7 +12,10 @@ export default function LoginRoute() {
     <ScreenContainer testID="login-screen">
       <LoginForm
         onSubmit={(values) => login.mutateAsync(values)}
-        onForgotPassword={() => router.push('/forgot-password')}
+        onForgotPassword={(email) => {
+          authDraft.setEmail(email);
+          router.push('/forgot-password');
+        }}
         onRegister={() => router.push('/register')}
       />
       <ChangeModeLink from="org" />

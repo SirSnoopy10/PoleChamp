@@ -86,6 +86,7 @@
 | `INVALID_STEP` | wartość nie jest wielokrotnością kroku | waga 0,3, nota 8,3 |
 | `INVALID_FORMAT` | zły format | e-mail, data, UUID |
 | `PASSWORD_BREACHED` | hasło na liście wycieków (HIBP lub lista lokalna) | US-001 |
+| `PASSWORD_INCORRECT` | błędne bieżące hasło (`currentPassword` przy zmianie e-maila) | UX-45 |
 | `DATE_RANGE` | data końcowa < początkowa | SCR-ORG-02 |
 | `UNKNOWN_FIELD` | pole spoza schematu (walidacja `strict`) | – |
 
@@ -118,6 +119,7 @@ Aplikacja mapuje `errors[].field` + `code` na komunikaty pod polami z [05-ekrany
 | POST | `/v1/auth/password/reset` | PUBLIC | `{ token, newPassword }` → 204; unieważnia wszystkie refresh tokeny | 400 `RESET_TOKEN_INVALID`, 422 |
 | GET | `/v1/me` | ORG | Profil | – |
 | PATCH | `/v1/me` | ORG | `displayName`, `locale` | 422 |
+| PUT | `/v1/me/email` | ORG | `email`, `currentPassword` → 204; nowy adres niezweryfikowany, kod na nowy adres; adres zajęty – bez zmiany (anty-enumeracja, e-mail „konto istnieje”) – EP-16, UX-45 | 422 (`currentPassword`: `PASSWORD_INCORRECT`) |
 | DELETE | `/v1/me` | ORG | Wniosek o usunięcie konta → 202; konto natychmiast nieaktywne, twarde usunięcie po 30 dniach | 409 `ACTIVE_TOURNAMENT_EXISTS` |
 | GET | `/v1/app-config` | PUBLIC | `{ minAppVersion, minSyncAppVersion, termsVersion, legal: { termsUrl, privacyUrl, dpaUrl, accountDeletionUrl, supportUrl } }` (uzupełnienie TL-07, NFR-706, FR-903) | – |
 

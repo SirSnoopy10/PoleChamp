@@ -17,6 +17,8 @@ export interface VerifyEmailFormProps {
   onVerify: (code: string) => Promise<unknown>;
   onResend: () => Promise<unknown>;
   onSkip: () => void;
+  /** „Zmień adres e-mail” – literówka w adresie bez zakładania drugiego konta (UX-45). */
+  onChangeEmail?: () => void;
   /** Sekundy do odblokowania „Wyślij kod ponownie” na starcie (kod wysłano przy rejestracji). */
   initialResendDelay?: number;
 }
@@ -30,6 +32,7 @@ export function VerifyEmailForm({
   onVerify,
   onResend,
   onSkip,
+  onChangeEmail,
   initialResendDelay = RESEND_DELAY_S,
 }: VerifyEmailFormProps) {
   const t = useT();
@@ -106,6 +109,16 @@ export function VerifyEmailForm({
         onPress={() => void resend()}
         style={styles.center}
       />
+      {onChangeEmail ? (
+        <Button
+          testID="verify-change-email"
+          variant="ghost"
+          size={44}
+          label={t('org:email.change')}
+          onPress={onChangeEmail}
+          style={styles.center}
+        />
+      ) : null}
       <Button
         testID="verify-skip"
         variant="ghost"

@@ -135,6 +135,16 @@ export const routes: readonly RouteDef[] = [
     errors: VALIDATION,
   },
   {
+    method: 'put',
+    path: '/v1/me/email',
+    operationId: 'changeMyEmail',
+    summary: 'Zmiana adresu e-mail (ponowna weryfikacja)',
+    permission: 'ORG',
+    body: auth.MeEmailChange,
+    success: { status: 204, schema: NONE },
+    errors: VALIDATION,
+  },
+  {
     method: 'delete',
     path: '/v1/me',
     operationId: 'deleteMe',

@@ -231,6 +231,8 @@
 - **FR:** FR-105, FR-106, FR-903. **US:** US-003.
 - **Układ:** „‹ Turnieje”; tytuł „Konto”; karta: nazwa wyświetlana, e-mail, status weryfikacji (pigułka „Zweryfikowany” / link „Zweryfikuj e-mail”); lista grupowana: „Regulamin”, „Polityka prywatności”, „Umowa powierzenia danych”, „Pomoc i kontakt”, „Wersja aplikacji {x.y.z}”; secondary „Wyloguj się” (`sign-out`); ghost neutral-300 „Usuń konto” (potwierdzenie z wpisaniem „USUŃ”). Linki do dokumentów pochodzą z `GET /v1/app-config` (TL-07). Usunięcie konta jest Must (TL-22); przy turnieju w statusie Trwa komunikat „Najpierw zakończ trwający turniej.”.
 
+- **Decyzja PO 28.10.2026 (IMP-718, UX-45):** e-mail można zmienić przed weryfikacją (ekran kodu – „Zmień adres e-mail”) i na Koncie: arkusz z nowym adresem i obecnym hasłem (`PUT /v1/me/email`), nowy adres wymaga ponownej weryfikacji kodem; adres zajęty przez inne konto – bez zmiany, bez ujawnienia (e-mail „konto istnieje” na ten adres). Wylogowanie z potwierdzeniem „Wylogować się?” (UX-22). Ekran nowego hasła – „Wróć do logowania”; „Nie pamiętasz hasła?” przejmuje adres z logowania.
+
 ## SCR-ORG-22 – Odrzucone oceny (bottom sheet) ⟡ POZA DESIGNEM – PROPOZYCJA
 - **FR:** FR-805. **US:** US-083.
 - **Układ:** tytuł „Odrzucone oceny”; tekst objaśniający (13 dp neutral-300): „Te oceny dotarły po zablokowaniu kategorii. Aby przyjąć ocenę, najpierw odblokuj kategorię.”; lista wierszy: „{sędzia} → #{nr} {zawodniczka}”, „{kategoria} · {powód}” (np. „Kategoria zablokowana”), „wysłano {czas}”, wynik sędziego z treści; akcje w wierszu: ghost „Przyjmij” (accent; nieaktywny przy zablokowanej kategorii) i ghost „Odrzuć” (neutral-300, z potwierdzeniem). Stan pusty: „Brak odrzuconych ocen.”.

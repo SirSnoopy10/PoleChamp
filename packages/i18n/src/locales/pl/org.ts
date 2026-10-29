@@ -346,6 +346,15 @@ export const org = {
     revokeText: 'Niewysłane oceny ({n}) nie dotrą do systemu.',
     revokeConfirm: 'Odłącz',
   },
+  /** Zmiana adresu e-mail (UX-45, decyzja PO IMP-718) – do akceptacji IMP-650. */
+  email: {
+    change: 'Zmień adres e-mail',
+    title: 'Zmień adres e-mail',
+    text: 'Na nowy adres wyślemy kod weryfikacyjny. Do czasu weryfikacji turnieju nie da się rozpocząć.',
+    newEmail: 'Nowy adres e-mail',
+    password: 'Obecne hasło',
+    save: 'Zapisz i wyślij kod',
+  },
   /** SCR-ORG-21 – konto. */
   account: {
     title: 'Konto',
@@ -357,6 +366,7 @@ export const org = {
     support: 'Pomoc i kontakt',
     version: 'Wersja aplikacji {version}',
     logout: 'Wyloguj się',
+    logoutTitle: 'Wylogować się?',
     delete: 'Usuń konto',
     deleteTitle: 'Usunąć konto?',
     deleteText:

@@ -13,15 +13,22 @@ import { FormError } from './FormError';
 
 export interface ForgotPasswordFormProps {
   onSubmit: (values: { email: string }) => Promise<unknown>;
+  /** Adres z ekranu logowania (UX-45). */
+  initialEmail?: string;
   onBack: () => void;
   /** Stan po wysłaniu (DevCatalog). */
   initialSent?: boolean;
 }
 
 /** SCR-ORG-13 – „Nie pamiętasz hasła?” (IMP-253): po wysłaniu zawsze ten sam neutralny komunikat. */
-export function ForgotPasswordForm({ onSubmit, onBack, initialSent = false }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({
+  onSubmit,
+  onBack,
+  initialEmail = '',
+  initialSent = false,
+}: ForgotPasswordFormProps) {
   const t = useT();
-  const form = useZodForm(ForgotPasswordRequest, { defaultValues: { email: '' } });
+  const form = useZodForm(ForgotPasswordRequest, { defaultValues: { email: initialEmail } });
   const [sent, setSent] = useState(initialSent);
   const [error, setError] = useState<ApiError | null>(null);
 

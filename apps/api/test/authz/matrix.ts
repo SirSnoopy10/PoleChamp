@@ -24,7 +24,7 @@ export interface ResourceIds {
 
 export interface MatrixRow {
   tc: string;
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
   /** Oczekiwane `x-permissions` w OpenAPI. */
   permission: Permission;
@@ -91,6 +91,7 @@ export const MATRIX: MatrixRow[] = [
   row('TC-AUTHZ-008', 'POST', '/v1/auth/password/reset', 'PUBLIC', PUBLIC, { body: empty }),
   row('TC-AUTHZ-009', 'GET', '/v1/me', 'ORG', ORG_ACCOUNT),
   row('TC-AUTHZ-009', 'PATCH', '/v1/me', 'ORG', ORG_ACCOUNT, { body: empty }),
+  row('TC-AUTHZ-009', 'PUT', '/v1/me/email', 'ORG', ORG_ACCOUNT, { body: empty }),
   row('TC-AUTHZ-009', 'DELETE', '/v1/me', 'ORG', ORG_ACCOUNT, { destructive: true, body: empty }),
   row('TC-AUTHZ-010', 'GET', '/v1/app-config', 'PUBLIC', PUBLIC),
   row('TC-AUTHZ-011', 'GET', '/v1/tournaments', 'ORG', ORG_ACCOUNT),

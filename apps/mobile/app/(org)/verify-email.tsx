@@ -1,5 +1,7 @@
 import { router } from 'expo-router';
-import { useMe, useResendCode, useVerifyEmail } from '../../src/data/auth/orgSession';
+import { useState } from 'react';
+import { useChangeEmail, useMe, useResendCode, useVerifyEmail } from '../../src/data/auth/orgSession';
+import { ChangeEmailSheet } from '../../src/features/account/ChangeEmailSheet';
 import { VerifyEmailForm } from '../../src/features/auth/VerifyEmailForm';
 import { ScreenContainer } from '../../src/ui/layout/ScreenContainer';
 import { toast } from '../../src/ui/Toast';
@@ -9,6 +11,8 @@ export default function VerifyEmailRoute() {
   const me = useMe();
   const verify = useVerifyEmail();
   const resend = useResendCode();
+  const change = useChangeEmail();
+  const [changing, setChanging] = useState(false);
   const email = me.data?.email ?? '';
   const done = () => (router.canGoBack() ? router.back() : router.replace('/'));
   return (
@@ -25,6 +29,14 @@ export default function VerifyEmailRoute() {
           toast.info('toasts:codeResent');
         }}
         onSkip={done}
+        onChangeEmail={() => setChanging(true)}
+      />
+      <ChangeEmailSheet
+        visible={changing}
+        onClose={() => setChanging(false)}
+        currentEmail={email}
+        onSubmit={(body) => change.mutateAsync(body)}
+        onChanged={() => toast.info('toasts:emailChanged')}
       />
     </ScreenContainer>
   );

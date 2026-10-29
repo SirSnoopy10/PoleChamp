@@ -58,6 +58,8 @@ export const FIELD_ERROR_CODES = [
   'INVALID_STEP',
   'INVALID_FORMAT',
   'PASSWORD_BREACHED',
+  /** Błędne bieżące hasło przy zmianie adresu e-mail (pole `currentPassword`, UX-45). */
+  'PASSWORD_INCORRECT',
   'DATE_RANGE',
   'UNKNOWN_FIELD',
 ] as const;

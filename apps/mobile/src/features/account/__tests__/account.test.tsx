@@ -69,6 +69,9 @@ describe('SCR-ORG-21 konto (IMP-277)', () => {
     expect(await screen.findByText('anna@example.com')).toBeOnTheScreen();
     expect(screen.getByText('Zweryfikowany')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('account-logout'));
+    // UX-22: wylogowanie z potwierdzeniem.
+    expect(await screen.findByText('Wylogować się?')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('logout-confirm'));
     await waitFor(() => expect(r.getPathname()).toBe('/login'));
     expect(loggedOut).toBe(true);
     expect(tokenStore.getState().org).toBeNull();

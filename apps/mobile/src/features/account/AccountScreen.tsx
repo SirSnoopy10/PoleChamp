@@ -35,6 +35,8 @@ export interface AccountScreenProps {
   onLogout: () => void;
   /** Usunięcie konta – rzuca `ApiError` (np. `ACTIVE_TOURNAMENT_EXISTS`). */
   onDelete: () => Promise<unknown>;
+  /** „Zmień adres e-mail” – arkusz z ponowną weryfikacją (UX-45). */
+  onChangeEmail?: () => void;
   /** Turniej „Trwa” – usunięcie konta zablokowane z komunikatem (UX-17). */
   hasActiveTournament?: boolean;
 }
@@ -133,9 +135,11 @@ export function AccountScreen({
   onLogout,
   onDelete,
   hasActiveTournament = false,
+  onChangeEmail,
 }: AccountScreenProps) {
   const t = useT();
   const [deleting, setDeleting] = useState(false);
+  const [loggingOutAsk, setLoggingOutAsk] = useState(false);
   return (
     <>
       <ScreenContainer testID="account-screen">
@@ -164,6 +168,17 @@ export function AccountScreen({
                 style={styles.start}
               />
             )}
+            {onChangeEmail ? (
+              <Button
+                testID="account-change-email"
+                variant="ghost"
+                size={44}
+                label={t('org:email.change')}
+                disabled={!canWrite}
+                onPress={onChangeEmail}
+                style={styles.start}
+              />
+            ) : null}
           </Card>
         ) : error && !loading ? (
           <EmptyState variant="error" onRetry={onRetry} />
@@ -195,7 +210,7 @@ export function AccountScreen({
             size={48}
             fullWidth
             loading={loggingOut}
-            onPress={onLogout}
+            onPress={() => setLoggingOutAsk(true)}
           />
           <Button
             testID="account-delete"
@@ -211,6 +226,40 @@ export function AccountScreen({
           />
         </View>
       </ScreenContainer>
+      {/* Potwierdzenie wylogowania (UX-22). */}
+      <Sheet
+        visible={loggingOutAsk}
+        onClose={() => setLoggingOutAsk(false)}
+        accessibilityLabel={t('org:account.logoutTitle')}
+        testID="logout-sheet"
+      >
+        <ConfirmContent
+          icon="sign-out"
+          title={t('org:account.logoutTitle')}
+          actions={
+            <>
+              <Button
+                testID="logout-confirm"
+                variant="secondary"
+                label={t('org:account.logout')}
+                size={48}
+                fullWidth
+                onPress={() => {
+                  setLoggingOutAsk(false);
+                  onLogout();
+                }}
+              />
+              <Button
+                variant="ghost"
+                label={t('common:cancel')}
+                size={48}
+                fullWidth
+                onPress={() => setLoggingOutAsk(false)}
+              />
+            </>
+          }
+        />
+      </Sheet>
       <DeleteAccountSheet visible={deleting} onClose={() => setDeleting(false)} onDelete={onDelete} />
     </>
   );

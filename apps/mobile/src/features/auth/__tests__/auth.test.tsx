@@ -215,6 +215,55 @@ describe('SCR-ORG-13 rejestracja i weryfikacja (IMP-251, IMP-252)', () => {
   });
 });
 
+describe('UX-45: adres e-mail i reset hasła', () => {
+  it('UX-45: ekran kodu – „Zmień adres e-mail” (hasło, nowy adres), błędne hasło pod polem', async () => {
+    await tokenStore.setOrg({ accessToken: 'a1', refreshToken: 'r1' });
+    let current = { ...user, locale: 'pl' };
+    let body: unknown;
+    server.use(
+      http.get(`${API}/v1/me`, () => HttpResponse.json(current)),
+      http.put(`${API}/v1/me/email`, async ({ request }) => {
+        body = await request.json();
+        if ((body as { currentPassword: string }).currentPassword !== 'dobre-haslo-123')
+          return problem(422, 'VALIDATION_FAILED', {
+            errors: [{ field: 'currentPassword', code: 'PASSWORD_INCORRECT' }],
+          });
+        current = { ...current, email: 'anna.nowa@example.com' };
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const r = await start('/verify-email');
+    await screen.findByText('Wysłaliśmy 6-cyfrowy kod na adres anna@example.com.');
+    await fireEvent.press(screen.getByTestId('verify-change-email'));
+    expect(screen.getByTestId('email-new').props.value).toBe('anna@example.com');
+    await fireEvent.changeText(screen.getByTestId('email-new'), 'anna.nowa@example.com');
+    await fireEvent.changeText(screen.getByTestId('email-password'), 'zle-haslo-123');
+    await fireEvent.press(screen.getByTestId('email-save'));
+    expect(await screen.findByText('Nieprawidłowe hasło.')).toBeOnTheScreen();
+    await fireEvent.changeText(screen.getByTestId('email-password'), 'dobre-haslo-123');
+    await fireEvent.press(screen.getByTestId('email-save'));
+    expect(
+      await screen.findByText('Wysłaliśmy 6-cyfrowy kod na adres anna.nowa@example.com.'),
+    ).toBeOnTheScreen();
+    expect(body).toEqual({ email: 'anna.nowa@example.com', currentPassword: 'dobre-haslo-123' });
+    await r.unmount();
+  });
+
+  it('UX-45: „Nie pamiętasz hasła?” przejmuje adres z logowania; nowe hasło – „Wróć do logowania”', async () => {
+    const r = await start('/login');
+    await fireEvent.changeText(await screen.findByTestId('login-email'), 'anna@example.com');
+    await fireEvent.press(screen.getByText('Nie pamiętasz hasła?'));
+    await waitFor(() => expect(r.getPathname()).toBe('/forgot-password'));
+    expect(screen.getByTestId('forgot-email').props.value).toBe('anna@example.com');
+    await r.unmount();
+
+    const link = await start('/reset?token=Qx7vR2mN9kL4pW8sT1yU6zA3bC5dE0fG_hJ-iK2oP4q');
+    await fireEvent.press(screen.getByTestId('reset-back-login'));
+    await waitFor(() => expect(link.getPathname()).toBe('/login'));
+    await link.unmount();
+  });
+});
+
 describe('SCR-ORG-13 reset hasła (IMP-253)', () => {
   it('TC-E2E-ORG-006: link → neutralny komunikat; nowe hasło z linku → logowanie', async () => {
     let reset: unknown;

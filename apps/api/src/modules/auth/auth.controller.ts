@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, Inject, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, Inject, Patch, Post, Put } from '@nestjs/common';
 import {
   ForgotPasswordRequest,
   LoginRequest,
+  MeEmailChange,
   MePatch,
   RefreshRequest,
   RegisterRequest,
@@ -105,6 +106,16 @@ export class AuthController {
   @Auth('org')
   updateMe(@OrgUser() userId: string, @Body(zod(MePatch)) body: z.output<typeof MePatch>) {
     return this.auth.updateMe(userId, body);
+  }
+
+  @Put('me/email')
+  @Auth('org')
+  @HttpCode(204)
+  async changeEmail(
+    @OrgUser() userId: string,
+    @Body(zod(MeEmailChange)) body: z.output<typeof MeEmailChange>,
+  ): Promise<void> {
+    await this.auth.changeEmail(userId, body.email, body.currentPassword);
   }
 
   @Delete('me')
