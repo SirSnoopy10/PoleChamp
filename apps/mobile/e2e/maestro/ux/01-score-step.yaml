@@ -1,0 +1,22 @@
+# UX-01 (IMP-700/701) – zatwierdzona ocena trafia do API (pigułka „Wysłano”), bez wiecznego „Wysyłanie…”.
+# Krok 0,1 wymaga kategorii W przygotowaniu z kryterium o kroku 0,1 przed startem – seed FX-SEED ma krok 0,5;
+# przy pierwszym przebiegu z kategorią testową podmienić `c3` (EP-11: selektory do stabilizacji).
+appId: app.polechamp
+tags: [nightly, judge, ux]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'criterion-${output.ids.c3_k1}-plus'
+- tapOn:
+    id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
+- extendedWaitUntil:
+    visible: 'Wysłano'
+    timeout: 15000
+- assertNotVisible: 'Wymaga uwagi'

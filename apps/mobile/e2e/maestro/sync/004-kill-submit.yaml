@@ -5,6 +5,9 @@ tags: [sync]
 ---
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - killApp
 - launchApp
 - extendedWaitUntil:

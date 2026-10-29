@@ -9,8 +9,14 @@ tags: [p1, nightly, judge]
     id: 'queue-row-${output.ids.u27}'
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - assertVisible:
     id: 'score-form'
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - assertVisible: 'Wybierz zawodniczkę z listy, aby ją ocenić.'

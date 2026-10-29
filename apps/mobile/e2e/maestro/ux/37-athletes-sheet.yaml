@@ -1,0 +1,17 @@
+# UX-37 / UX-43 (IMP-704) – „Zawodniczki” turnieju: wyszukiwarka, tap wiersza otwiera arkusz SCR-ORG-17 w miejscu.
+appId: app.polechamp
+tags: [nightly, org, ux]
+---
+- runFlow: ../_shared/seed.yaml
+- runFlow: ../_shared/login-org.yaml
+- tapOn:
+    id: 'tournament-${output.ids.t1}'
+- tapOn: 'Zawodniczki'
+- assertVisible:
+    id: 'athletes-search'
+- tapOn:
+    id: 'entry-${output.ids.u26}'
+- assertVisible:
+    id: 'entry-sheet'
+- assertVisible:
+    id: 'entry-save'

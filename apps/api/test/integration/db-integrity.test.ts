@@ -157,9 +157,9 @@ describe('IMP-105: ograniczenia konfiguracji turnieju', () => {
 });
 
 describe('IMP-106: ocenianie w bazie', () => {
-  it('TC-INT-003: nota ponad skalę, krok i licznik ponad limit odrzucone (CHECK + wyzwalacz)', async () => {
+  it('TC-INT-003: nota ponad skalę, ujemna i licznik ponad limit odrzucone (CHECK + wyzwalacz)', async () => {
+    // Krok noty (0,1 / 0,5 / 1) sprawdza silnik punktacji przed zapisem – migracja 0012 (IMP-700).
     expect(await pgCode(insertSheet({ value: 105, count: 0 }))).toBe('23514');
-    expect(await pgCode(insertSheet({ value: 83, count: 0 }))).toBe('23514');
     expect(await pgCode(insertSheet({ value: -5, count: 0 }))).toBe('23514');
     expect(await pgCode(insertSheet({ value: 85, count: 4 }))).toBe('23514');
   });

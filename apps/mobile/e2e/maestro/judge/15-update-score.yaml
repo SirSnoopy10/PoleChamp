@@ -10,6 +10,9 @@ tags: [p1, nightly, judge]
 - tapOn: { id: 'criterion-${output.ids.c3_k1}-plus' }
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - extendedWaitUntil:
     visible:
       id: 'queue-state-synced'

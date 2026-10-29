@@ -9,6 +9,9 @@ tags: [p1, nightly, judge]
     id: 'queue-row-${output.ids.u27}'
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - assertVisible: 'Zapisano ocenę: Lena Mazur'
 - assertVisible:
     id: 'score-form'

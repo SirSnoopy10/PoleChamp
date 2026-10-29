@@ -8,6 +8,9 @@ tags: [p1, nightly, org]
     id: 'tournament-${output.ids.t2}'
 - tapOn:
     id: 'tournament-start'
+- assertVisible: 'Rozpocząć turniej?'
+- tapOn:
+    id: 'start-confirm'
 - assertVisible: 'Turniej rozpoczęty'
 - tapOn:
     id: 'tournament-finish'

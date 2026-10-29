@@ -194,6 +194,8 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
               loading={busy}
               disabled={code.length !== 9}
               onPress={() => void connect(code)}
+              // `fullWidth` rośnie też w pionie (flexGrow) – w kolumnie stała wysokość 48 dp (UX-33).
+              style={styles.connect}
               testID="pair-connect"
             />
           </View>
@@ -267,4 +269,5 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: radius.lg,
   },
   progress: { flexDirection: 'row', alignItems: 'center', gap: layout[10] },
+  connect: { flexGrow: 0 },
 });

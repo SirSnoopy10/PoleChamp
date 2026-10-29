@@ -9,6 +9,9 @@ tags: [nightly, sync]
 - setAirplaneMode: enabled
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - assertVisible: 'Offline · 1 w kolejce'
 - setAirplaneMode: disabled
 - extendedWaitUntil:

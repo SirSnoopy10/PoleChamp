@@ -12,6 +12,9 @@ tags: [nightly, sync]
 - tapOn: { id: 'criterion-${output.ids.c3_k1}-plus' }
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - runScript:
     file: ../_shared/api.js
     env: { ACTION: submit, TOURNAMENT: t1, CATEGORY: c3, ENTRY: u20, JUDGE: jA, NOTE: '6' }

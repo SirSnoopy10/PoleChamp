@@ -192,8 +192,11 @@ const styles = StyleSheet.create({
   },
   grid: { gap: layout[12] },
   row: { flexDirection: 'row', gap: layout[12] },
+  // Równe kolumny we wszystkich wierszach (`flexBasis: 0`, `minWidth: 0` – długie nazwiska nie poszerzają karty).
   card: {
     flex: 1,
+    flexBasis: 0,
+    minWidth: 0,
     alignItems: 'center',
     gap: layout[10],
     paddingVertical: layout[22],
@@ -202,6 +205,6 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
   },
   cardPressed: { borderColor: color.accent },
-  cardSlot: { flex: 1 },
+  cardSlot: { flex: 1, flexBasis: 0, minWidth: 0 },
   finished: { alignItems: 'center', gap: layout[16] },
 });

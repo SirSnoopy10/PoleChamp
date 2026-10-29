@@ -13,6 +13,9 @@ tags: [full]
 - tapOn: { id: 'criterion-${ID_c6_k1}-plus' }
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - extendedWaitUntil:
     visible:
       id: 'queue-state-synced'

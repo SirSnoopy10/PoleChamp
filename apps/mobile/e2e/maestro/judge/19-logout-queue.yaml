@@ -11,7 +11,13 @@ tags: [p1, nightly, judge]
 - tapOn:
     id: 'score-submit'
 - tapOn:
+    id: 'untouched-confirm'
+    optional: true
+- tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - tapOn:
     id: 'judge-logout'
 - assertVisible:

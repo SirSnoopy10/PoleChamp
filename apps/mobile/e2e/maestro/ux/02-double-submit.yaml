@@ -1,0 +1,29 @@
+# UX-02 (IMP-702) – dwa szybkie tapnięcia „Zatwierdź” = jedna ocena (jeden toast, jedna mutacja).
+appId: app.polechamp
+tags: [nightly, judge, ux]
+---
+- runFlow: ../_shared/tablet-ja.yaml
+- tapOn:
+    id: 'category-${output.ids.c3}'
+- tapOn:
+    id: 'queue-row-${output.ids.u27}'
+- tapOn:
+    id: 'criterion-${output.ids.c3_k1}-plus'
+- tapOn:
+    id: 'criterion-${output.ids.c3_k2}-plus'
+- tapOn:
+    id: 'criterion-${output.ids.c3_k3}-plus'
+- tapOn:
+    id: 'criterion-${output.ids.c3_k4}-plus'
+- tapOn:
+    id: 'criterion-${output.ids.c3_k5}-plus'
+- tapOn:
+    id: 'score-submit'
+- tapOn:
+    id: 'score-submit'
+    optional: true
+- assertVisible: 'Zapisano ocenę: Lena Mazur'
+- extendedWaitUntil:
+    visible:
+      id: 'queue-state-synced'
+    timeout: 10000

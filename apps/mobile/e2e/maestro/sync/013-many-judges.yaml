@@ -58,6 +58,9 @@ tags: [nightly, sync]
     id: 'queue-row-${output.ids.u27}'
 - tapOn:
     id: 'score-submit'
+- tapOn:
+    id: 'untouched-confirm'
+    optional: true
 - extendedWaitUntil:
     visible:
       id: 'queue-state-synced'
