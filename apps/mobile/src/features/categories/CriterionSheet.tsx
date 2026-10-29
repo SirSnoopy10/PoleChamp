@@ -226,6 +226,8 @@ export function CriterionSheet({
                 <>
                   <Button
                     testID="criterion-delete-confirm"
+                    variant="secondary"
+                    destructive
                     label={t('org:criterionForm.deleteConfirm')}
                     size={48}
                     fullWidth
@@ -233,7 +235,7 @@ export function CriterionSheet({
                     disabled={offline}
                   />
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     label={t('common:cancel')}
                     size={48}
                     fullWidth

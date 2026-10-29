@@ -218,7 +218,11 @@ export function JudgesDevicesScreen({
             value={tab}
             onChange={onTab}
             segments={[
-              { key: 'judges', label: t('org:judges.tabJudges'), count: judges?.length },
+              {
+                key: 'judges',
+                label: t('org:judges.tabJudges'),
+                count: judges?.filter((j) => j.isActive).length,
+              },
               { key: 'devices', label: t('org:judges.tabDevices'), count: devices?.length },
             ]}
           />

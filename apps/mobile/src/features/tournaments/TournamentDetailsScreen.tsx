@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useRef, type ComponentRef, type ReactNode } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { color, layout } from '@polechamp/tokens';
 import { formatTournamentDate } from '@polechamp/i18n';
 import type { TournamentDetails } from '@polechamp/contracts';
@@ -75,6 +75,8 @@ export function TournamentDetailsScreen({
   onResendCode,
   children,
 }: TournamentDetailsScreenProps) {
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const categoriesY = useRef(0);
   const t = useT();
   const finished = tour?.status === 'FINISHED';
 
@@ -155,7 +157,7 @@ export function TournamentDetailsScreen({
     ) : undefined;
 
   return (
-    <ScreenContainer testID="tournament-screen">
+    <ScreenContainer testID="tournament-screen" scrollRef={scrollRef}>
       {header}
       <OfflineBanner />
       <View style={styles.head}>
@@ -183,7 +185,13 @@ export function TournamentDetailsScreen({
       <View style={styles.tiles}>
         <StatTiles
           tiles={[
-            { label: t('org:tournament.categories'), value: tour.stats.categories },
+            {
+              label: t('org:tournament.categories'),
+              value: tour.stats.categories,
+              // Wszystkie kafle klikalne (UX-27): „Kategorie” przewija do sekcji kategorii.
+              onPress: () => scrollRef.current?.scrollTo({ y: categoriesY.current, animated: true }),
+              accessibilityLabel: t('org:tournament.categoriesA11y', { n: tour.stats.categories }),
+            },
             {
               label: t('org:tournament.athletes'),
               value: tour.stats.athletes,
@@ -198,13 +206,19 @@ export function TournamentDetailsScreen({
             },
           ]}
         />
+        <Text variant="caption" color={color.neutral[500]} testID="tiles-note">
+          {t('org:tournament.tilesNote')}
+        </Text>
       </View>
       <View style={styles.banners}>
         {emailUnverified && !finished ? <Banner variant="emailVerify" onAction={onResendCode} /> : null}
         {tour.pendingRejectedSubmissions > 0 ? (
           <Banner
             variant="rejected"
-            text={t('org:tournament.rejected', { n: tour.pendingRejectedSubmissions })}
+            muted={finished}
+            text={t(finished ? 'org:tournament.rejectedFinished' : 'org:tournament.rejected', {
+              n: tour.pendingRejectedSubmissions,
+            })}
             onPress={onRejected}
           />
         ) : null}
@@ -212,6 +226,7 @@ export function TournamentDetailsScreen({
       <View style={styles.progress}>
         <ProgressCard pct={progress.percent} summary={summary} action={statusAction} />
       </View>
+      <View onLayout={(e) => (categoriesY.current = e.nativeEvent.layout.y)} />
       <SectionHeader
         title={t('org:tournament.categories')}
         onAdd={finished || !canWrite ? undefined : onAddCategory}
@@ -254,7 +269,7 @@ const styles = StyleSheet.create({
   name: { marginTop: layout[4] },
   meta: { flexDirection: 'row', flexWrap: 'wrap', columnGap: layout[14], rowGap: layout[4] },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: layout[4] },
-  tiles: { marginTop: layout[22], marginBottom: layout[12] },
+  tiles: { marginTop: layout[22], marginBottom: layout[12], gap: layout[6] },
   banners: { gap: layout[8], marginBottom: layout[12] },
   progress: { marginBottom: layout[28] },
   categories: { gap: layout[10] },

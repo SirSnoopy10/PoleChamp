@@ -108,7 +108,7 @@ describe('SCR-ORG-19 oceny zawodniczki (IMP-269)', () => {
     expect(within(screen.getByTestId('sheet-s2')).getByText('offline')).toBeOnTheScreen();
     expect(screen.getByText('brak oceny')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('history-s1'));
-    expect(await screen.findByText(/^rew\. 1 · .* · 52$/)).toBeOnTheScreen();
+    expect(await screen.findByText(/^rew\. 1 · .* · 52,0$/)).toBeOnTheScreen();
     await r.unmount();
   });
 });
@@ -276,11 +276,11 @@ describe('SCR-ORG-22 odrzucone oceny (IMP-272)', () => {
     await fireEvent.press(await screen.findByText('Odrzucone oceny (2)'));
     expect(
       await screen.findByText(
-        'Te oceny dotarły po zablokowaniu kategorii. Aby przyjąć ocenę, najpierw odblokuj kategorię.',
+        'Tych ocen nie przyjęto do wyników. Aby przyjąć ocenę, najpierw odblokuj kategorię.',
       ),
     ).toBeOnTheScreen();
     expect(await screen.findAllByText('Anna Nowak → #47 Natalia Sikora')).toHaveLength(2);
-    expect(screen.getByText('Pole Sport Beginner · Kategoria zablokowana')).toBeOnTheScreen();
+    expect(screen.getByText('Pole Sport Beginner · Kategoria zakończona')).toBeOnTheScreen();
     expect(screen.getByTestId('rejected-accept-r1')).toBeDisabled();
     await fireEvent.press(screen.getByTestId('rejected-accept-r2'));
     expect(await screen.findByText('Przyjęto ocenę')).toBeOnTheScreen();

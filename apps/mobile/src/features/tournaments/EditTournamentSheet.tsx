@@ -139,6 +139,7 @@ export function EditTournamentSheet({
                   <Button
                     testID="tournament-delete-confirm"
                     variant="secondary"
+                    destructive
                     label={t('org:tournamentForm.deleteConfirm')}
                     size={48}
                     fullWidth

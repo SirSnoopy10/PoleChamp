@@ -43,7 +43,7 @@ function mockLists(
 }
 
 describe('SCR-ORG-14 sędziowie i urządzenia (IMP-273)', () => {
-  it('stany sędziów: aktywny z ocenami, PIN zablokowany, nieaktywny; stan pusty urządzeń', async () => {
+  it('UX-27: stany sędziów: aktywny z ocenami, PIN zablokowany, nieaktywny; stan pusty urządzeń', async () => {
     mockLists(
       [
         judge('j1', { fullName: 'Anna Nowak', sheetCount: 12 }),
@@ -56,7 +56,9 @@ describe('SCR-ORG-14 sędziowie i urządzenia (IMP-273)', () => {
     expect(await screen.findByText('Aktywny · 12 ocen')).toBeOnTheScreen();
     expect(screen.getByText('PIN zablokowany')).toBeOnTheScreen();
     expect(screen.getByText('Nieaktywny')).toBeOnTheScreen();
-    await fireEvent.press(screen.getByText('Urządzenia'));
+    // UX-27: zakładka liczy aktywnych sędziów – jak kafel „Sędziowie” na ekranie turnieju.
+    expect(screen.getByTestId('segment-judges-count')).toHaveTextContent('2');
+    await fireEvent.press(screen.getAllByText('Tablety')[0]!);
     expect(await screen.findByText('Brak sparowanych tabletów.')).toBeOnTheScreen();
     await r.unmount();
   });
@@ -221,7 +223,7 @@ describe('SCR-ORG-16 parowanie i akcje urządzenia (IMP-275, IMP-276)', () => {
     await fireEvent.press(await screen.findByTestId('device-revoke'));
     expect(await screen.findByText('Niewysłane oceny (2) nie dotrą do systemu.')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('device-revoke-confirm'));
-    expect(await screen.findByText('Odłączono urządzenie')).toBeOnTheScreen();
+    expect(await screen.findByText('Odłączono tablet')).toBeOnTheScreen();
     await waitFor(() => expect(calls).toEqual(['rename {"name":"Stół sędziowski A"}', 'revoke']));
     await r.unmount();
   });

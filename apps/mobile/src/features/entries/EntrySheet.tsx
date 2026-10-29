@@ -353,6 +353,7 @@ export function EntrySheet({
                     <Button
                       testID="entry-anonymize"
                       variant="ghost"
+                      destructive
                       size={44}
                       label={t('org:entryForm.anonymize')}
                       onPress={() => setStep('anonymize')}
@@ -363,6 +364,7 @@ export function EntrySheet({
                     <Button
                       testID="entry-remove"
                       variant="ghost"
+                      destructive
                       size={44}
                       label={t('org:entryForm.remove')}
                       onPress={() => setStep('remove')}
@@ -382,6 +384,7 @@ export function EntrySheet({
                 <>
                   <Button
                     testID="entry-confirm"
+                    destructive
                     variant="secondary"
                     label={confirm[step].label}
                     size={48}

@@ -33,6 +33,8 @@ export interface RejectedSheetProps {
   /** Kategorie zablokowane – „Przyjmij” nieaktywny. */
   lockedCategoryIds: ReadonlySet<string>;
   canWrite: boolean;
+  /** Turniej zakończony – wersja informacyjna (UX-32). */
+  tournamentFinished?: boolean;
   onAccept: (item: RejectedSubmission) => Promise<unknown>;
   onDiscard: (item: RejectedSubmission) => Promise<unknown>;
   /** Odświeżenie listy i statusów kategorii przy otwarciu arkusza (UX-03). */
@@ -51,6 +53,7 @@ export function RejectedSheet({
   categoryId,
   lockedCategoryIds,
   canWrite,
+  tournamentFinished = false,
   onAccept,
   onDiscard,
   onOpen,
@@ -129,7 +132,7 @@ export function RejectedSheet({
           <View style={styles.list}>
             <SheetHeader title={t('org:rejected.title')} />
             <Text variant="meta" color={color.neutral[300]}>
-              {t('org:rejected.intro')}
+              {t(tournamentFinished ? 'org:rejected.introFinished' : 'org:rejected.intro')}
             </Text>
             <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
               {!items && loading ? (

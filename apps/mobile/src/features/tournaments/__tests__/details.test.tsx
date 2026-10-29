@@ -180,7 +180,7 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
       [device('d1', { name: 'Tablet stół 2', pendingMutations: 3 }), device('d2')],
     );
     expect(model.categories).toBe(
-      'Kategorie w toku (2) zostaną zablokowane. Kategorie w przygotowaniu (3) zostaną oznaczone jako nierozegrane.',
+      'Kategorie w toku (2) zostaną zakończone. Kategorie w przygotowaniu (3) zostaną oznaczone jako nierozegrane.',
     );
     expect(model.warnings).toEqual([
       'Brakuje 15 ocen w kategoriach w toku.',

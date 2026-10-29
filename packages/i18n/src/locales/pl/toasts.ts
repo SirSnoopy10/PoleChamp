@@ -44,6 +44,6 @@ export const toasts = {
   rejectedDiscarded: 'Odrzucono ocenę',
   judgeAdded: 'Dodano sędziego',
   judgeDeleted: 'Usunięto sędziego',
-  deviceRevoked: 'Odłączono urządzenie',
+  deviceRevoked: 'Odłączono tablet',
   accountDeleted: 'Konto zostanie usunięte po 30 dniach.',
 } as const;

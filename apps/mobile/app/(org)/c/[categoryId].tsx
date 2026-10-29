@@ -226,6 +226,7 @@ export default function CategoryRoute() {
               categoryId={id}
               lockedCategoryIds={new Set(category.status === 'LOCKED' ? [id] : [])}
               canWrite={canWrite}
+              tournamentFinished={tournamentStatus === 'FINISHED'}
               onAccept={(item) => resolve.accept.mutateAsync(item)}
               onDiscard={(item) => resolve.discard.mutateAsync(item)}
               onOpen={() => void Promise.all([rejected.refetch(), query.refetch()])}

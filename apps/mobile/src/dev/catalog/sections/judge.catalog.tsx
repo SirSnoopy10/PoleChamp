@@ -187,7 +187,7 @@ registerSection({
           <Banner variant="locked" />
           <Banner
             variant="rejected"
-            text="3 oceny nie zostały przyjęte – kategoria zablokowana"
+            text="3 oceny nie zostały przyjęte – kategoria zakończona"
             onPress={noop}
           />
           <Banner variant="rejected" text="Ta ocena nie została przyjęta: Zawodniczka wycofana." />

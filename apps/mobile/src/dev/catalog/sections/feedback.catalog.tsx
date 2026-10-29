@@ -50,7 +50,7 @@ registerSection({
           <Banner variant="locked" />
           <Banner
             variant="rejected"
-            text="2 oceny nie zostały przyjęte – kategoria zablokowana"
+            text="2 oceny nie zostały przyjęte – kategoria zakończona"
             onPress={() => undefined}
           />
           <Banner variant="offline" />

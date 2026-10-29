@@ -142,13 +142,11 @@ describe('IMP-308: kolejka (SCR-JDG-04)', () => {
     await sheet('e2', 'REJECTED', 'CATEGORY_LOCKED');
     await startJudge(JUDGE_ROUTES, '/category/c1');
     expect(screen.getByTestId('queue-rejected-banner')).toHaveTextContent(
-      '2 oceny nie zostały przyjęte – kategoria zablokowana',
+      '2 oceny nie zostały przyjęte – kategoria zakończona',
     );
     await fireEvent.press(screen.getByTestId('queue-rejected-banner'));
     expect(screen.getByTestId('sync-popover')).toBeOnTheScreen();
-    expect(screen.getByTestId('sync-rejected')).toHaveTextContent(
-      /#41 Zawodniczka 1 – Kategoria zablokowana/,
-    );
+    expect(screen.getByTestId('sync-rejected')).toHaveTextContent(/#41 Zawodniczka 1 – Kategoria zakończona/);
     expect(screen.getByText('Organizator zdecyduje o ich uwzględnieniu.')).toBeOnTheScreen();
   });
 
@@ -397,7 +395,7 @@ describe('IMP-314: kategoria zablokowana', () => {
       await env.local.tx(() => undefined);
     });
     await waitFor(() => expect(screen.getByTestId('queue-locked-banner')).toBeOnTheScreen());
-    expect(screen.getByText('Kategoria zablokowana — tylko podgląd')).toBeOnTheScreen();
+    expect(screen.getByText('Kategoria zakończona — tylko podgląd')).toBeOnTheScreen();
     expect(screen.getByTestId('no-own-score')).toHaveTextContent('Brak Twojej oceny dla tej zawodniczki.');
     expect(screen.queryByTestId('score-footer')).toBeNull();
     await fireEvent.press(screen.getByTestId('queue-row-e1'));
@@ -536,7 +534,7 @@ describe('IMP-317: pigułka synchronizacji i popover (SCR-JDG-07)', () => {
     await signIn(env, 'jA');
     await startJudge(JUDGE_ROUTES, '/categories');
     const states: [Partial<ReturnType<typeof syncStore.getState>>, string, string][] = [
-      [{ online: true, pending: 0, isSyncing: false }, 'synced', 'Zsynchronizowano'],
+      [{ online: true, pending: 0, isSyncing: false }, 'synced', 'Wysłano'],
       [{ online: true, pending: 3, isSyncing: true }, 'sending', 'Wysyłanie… (3)'],
       [{ online: false, pending: 3, isSyncing: false }, 'offlineQueue', 'Offline · 3 w kolejce'],
       [{ online: false, pending: 0 }, 'offline', 'Offline'],

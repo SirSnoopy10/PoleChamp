@@ -242,6 +242,7 @@ export function CategoryFormSheet({
                   <Button
                     testID="category-delete-confirm"
                     variant="secondary"
+                    destructive
                     label={t('org:categoryForm.deleteConfirm')}
                     size={48}
                     fullWidth

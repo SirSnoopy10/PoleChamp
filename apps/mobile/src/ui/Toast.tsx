@@ -8,6 +8,9 @@ import { Text } from './Text';
 import { useReducedMotion } from './motion';
 import { useTheme } from './theme/ThemeProvider';
 
+/** Odstęp toastu od dołu ekranu: pasek akcji 48 dp + marginesy. */
+const TOAST_OFFSET = 104;
+
 export type ToastVariant = 'success' | 'error' | 'info';
 type Params = Record<string, string | number>;
 
@@ -88,7 +91,8 @@ export function ToastHost() {
   const success = message.variant === 'success';
   const duration = reduced ? 0 : theme.motion.toast.duration;
   return (
-    <View pointerEvents="none" style={[styles.host, { bottom: insets.bottom + 28 }]}>
+    // Nad przyklejonym paskiem akcji i przyciskami arkusza (48 dp + odstępy) – UX-29.
+    <View pointerEvents="none" style={[styles.host, { bottom: insets.bottom + TOAST_OFFSET }]}>
       <Animated.View
         key={message.id}
         entering={FadeIn.duration(duration)}

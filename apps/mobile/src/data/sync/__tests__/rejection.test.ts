@@ -127,7 +127,7 @@ describe('obsługa odrzuceń (IMP-357)', () => {
     );
     expect(countQueueRejections(local.read, 'jA', 'c1')).toBe(3);
     expect(createI18n().t('judge:rejectedBanner', { count: 3 })).toBe(
-      '3 oceny nie zostały przyjęte – kategoria zablokowana',
+      '3 oceny nie zostały przyjęte – kategoria zakończona',
     );
     expect(events.filter((e) => e.type === 'rejected')).toHaveLength(3);
     expect(sessionEnded('jA')).toBeNull();

@@ -92,6 +92,7 @@ function DeleteAccountSheet({
             <Button
               testID="delete-confirm"
               variant="secondary"
+              destructive
               label={t('org:account.deleteConfirm')}
               size={48}
               fullWidth

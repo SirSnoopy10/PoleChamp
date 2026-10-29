@@ -20,20 +20,22 @@ export interface BannerProps {
   text?: string;
   /** `rejected`: tapnięcie otwiera listę odrzuconych. */
   onPress?: () => void;
+  /** Wersja informacyjna (np. odrzucone oceny po zakończeniu turnieju – UX-32): kolory neutralne. */
+  muted?: boolean;
   /** `emailVerify`: „Wyślij kod ponownie”. */
   onAction?: () => void;
   testID?: string;
 }
 
 /** Baner stanu (09-design-system §4.19): accent-900/accent-200, offline neutral-900/neutral-300. */
-export function Banner({ variant, text, onPress, onAction, testID }: BannerProps) {
+export function Banner({ variant, text, onPress, onAction, muted = false, testID }: BannerProps) {
   const t = useT();
-  const offline = variant === 'offline';
+  const offline = variant === 'offline' || muted;
   const fg = offline ? color.neutral[300] : color.accentRamp[200];
   const label = text ?? t(`banner.${variant === 'rejected' ? 'locked' : variant}`);
   const body = (
     <View style={styles.row}>
-      <Icon name={ICON[variant]} size={15} color={fg} />
+      <Icon name={muted ? 'info' : ICON[variant]} size={15} color={fg} />
       <Text variant="caption" color={fg} style={styles.text}>
         {label}
       </Text>

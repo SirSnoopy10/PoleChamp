@@ -132,6 +132,7 @@ export default function TournamentRoute() {
               new Set(tournament.categories.filter((c) => c.status === 'LOCKED').map((c) => c.id))
             }
             canWrite={canWrite}
+            tournamentFinished={tournament.status === 'FINISHED'}
             onAccept={(item) => resolve.accept.mutateAsync(item)}
             onDiscard={(item) => resolve.discard.mutateAsync(item)}
             onOpen={() => void Promise.all([rejected.refetch(), query.refetch()])}

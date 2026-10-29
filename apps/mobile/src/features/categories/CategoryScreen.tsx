@@ -138,7 +138,11 @@ export function CategoryScreen({
           <View style={styles.banner}>
             <Banner
               variant="rejected"
-              text={t('org:category.rejected', { n: rejected })}
+              muted={tournamentStatus === 'FINISHED'}
+              text={t(
+                tournamentStatus === 'FINISHED' ? 'org:category.rejectedFinished' : 'org:category.rejected',
+                { n: rejected },
+              )}
               onPress={onRejected}
             />
           </View>

@@ -157,6 +157,8 @@ export function PenaltySheet({ visible, onClose, penalty, onCreate, onUpdate, on
                 <>
                   <Button
                     testID="penalty-delete-confirm"
+                    variant="secondary"
+                    destructive
                     label={t('org:penaltyForm.deleteConfirm')}
                     size={48}
                     fullWidth
@@ -164,7 +166,7 @@ export function PenaltySheet({ visible, onClose, penalty, onCreate, onUpdate, on
                     disabled={offline}
                   />
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     label={t('common:cancel')}
                     size={48}
                     fullWidth

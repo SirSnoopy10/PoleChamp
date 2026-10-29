@@ -6,7 +6,7 @@ export const ui = {
     done: 'Zakończona',
     unplayed: 'Nierozegrana',
     provisional: 'wstępny',
-    synced: 'Zsynchronizowano',
+    synced: 'Wysłano',
     sending: 'Wysyłanie… ({count})',
     offlineQueue: 'Offline · {count} w kolejce',
     offline: 'Offline',
@@ -57,7 +57,7 @@ export const ui = {
     unavailable: 'Niedostępne',
   },
   banner: {
-    locked: 'Kategoria zablokowana — tylko podgląd',
+    locked: 'Kategoria zakończona — tylko podgląd',
     offline: 'Brak połączenia — dane mogą być nieaktualne. Zmiany są niedostępne.',
     emailVerify: 'Potwierdź adres e-mail, aby rozpocząć turniej.',
     resendCode: 'Wyślij kod ponownie',
@@ -65,7 +65,7 @@ export const ui = {
   nav: { back: 'Wstecz', tournaments: 'Turnieje', tournament: 'Turniej' },
   actions: {
     startCategory: 'Rozpocznij kategorię',
-    lockCategory: 'Zakończ i zablokuj',
+    lockCategory: 'Zakończ kategorię',
     unlockCategory: 'Odblokuj',
     exportPdf: 'Eksport PDF',
   },

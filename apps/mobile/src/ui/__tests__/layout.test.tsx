@@ -40,7 +40,7 @@ describe('rama ekranu (IMP-209)', () => {
     await renderWithProviders(
       <CategoryActionBar category="IN_PROGRESS" tournament="IN_PROGRESS" onAction={onAction} />,
     );
-    expect(screen.getByRole('button', { name: 'Zakończ i zablokuj' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Zakończ kategorię' })).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'Eksport PDF' }));
     expect(onAction).toHaveBeenCalledWith('exportPdf');
   });

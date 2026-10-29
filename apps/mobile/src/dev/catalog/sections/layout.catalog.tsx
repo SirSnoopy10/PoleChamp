@@ -60,7 +60,7 @@ registerSection({
       render: () => (
         <View style={frame}>
           <StickyActionBar>
-            <Button variant="secondary" fullWidth label="Zakończ i zablokuj" />
+            <Button variant="secondary" fullWidth label="Zakończ kategorię" />
             <Button onBar fullWidth icon="file-pdf" label="Eksport PDF" />
           </StickyActionBar>
         </View>

@@ -40,16 +40,17 @@ export function CategoryCard({
       onPress={onPress}
       accessibilityLabel={`${name}, ${t(`status.${status}`)}, ${subtitle}, ${progress}`}
     >
-      <View style={styles.top}>
-        <View style={styles.titles}>
-          <Text variant="subhead" numberOfLines={1}>
-            {name}
-          </Text>
-          <Text variant="caption" color={color.neutral[400]}>
-            {subtitle}
-          </Text>
+      {/* Pigułka nad nazwą – meta w jednej linii na całej szerokości karty (UX-30). */}
+      <View style={styles.titles}>
+        <View style={styles.pill}>
+          <StatusPill variant={status} />
         </View>
-        <StatusPill variant={status} />
+        <Text variant="subhead" numberOfLines={1}>
+          {name}
+        </Text>
+        <Text variant="caption" color={color.neutral[400]} numberOfLines={1}>
+          {subtitle}
+        </Text>
       </View>
       <View style={cardStyles.progress}>
         <View style={cardStyles.bar}>
@@ -64,6 +65,6 @@ export function CategoryCard({
 }
 
 const styles = StyleSheet.create({
-  top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
-  titles: { flex: 1, minWidth: 0, gap: 3 },
+  titles: { minWidth: 0, gap: 3 },
+  pill: { alignSelf: 'flex-start', marginBottom: 3 },
 });

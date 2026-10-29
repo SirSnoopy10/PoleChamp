@@ -1,4 +1,12 @@
-import { useCallback, useRef, type ComponentRef, type ReactElement, type ReactNode } from 'react';
+import {
+  useCallback,
+  useRef,
+  useState,
+  type ComponentRef,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { ScrollView, StyleSheet, View, useWindowDimensions, type RefreshControlProps } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,6 +29,8 @@ export interface ScreenContainerProps {
   glow?: boolean;
   /** Pull-to-refresh (`RefreshControl` w kolorze accent). */
   refreshControl?: ReactElement<RefreshControlProps>;
+  /** Ref przewijania dla ekranu (np. kafel „Kategorie” przewija do sekcji). */
+  scrollRef?: RefObject<ComponentRef<typeof ScrollView> | null>;
   testID?: string;
 }
 
@@ -36,17 +46,20 @@ export function ScreenContainer({
   scroll = true,
   glow = true,
   refreshControl,
+  scrollRef,
   testID = 'screen',
 }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const ref = useRef<ComponentRef<typeof ScrollView>>(null);
+  const ownRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const ref = scrollRef ?? ownRef;
+  const [scrolled, setScrolled] = useState(false);
   const tablet = width >= TABLET_MIN_WIDTH;
 
   useFocusEffect(
     useCallback(() => {
       ref.current?.scrollTo({ y: 0, animated: false });
-    }, []),
+    }, [ref]),
   );
 
   const column = (
@@ -76,18 +89,29 @@ export function ScreenContainer({
           keyboardShouldPersistTaps="handled"
           refreshControl={refreshControl}
           contentContainerStyle={padding}
+          scrollEventThrottle={32}
+          onScroll={(e) => setScrolled(e.nativeEvent.contentOffset.y > 4)}
         >
           {column}
         </ScrollView>
       ) : (
         <View style={[styles.root, padding]}>{column}</View>
       )}
+      {/* Maska pod paskiem stanu – przewijana treść nie nachodzi na zegar (UX-29). */}
+      {scroll && scrolled ? (
+        <View
+          testID={`${testID}-status-mask`}
+          pointerEvents="none"
+          style={[styles.mask, { height: insets.top }]}
+        />
+      ) : null}
       {footer}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  mask: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: color.bg },
   root: { flex: 1, backgroundColor: color.bg },
   column: { width: '100%' },
 });

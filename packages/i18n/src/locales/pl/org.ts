@@ -81,12 +81,15 @@ export const org = {
     categories: 'Kategorie',
     athletes: 'Zawodniczki',
     judges: 'Sędziowie',
-    judgesA11y: 'Sędziowie: {n}. Zarządzaj sędziami i urządzeniami',
-    athletesA11y: 'Zawodniczki: {n}. Lista według kategorii',
+    judgesA11y: 'Aktywni sędziowie: {n}. Zarządzaj sędziami i tabletami',
+    categoriesA11y: 'Kategorie: {n}. Przejdź do listy kategorii',
+    athletesA11y: 'Aktywne zawodniczki: {n}. Lista według kategorii',
+    tilesNote: 'Bez wycofanych zawodniczek i nieaktywnych sędziów.',
     start: 'Rozpocznij turniej',
     finish: 'Zakończ turniej',
     noCategories: 'Brak kategorii. Dodaj pierwszą, aby zacząć.',
     rejected: 'Odrzucone oceny ({n})',
+    rejectedFinished: 'Nieprzyjęte oceny ({n}) – tylko do wglądu',
     addCategoryA11y: 'Dodaj kategorię',
   },
   /** Zawodniczki turnieju według kategorii. */
@@ -103,7 +106,7 @@ export const org = {
     title: 'Zakończyć turniej?',
     text: '„{name}” zostanie zamknięty, a wyniki zapisane jako ostateczne.',
     categories:
-      'Kategorie w toku ({n}) zostaną zablokowane. Kategorie w przygotowaniu ({m}) zostaną oznaczone jako nierozegrane.',
+      'Kategorie w toku ({n}) zostaną zakończone. Kategorie w przygotowaniu ({m}) zostaną oznaczone jako nierozegrane.',
     missing_one: 'Brakuje {count} oceny w kategoriach w toku.',
     missing_few: 'Brakuje {count} ocen w kategoriach w toku.',
     missing_many: 'Brakuje {count} ocen w kategoriach w toku.',
@@ -129,6 +132,7 @@ export const org = {
     tabEntries: 'Zawodniczki',
     tabResults: 'Wyniki',
     rejected: 'Odrzucone oceny ({n})',
+    rejectedFinished: 'Nieprzyjęte oceny ({n}) – tylko do wglądu',
   },
   /** SCR-ORG-06 – zakładka Kryteria. */
   criteria: {
@@ -191,7 +195,7 @@ export const org = {
   results: { live: 'Ranking na żywo' },
   /** SCR-ORG-18 – ostrzeżenie przed blokadą. */
   lock: {
-    title: 'Zablokować kategorię?',
+    title: 'Zakończyć kategorię?',
     missing_one: 'Brakuje {count} oceny. Wyniki zostaną zapisane jako ostateczne.',
     missing_few: 'Brakuje {count} ocen. Wyniki zostaną zapisane jako ostateczne.',
     missing_many: 'Brakuje {count} ocen. Wyniki zostaną zapisane jako ostateczne.',
@@ -199,8 +203,8 @@ export const org = {
     pending_few: '{name} – {count} niewysłane oceny',
     pending_many: '{name} – {count} niewysłanych ocen',
     offline: '{name} – offline od {time}',
-    hint: 'Poczekaj, aż tablety się zsynchronizują, albo zablokuj teraz – późniejsze oceny trafią do „Odrzucone oceny”.',
-    confirm: 'Zablokuj mimo to',
+    hint: 'Poczekaj, aż tablety się zsynchronizują, albo zakończ teraz – późniejsze oceny trafią do „Odrzucone oceny”.',
+    confirm: 'Zakończ mimo to',
   },
   /** SCR-ORG-12 – podgląd PDF. */
   pdf: {
@@ -232,7 +236,8 @@ export const org = {
   /** SCR-ORG-22 – odrzucone oceny. */
   rejected: {
     title: 'Odrzucone oceny',
-    intro: 'Te oceny dotarły po zablokowaniu kategorii. Aby przyjąć ocenę, najpierw odblokuj kategorię.',
+    intro: 'Tych ocen nie przyjęto do wyników. Aby przyjąć ocenę, najpierw odblokuj kategorię.',
+    introFinished: 'Tych ocen nie przyjęto do wyników. Turniej jest zakończony – lista tylko do wglądu.',
     row: '{judge} → #{nr} {athlete}',
     meta: '{category} · {reason}',
     sent: 'wysłano {time}',
@@ -245,7 +250,7 @@ export const org = {
     acceptNewer: 'Sędzia ma już nowszą ocenę tej zawodniczki – przyjęcie ją zastąpi.',
     empty: 'Brak odrzuconych ocen.',
     reason: {
-      CATEGORY_LOCKED: 'Kategoria zablokowana',
+      CATEGORY_LOCKED: 'Kategoria zakończona',
       CATEGORY_NOT_STARTED: 'Kategoria nierozpoczęta',
       TOURNAMENT_FINISHED: 'Turniej zakończony',
       JUDGE_NOT_IN_PANEL: 'Sędzia spoza panelu',
@@ -257,9 +262,9 @@ export const org = {
   },
   /** SCR-ORG-14 – sędziowie i urządzenia. */
   judges: {
-    title: 'Sędziowie i urządzenia',
+    title: 'Sędziowie i tablety',
     tabJudges: 'Sędziowie',
-    tabDevices: 'Urządzenia',
+    tabDevices: 'Tablety',
     section: 'Sędziowie',
     active_one: 'Aktywny · {count} ocena',
     active_few: 'Aktywny · {count} oceny',
@@ -319,10 +324,10 @@ export const org = {
   /** SCR-ORG-14 – akcje urządzenia. */
   device: {
     rename: 'Zmień nazwę',
-    name: 'Nazwa urządzenia',
+    name: 'Nazwa tabletu',
     nameError: 'Podaj nazwę (1–60 znaków).',
     save: 'Zapisz',
-    revoke: 'Odłącz urządzenie',
+    revoke: 'Odłącz tablet',
     revokeTitle: 'Odłączyć „{name}”?',
     revokeText: 'Niewysłane oceny ({n}) nie dotrą do systemu.',
     revokeConfirm: 'Odłącz',

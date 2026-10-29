@@ -20,6 +20,8 @@ type ScoreSheet = EntryScoreSheets['items'][number];
 
 /** Liczba z przecinkiem bez zbędnych zer („8,5”, „2”). */
 const num = (value: number) => (Number.isInteger(value) ? String(value) : formatDecimal(value, 1));
+/** Noty i sumy zawsze z 1 miejscem po przecinku – jak na tablecie (UX-31). */
+const score = (value: number) => formatDecimal(value, 1);
 
 function Revisions({ sheet }: { sheet: ScoreSheet }) {
   const t = useT();
@@ -42,7 +44,7 @@ function Revisions({ sheet }: { sheet: ScoreSheet }) {
               {t('org:scores.revision', {
                 k: r.revision,
                 time: formatClock(r.createdAt),
-                total: num(r.total),
+                total: score(r.total),
               })}
             </Text>
           ))
@@ -68,13 +70,13 @@ function JudgeCard({ sheet }: { sheet: ScoreSheet }) {
           </View>
         ) : null}
         <Text variant="cardTitle" tabular style={styles.total}>
-          {num(sheet.total)}
+          {score(sheet.total)}
         </Text>
       </View>
       <View style={styles.criteria}>
         {sheet.criteria.map((c) => (
           <Text key={c.criterionId} variant="caption" tabular color={color.neutral[300]} style={styles.half}>
-            {t('org:scores.criterion', { name: c.name, value: num(c.value), weight: num(c.weight) })}
+            {t('org:scores.criterion', { name: c.name, value: score(c.value), weight: num(c.weight) })}
           </Text>
         ))}
       </View>

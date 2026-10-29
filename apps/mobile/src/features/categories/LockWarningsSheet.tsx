@@ -76,7 +76,7 @@ export function LockWarningsSheet({ warnings, onClose, busy, onForce }: LockWarn
               onPress={onForce}
               disabled={offline}
             />
-            <Button variant="secondary" label={t('common:cancel')} size={48} fullWidth onPress={onClose} />
+            <Button variant="ghost" label={t('common:cancel')} size={48} fullWidth onPress={onClose} />
           </>
         }
       />

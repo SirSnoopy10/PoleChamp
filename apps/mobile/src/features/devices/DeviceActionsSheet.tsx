@@ -107,6 +107,7 @@ export function DeviceActionsSheet({ device, onClose, onRename, onRevoke }: Devi
             <Button
               testID="device-revoke-confirm"
               variant="secondary"
+              destructive
               label={t('org:device.revokeConfirm')}
               size={48}
               fullWidth

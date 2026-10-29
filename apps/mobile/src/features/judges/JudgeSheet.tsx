@@ -171,7 +171,7 @@ export function JudgeSheet({
               }
             />
             <Button
-              variant="secondary"
+              variant="ghost"
               label={t('common:cancel')}
               size={48}
               fullWidth
@@ -191,6 +191,7 @@ export function JudgeSheet({
             <Button
               testID="judge-delete-confirm"
               variant="secondary"
+              destructive
               label={t('org:judgeForm.deleteConfirm')}
               size={48}
               fullWidth
