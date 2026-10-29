@@ -38,6 +38,8 @@ export interface EntrySheetProps {
   numberLocked: boolean;
   /** Zmiana listy (wycofanie, dodanie) – niedostępna w kategorii/turnieju Zakończona i offline. */
   canChangeList: boolean;
+  /** Kategoria W przygotowaniu – bez ocen tylko „Usuń z listy”, bez „Wycofaj” (UX-12). */
+  categoryDraft?: boolean;
   /** Turniej Zakończony – „Usuń dane osobowe” dla każdej zawodniczki, także bez ocen (FR-904, UX-40). */
   tournamentFinished?: boolean;
   onCreate: (body: EntryCreate, idempotencyKey: string) => Promise<unknown>;
@@ -61,6 +63,7 @@ export function EntrySheet({
   numberLocked,
   canChangeList,
   tournamentFinished = false,
+  categoryDraft = false,
   onCreate,
   onUpdate,
   onWithdraw,
@@ -324,7 +327,7 @@ export function EntrySheet({
                 />
               ) : (
                 <>
-                  {canChangeList ? (
+                  {canChangeList && !(categoryDraft && !scored && entry.status === 'ACTIVE') ? (
                     entry.status === 'ACTIVE' ? (
                       <Button
                         testID="entry-withdraw"

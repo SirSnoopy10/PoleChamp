@@ -68,10 +68,15 @@ export function ResultsTab({ results, loading, error, onRetry, onOpen }: Results
                 testID={`result-${row.entryId}`}
                 rank={scored && !withdrawn ? row.rank : null}
                 name={row.fullName}
-                score={scored ? row.display : '—'}
+                // Wycofana: na końcu, bez miejsca i wyniku – jak w PDF i CSV (decyzja PO IMP-709, UX-12).
+                score={scored && !withdrawn ? row.display : '—'}
                 meta={meta}
                 judges={judges}
-                bar={scored && results.maxJudgeScore ? (row.official ?? 0) / results.maxJudgeScore : 0}
+                bar={
+                  scored && !withdrawn && results.maxJudgeScore
+                    ? (row.official ?? 0) / results.maxJudgeScore
+                    : 0
+                }
                 provisional={scored && row.isProvisional}
                 muted={withdrawn}
                 accessibilityLabel={`${row.fullName}, ${scored ? row.display : t('common:noScores')}, ${judges}`}

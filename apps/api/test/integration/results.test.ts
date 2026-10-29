@@ -256,7 +256,7 @@ describe('wyniki, oceny i rewizje (IMP-151, IMP-152) – fikstura c3', () => {
     }
   });
 
-  it('TC-API-091 / TC-API-092: wycofany start na końcu; po blokadzie niekompletne wstępne', async () => {
+  it('TC-API-091 / TC-API-092 / UX-12: wycofany start na końcu bez miejsca; po blokadzie niekompletne wstępne', async () => {
     await org.req('POST', `/v1/entries/${fx.entries.get(44)!.id}/withdraw`);
     const withdrawn = (await org.req('GET', `/v1/categories/${fx.c.id}/results`)).body.rows;
     expect(withdrawn.at(-1)).toMatchObject({ startNumber: 44, entryStatus: 'WITHDRAWN', rank: null });

@@ -36,6 +36,7 @@ function CategoryEntrySheet({
       suggestedNumber={suggestStartNumber(entries)}
       numberLocked={listClosed}
       canChangeList={!listClosed && canWrite}
+      categoryDraft={category.status === 'DRAFT'}
       tournamentFinished={tournamentFinished}
       onCreate={(body, idempotencyKey) => mutations.create.mutateAsync({ body, idempotencyKey })}
       onUpdate={(e, body) => mutations.update.mutateAsync({ entryId: e.id, version: e.version, body })}

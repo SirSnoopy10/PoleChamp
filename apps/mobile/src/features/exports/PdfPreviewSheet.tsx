@@ -32,8 +32,11 @@ export interface PdfPreviewSheetProps {
   deps?: ExportDeps;
 }
 
+const DASH = '—';
 const ranked = (rows: readonly Row[]) =>
   rows.filter((r) => r.entryStatus === 'ACTIVE' && r.official !== null);
+/** Wycofane na końcu z „Wycofana”, bez miejsca i wyniku – jak w pliku PDF (UX-12). */
+const withdrawnRows = (rows: readonly Row[]) => rows.filter((r) => r.entryStatus === 'WITHDRAWN');
 
 /**
  * SCR-ORG-12 – podgląd i pobranie PDF (IMP-270). Podgląd z danych rankingu; plik generuje serwer
@@ -154,6 +157,19 @@ export function PdfPreviewSheet({
                   {t('org:pdf.noResults')}
                 </Text>
               )}
+              {withdrawnRows(cat.rows).map((row) => (
+                <View key={row.entryId} style={styles.tableRow} testID={`pdf-withdrawn-${row.entryId}`}>
+                  <Text variant="caption" tabular color={color.neutral[500]} style={styles.rank}>
+                    {DASH}
+                  </Text>
+                  <Text variant="caption" color={color.neutral[500]} numberOfLines={1} style={styles.flex}>
+                    {row.fullName}
+                  </Text>
+                  <Text variant="caption" color={color.neutral[500]}>
+                    {t('common:entryStatus.WITHDRAWN')}
+                  </Text>
+                </View>
+              ))}
             </View>
           ))}
         </View>

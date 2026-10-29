@@ -330,7 +330,9 @@ describe('SCR-ORG-07/11/17 zawodniczki (IMP-265…267)', () => {
     await fireEvent.press(screen.getByTestId('entry-e41'));
     await fireEvent.press(await screen.findByTestId('entry-withdraw'));
     expect(
-      await screen.findByText('Zniknie z kolejki sędziów i z rankingu. Oceny zostaną zachowane.'),
+      await screen.findByText(
+        'Zniknie z kolejki sędziów. W rankingu, PDF i CSV zostanie na końcu jako „Wycofana” – bez miejsca i wyniku. Oceny zostaną zachowane.',
+      ),
     ).toBeOnTheScreen();
     expect(screen.queryByTestId('entry-remove')).toBeNull();
     await fireEvent.press(screen.getByTestId('entry-confirm'));
@@ -386,6 +388,20 @@ describe('SCR-ORG-07/11/17 zawodniczki (IMP-265…267)', () => {
     await fireEvent.press(screen.getByTestId('entry-sheet-backdrop', { includeHiddenElements: true }));
     await fireEvent.press(await screen.findByTestId('sheet-discard'));
     await waitFor(() => expect(screen.queryByTestId('entry-sheet')).toBeNull());
+    await r.unmount();
+  });
+
+  it('UX-12: W przygotowaniu bez ocen – tylko „Usuń z listy”, bez „Wycofaj”', async () => {
+    mockCategory(categoryDetails({ status: 'DRAFT', entryCount: 1 }), 'DRAFT');
+    server.use(
+      http.get(`${API}/v1/categories/c3/entries`, () =>
+        HttpResponse.json({ items: [entry(41, 'Zuzanna Król', { judged: { done: 0, expected: 5 } })] }),
+      ),
+    );
+    const r = await startOrg(routes, '/c/c3?tab=entries', state);
+    await fireEvent.press(await screen.findByTestId('entry-e41'));
+    expect(await screen.findByTestId('entry-remove')).toBeOnTheScreen();
+    expect(screen.queryByTestId('entry-withdraw')).toBeNull();
     await r.unmount();
   });
 

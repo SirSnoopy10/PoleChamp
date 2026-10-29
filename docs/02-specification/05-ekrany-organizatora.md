@@ -211,7 +211,9 @@
 ## SCR-ORG-17 – Edytuj zawodniczkę (bottom sheet) ⟡ POZA DESIGNEM – PROPOZYCJA
 - **FR:** FR-403, FR-404, FR-406, FR-904. **US:** US-032, US-033, US-091.
 - **Układ:** „Edytuj zawodniczkę”; pola jak SCR-ORG-11 (z rokiem urodzenia i zgodą); primary „Zapisz zmiany” (toast „Zapisano zmiany”); secondary „Wycofaj zawodniczkę” (`user-minus`) / „Przywróć zawodniczkę”; ghost „Usuń z listy” (tylko bez ocen) lub „Usuń dane osobowe” (po ocenach, Should). Każda akcja z drugim krokiem potwierdzenia.
-- **Teksty potwierdzeń:** „Wycofać {imię i nazwisko}? Zniknie z kolejki sędziów i z rankingu. Oceny zostaną zachowane.”; „Usunąć dane osobowe? W wynikach pozostanie „Zawodniczka nr {nr}”. Tej operacji nie można cofnąć.”.
+- **Teksty potwierdzeń:** „Wycofać zawodniczkę: {imię}? Zniknie z kolejki sędziów. W rankingu, PDF i CSV zostanie na końcu jako „Wycofana” – bez miejsca i wyniku. Oceny zostaną zachowane.”; „Usunąć dane osobowe? W wynikach pozostanie „Zawodniczka nr {nr}”. Tej operacji nie można cofnąć.”.
+
+- **Decyzja PO 28.10.2026 (IMP-709, UX-12):** wycofana zawodniczka zostaje w rankingu (SCR-ORG-08), podglądzie i pliku PDF oraz CSV – na końcu, oznaczona „Wycofana”, bez miejsca i wyniku. W kategorii W przygotowaniu zawodniczka bez ocen ma tylko „Usuń z listy” (bez „Wycofaj”).
 
 ## SCR-ORG-18 – Zablokować kategorię? (bottom sheet) ⟡ POZA DESIGNEM – PROPOZYCJA
 - **FR:** FR-309. **US:** US-026. **API:** `LOCK_WARNINGS`.

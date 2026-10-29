@@ -383,7 +383,8 @@ export const org = {
     save: 'Zapisz zmiany',
     withdraw: 'Wycofaj zawodniczkę',
     withdrawTitle: 'Wycofać zawodniczkę: {name}?',
-    withdrawText: 'Zniknie z kolejki sędziów i z rankingu. Oceny zostaną zachowane.',
+    withdrawText:
+      'Zniknie z kolejki sędziów. W rankingu, PDF i CSV zostanie na końcu jako „Wycofana” – bez miejsca i wyniku. Oceny zostaną zachowane.',
     withdrawConfirm: 'Wycofaj',
     restore: 'Przywróć zawodniczkę',
     remove: 'Usuń z listy',

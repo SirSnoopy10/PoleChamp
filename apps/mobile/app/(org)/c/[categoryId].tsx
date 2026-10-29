@@ -201,6 +201,7 @@ export default function CategoryRoute() {
               suggestedNumber={suggestStartNumber(entries.data ?? [])}
               numberLocked={listClosed}
               canChangeList={!listClosed && canWrite}
+              categoryDraft={category.status === 'DRAFT'}
               tournamentFinished={tournamentStatus === 'FINISHED'}
               onCreate={(body, idempotencyKey) => entryMutations.create.mutateAsync({ body, idempotencyKey })}
               onUpdate={(e, body) =>
