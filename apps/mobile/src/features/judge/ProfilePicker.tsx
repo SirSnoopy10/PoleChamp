@@ -127,12 +127,20 @@ export function ProfilePicker() {
                 <View style={styles.grid}>
                   {rows.map((row, i) => (
                     <View key={i} style={styles.row}>
+                      {/* Jeden niepełny wiersz – karty wyśrodkowane (UX-35), inaczej wyrównane do lewej. */}
+                      {rows.length === 1 && row.length < COLUMNS ? (
+                        <View style={{ flex: (COLUMNS - row.length) / 2 }} />
+                      ) : null}
                       {row.map((j) => (
                         <ProfileCard key={j.id} judge={j} onPress={() => router.push(`/pin/${j.id}`)} />
                       ))}
-                      {Array.from({ length: COLUMNS - row.length }, (_, k) => (
-                        <View key={`gap-${k}`} style={styles.cardSlot} />
-                      ))}
+                      {rows.length === 1 && row.length < COLUMNS ? (
+                        <View style={{ flex: (COLUMNS - row.length) / 2 }} />
+                      ) : (
+                        Array.from({ length: COLUMNS - row.length }, (_, k) => (
+                          <View key={`gap-${k}`} style={styles.cardSlot} />
+                        ))
+                      )}
                     </View>
                   ))}
                 </View>

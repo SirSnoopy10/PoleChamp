@@ -12,11 +12,13 @@ import { Banner } from '../../ui/Banner';
 import { Button } from '../../ui/Button';
 import { TextArea } from '../../ui/form';
 import { Icon } from '../../ui/Icon';
+import { Dialog } from '../../ui/Dialog';
 import { CriterionCard } from '../../ui/scoring/CriterionCard';
 import { PenaltyCounter } from '../../ui/scoring/PenaltyCounter';
 import { Text } from '../../ui/Text';
 import { toast } from '../../ui/Toast';
 import { attachDraftAutosave } from './draft';
+import { markDraft } from './draftMarks';
 import { createScoreFormStore, formValues, useForm, type ScoreFormStore } from './formStore';
 import { submitLabelKey, type ScoreFormModel } from './model';
 import { ScoreFooter } from './ScoreFooter';
@@ -43,6 +45,7 @@ function CriterionField({
   disabled: boolean;
 }) {
   const value = useForm(store, (s) => s.criteria[c.id] ?? 0);
+  const untouched = useForm(store, (s) => !!s.untouched[c.id]);
   const set = useForm(store, (s) => s.setCriterion);
   return (
     <CriterionCard
@@ -55,6 +58,7 @@ function CriterionField({
       value={value}
       onChange={set}
       disabled={disabled}
+      untouched={untouched && !disabled}
     />
   );
 }
@@ -138,7 +142,13 @@ export function ScoreForm({
 }: ScoreFormProps) {
   const t = useT();
   const online = useOnline();
-  const store = useMemo(() => createScoreFormStore(model.initial), [model]);
+  // Nowa ocena (bez szkicu i zapisanej oceny) – wszystkie kryteria „nieruszone” (decyzja PO IMP-712).
+  const store = useMemo(
+    () =>
+      createScoreFormStore(model.initial, model.source === 'default' ? model.criteria.map((c) => c.id) : []),
+    [model],
+  );
+  const [confirmUntouched, setConfirmUntouched] = useState<string[] | null>(null);
   const draft = useRef<ReturnType<typeof attachDraftAutosave> | null>(null);
   const grid = useColumns();
   const penaltyGrid = useColumns();
@@ -159,7 +169,18 @@ export function ScoreForm({
     };
   }, [store, readOnly, judge.judgeId, entry.id]);
 
+  // Zatwierdzenie z nieruszonymi kryteriami – najpierw potwierdzenie z ich listą (UX-14).
+  const requestSubmit = () => {
+    const ids = Object.keys(store.getState().untouched);
+    if (ids.length) {
+      setConfirmUntouched(model.criteria.filter((c) => ids.includes(c.id)).map((c) => c.name));
+      return;
+    }
+    void submit();
+  };
+
   const submit = async () => {
+    setConfirmUntouched(null);
     const state = store.getState();
     // UX-02: blokada od pierwszego tapnięcia do końca transakcji lokalnej (stan synchroniczny – drugie
     // `onPress` w tej samej klatce widzi `submitting`); późniejsze tapnięcie z tą samą treścią
@@ -174,6 +195,7 @@ export function ScoreForm({
         values: formValues(state),
         config: model.config,
       });
+      markDraft(judge.judgeId, entry.id, false);
       toast.success('toasts:scoreSaved', { name: entry.fullName });
       onSubmitted();
     } catch {
@@ -190,6 +212,7 @@ export function ScoreForm({
       await rt.engine.fetchJudgeSheets(judge.judgeId);
       draft.current?.cancel();
       await rt.local.tx((db) => ScoreSheetRepo.forJudge(db, judge.judgeId).deleteDraft(entry.id));
+      markDraft(judge.judgeId, entry.id, false);
       onReload();
     } catch {
       toast.error('toasts:saveFailed');
@@ -287,9 +310,33 @@ export function ScoreForm({
           config={model.config}
           maxHundredths={model.maxHundredths}
           label={t(submitLabelKey(!!sheet, othersUnscored))}
-          onSubmit={() => void submit()}
+          onSubmit={requestSubmit}
         />
       )}
+      <Dialog
+        visible={!!confirmUntouched}
+        onClose={() => setConfirmUntouched(null)}
+        title={t('judge:form.untouchedTitle')}
+        text={t('judge:form.untouchedText', { names: confirmUntouched?.join(', ') ?? '' })}
+        testID="untouched-dialog"
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              size={44}
+              label={t('judge:form.untouchedBack')}
+              onPress={() => setConfirmUntouched(null)}
+              testID="untouched-back"
+            />
+            <Button
+              size={44}
+              label={t('judge:form.untouchedConfirm')}
+              onPress={() => void submit()}
+              testID="untouched-confirm"
+            />
+          </>
+        }
+      />
     </View>
   );
 }

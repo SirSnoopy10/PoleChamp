@@ -131,6 +131,8 @@ export interface QueueEntry {
   startNumber: number;
   fullName: string;
   club: string | null;
+  /** Sędzia ma szkic tej oceny (`local_draft`, UX-14); bez `judgeId` w zapytaniu – `false`. */
+  hasDraft?: boolean;
 }
 
 export interface LocalEntry extends QueueEntry {
@@ -146,12 +148,17 @@ export const readEntry = (db: Db, entryId: string): LocalEntry | null =>
   );
 
 /** Kolejka kategorii: aktywne starty w kolejności listy startowej (SCR-JDG-04). */
-export const listQueue = (db: Db, categoryId: string): QueueEntry[] =>
-  db.getAllSync<QueueEntry>(
-    `SELECT id, start_number AS startNumber, full_name AS fullName, club FROM local_entry
-     WHERE category_id = ? AND status = 'ACTIVE' ORDER BY start_order, start_number`,
-    categoryId,
-  );
+export const listQueue = (db: Db, categoryId: string, judgeId?: string): QueueEntry[] =>
+  db
+    .getAllSync<QueueEntry & { draft: number }>(
+      `SELECT e.id, e.start_number AS startNumber, e.full_name AS fullName, e.club,
+         EXISTS (SELECT 1 FROM local_draft d WHERE d.judge_id = ? AND d.entry_id = e.id) AS draft
+       FROM local_entry e
+       WHERE e.category_id = ? AND e.status = 'ACTIVE' ORDER BY e.start_order, e.start_number`,
+      judgeId ?? '',
+      categoryId,
+    )
+    .map(({ draft, ...e }) => ({ ...e, hasDraft: draft === 1 }));
 
 export interface RejectedSheet {
   entryId: string;

@@ -8,6 +8,7 @@ import { useT } from '../../i18n';
 import { Badge } from '../../ui/Badge';
 import { Banner } from '../../ui/Banner';
 import { Icon, type IconName } from '../../ui/Icon';
+import { useHasDraft } from '../scoring/draftMarks';
 import { BackLink } from '../../ui/layout/ScreenHeader';
 import { ProgressBar } from '../../ui/ProgressBar';
 import { Text } from '../../ui/Text';
@@ -22,16 +23,20 @@ const STATE_ICON: Record<EntrySyncState, { icon: IconName; color: string; weight
 };
 
 const QueueRow = memo(function QueueRow({
+  judgeId,
   entry,
   active,
   onPress,
 }: {
+  judgeId: string;
   entry: QueueEntry;
   active: boolean;
   onPress: (id: string) => void;
 }) {
   const t = useT();
   const state = useSyncStore(selectEntrySyncState(entry.id));
+  // Szkic tylko dla nieocenionej – po zatwierdzeniu ikona stanu oceny wystarcza (UX-14).
+  const draft = useHasDraft(judgeId, entry.id, !!entry.hasDraft) && state === 'none';
   const icon = STATE_ICON[state];
   const stateText = t(`judge:queue.state.${state}`);
   return (
@@ -76,6 +81,11 @@ const QueueRow = memo(function QueueRow({
           </Text>
         ) : null}
       </View>
+      {draft ? (
+        <Text variant="micro" color={color.accentRamp[300]} testID={`queue-draft-${entry.id}`}>
+          {t('judge:queue.draft')}
+        </Text>
+      ) : null}
       <Icon
         name={icon.icon}
         size={18}
@@ -88,6 +98,9 @@ const QueueRow = memo(function QueueRow({
 });
 
 export interface QueuePanelProps {
+  judgeId: string;
+  /** Turniej zakończony – baner informacyjny nad kolejką (UX-35). */
+  tournamentFinished?: boolean;
   category: JudgeCategory;
   queue: QueueEntry[];
   selectedId: string | null;
@@ -102,6 +115,8 @@ export interface QueuePanelProps {
  * kolejka aktywnych startów (wycofane ukryte – FR-404) z ikoną stanu oceny.
  */
 export function QueuePanel({
+  judgeId,
+  tournamentFinished = false,
   category,
   queue,
   selectedId,
@@ -123,7 +138,15 @@ export function QueuePanel({
         <Text variant="caption" tabular color={color.neutral[400]}>
           {progressText}
         </Text>
-        {category.status === 'LOCKED' ? <Banner variant="locked" testID="queue-locked-banner" /> : null}
+        {tournamentFinished ? (
+          <Banner
+            variant="locked"
+            text={t('judge:queue.tournamentFinished')}
+            testID="queue-finished-banner"
+          />
+        ) : category.status === 'LOCKED' ? (
+          <Banner variant="locked" testID="queue-locked-banner" />
+        ) : null}
         {rejectedCount > 0 ? (
           <Banner
             variant="rejected"
@@ -139,7 +162,7 @@ export function QueuePanel({
         showsVerticalScrollIndicator={false}
       >
         {queue.map((e) => (
-          <QueueRow key={e.id} entry={e} active={e.id === selectedId} onPress={onSelect} />
+          <QueueRow key={e.id} judgeId={judgeId} entry={e} active={e.id === selectedId} onPress={onSelect} />
         ))}
       </ScrollView>
     </View>

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import { color, layout, radius, shadow } from '@polechamp/tokens';
-import { listQueue, readCategory } from '../../data/judge/queries';
+import { listQueue, readCategory, readTournament } from '../../data/judge/queries';
 import { judgeRuntime } from '../../data/judge/runtime';
 import { useJudgeSession, type ActiveJudge } from '../../data/judge/session';
 import { useLocalQuery } from '../../data/judge/useLocalQuery';
@@ -27,15 +27,16 @@ const sheetsOf = (judgeId: string) => (e: SyncEvent) =>
   (e.type === 'rejected' && e.judgeId === judgeId) ||
   e.type === 'snapshotApplied';
 
-function PickAthlete() {
+function PickAthlete({ allScored }: { allScored: boolean }) {
   const t = useT();
   return (
     <View testID="pick-athlete" style={styles.center}>
       <View style={[styles.circle, shadow.sm]}>
-        <Icon name="hand-pointing" size={24} color={color.accent} />
+        <Icon name={allScored ? 'check-circle' : 'hand-pointing'} size={24} color={color.accent} />
       </View>
-      <Text variant="bodyS" color={color.neutral[400]} align="center">
-        {t('judge:queue.pick')}
+      {/* Po ocenieniu całej kolejki – stan końcowy zamiast „Wybierz zawodniczkę” (UX-35). */}
+      <Text variant="bodyS" color={color.neutral[400]} align="center" testID="pick-athlete-text">
+        {t(allScored ? 'judge:queue.allScored' : 'judge:queue.pick')}
       </Text>
     </View>
   );
@@ -53,9 +54,10 @@ function CategoryBody({
   const router = useRouter();
   const { judgeId } = judge;
   const category = useLocalQuery((db) => readCategory(db, judgeId, categoryId), [judgeId, categoryId]);
+  const tournamentFinished = useLocalQuery((db) => readTournament(db)?.status === 'FINISHED', []);
   const queue = useLocalQuery(
-    (db) => listQueue(db, categoryId),
-    [categoryId],
+    (db) => listQueue(db, categoryId, judgeId),
+    [categoryId, judgeId],
     (e) => e.type !== 'judgeLocked',
   );
   const scored = useLocalQuery(
@@ -119,7 +121,7 @@ function CategoryBody({
     router.setParams({ entry: next ?? '' });
   };
 
-  let main = <PickAthlete />;
+  let main = <PickAthlete allScored={queue.length > 0 && queue.every((e) => scored.has(e.id))} />;
   if (model && model.entry.categoryId === categoryId) {
     if (locked && !sheet) main = <NoOwnScore />;
     else
@@ -142,6 +144,8 @@ function CategoryBody({
     <TwoPaneLayout
       side={
         <QueuePanel
+          judgeId={judgeId}
+          tournamentFinished={tournamentFinished}
           category={category}
           queue={queue}
           selectedId={entryId}

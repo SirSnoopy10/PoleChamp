@@ -69,8 +69,11 @@ export const judge = {
   },
   /** SCR-JDG-04. */
   queue: {
+    draft: 'szkic',
     back: 'Kategorie',
     pick: 'Wybierz zawodniczkę z listy, aby ją ocenić.',
+    allScored: 'Wszystkie zawodniczki ocenione.',
+    tournamentFinished: 'Turniej zakończony – tylko podgląd',
     rowA11y: '{number}, {name}, {club}, {state}',
     rowA11yNoClub: '{number}, {name}, {state}',
     state: {
@@ -82,6 +85,12 @@ export const judge = {
   },
   /** SCR-JDG-05. */
   form: {
+    /** Nieruszone kryteria (decyzja PO IMP-712, UX-14) – do akceptacji IMP-650. */
+    untouched: 'nieruszone',
+    untouchedTitle: 'Zatwierdzić z nieruszonymi kryteriami?',
+    untouchedText: 'Nie zmieniono wartości domyślnych: {names}.',
+    untouchedBack: 'Wróć do oceny',
+    untouchedConfirm: 'Zatwierdź',
     criteria: 'Kryteria',
     penalties: 'Kary',
     scale: ' /{max}',

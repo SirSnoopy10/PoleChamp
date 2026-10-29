@@ -110,14 +110,22 @@ export function CategoryGrid() {
         <View style={styles.grid}>
           {rows.map((row, i) => (
             <View key={i} style={styles.row}>
+              {/* Jeden niepełny wiersz – karty wyśrodkowane (UX-35). */}
+              {rows.length === 1 && row.length < COLUMNS ? (
+                <View style={{ flex: (COLUMNS - row.length) / 2 }} />
+              ) : null}
               {row.map((c) => (
                 <View key={c.id} style={styles.cell}>
                   <JudgeCategoryCard category={c} onPress={() => open(c)} />
                 </View>
               ))}
-              {Array.from({ length: COLUMNS - row.length }, (_, k) => (
-                <View key={`gap-${k}`} style={styles.cell} />
-              ))}
+              {rows.length === 1 && row.length < COLUMNS ? (
+                <View style={{ flex: (COLUMNS - row.length) / 2 }} />
+              ) : (
+                Array.from({ length: COLUMNS - row.length }, (_, k) => (
+                  <View key={`gap-${k}`} style={styles.cell} />
+                ))
+              )}
             </View>
           ))}
         </View>

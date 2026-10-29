@@ -19,6 +19,8 @@ export interface CriterionCardProps {
   value: number;
   onChange: (id: string, tenths: number) => void;
   disabled?: boolean;
+  /** Wartość domyślna, której sędzia nie ruszył – przygaszona z podpisem (UX-14). */
+  untouched?: boolean;
 }
 
 /**
@@ -35,6 +37,7 @@ export const CriterionCard = memo(function CriterionCard({
   value,
   onChange,
   disabled = false,
+  untouched = false,
 }: CriterionCardProps) {
   const t = useT();
   const max = scaleMax * 10;
@@ -59,14 +62,19 @@ export const CriterionCard = memo(function CriterionCard({
           <Text
             variant="numXL"
             tabular
-            color={color.accentRamp[200]}
+            color={untouched ? color.neutral[500] : color.accentRamp[200]}
             numberOfLines={1}
             testID={`criterion-${id}-value`}
           >
             {formatTenths(value)}
           </Text>
-          <Text variant="meta" color={color.neutral[500]} numberOfLines={1}>
-            {t('judge:form.scale', { max: scaleMax })}
+          <Text
+            variant="meta"
+            color={untouched ? color.accentRamp[300] : color.neutral[500]}
+            numberOfLines={1}
+            testID={untouched ? `criterion-${id}-untouched` : undefined}
+          >
+            {untouched ? t('judge:form.untouched') : t('judge:form.scale', { max: scaleMax })}
           </Text>
         </View>
       </View>

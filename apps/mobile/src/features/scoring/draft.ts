@@ -1,5 +1,6 @@
 import type { LocalDb } from '../../data/local/LocalDb';
 import { ScoreSheetRepo } from '../../data/local/scoreSheets';
+import { markDraft } from './draftMarks';
 import { formValues, type ScoreFormStore } from './formStore';
 import type { FormValues } from './model';
 
@@ -24,6 +25,7 @@ export function attachDraftAutosave(store: ScoreFormStore, local: LocalDb, judge
   const unsubscribe = store.subscribe((s, prev) => {
     if (s.criteria === prev.criteria && s.penalties === prev.penalties && s.comment === prev.comment) return;
     pending = formValues(s);
+    markDraft(judgeId, entryId, true);
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => void write(), DRAFT_DEBOUNCE_MS);
   });
@@ -31,6 +33,7 @@ export function attachDraftAutosave(store: ScoreFormStore, local: LocalDb, judge
     flush: write,
     /** Zatwierdzenie usuwa szkic w swojej transakcji – oczekujący zapis nie może go odtworzyć. */
     cancel() {
+      if (pending) markDraft(judgeId, entryId, false);
       if (timer) clearTimeout(timer);
       timer = null;
       pending = null;

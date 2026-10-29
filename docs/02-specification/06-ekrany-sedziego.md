@@ -109,6 +109,8 @@
 - **⟡ Stany dodatkowe:** ocena odrzucona – pod nagłówkiem baner (accent-900): „Ta ocena nie została przyjęta: {powód}.”; zmiana listy w trakcie edycji – baner „Lista startowa została zaktualizowana”; `STALE_REVISION` – baner „Ocena zmieniona na innym urządzeniu.” + ghost „Pokaż aktualną”.
 - **Dostępność:** suwak z rolą `adjustable` i etykietą „{kryterium}, {v} z {skala}”; akcje zwiększ/zmniejsz o 0,5; licznik kary jako `adjustable` „{kara}, {n} z {maks.}”.
 
+- **Decyzja PO 28.10.2026 (IMP-712, UX-14):** w nowej ocenie (bez szkicu i zapisanej oceny) wartość domyślna kryterium jest przygaszona (neutral-500) z podpisem „nieruszone” zamiast „/ {skala}” do pierwszej zmiany (także „−”/„+” wracające do tej samej wartości). Zatwierdzenie z nieruszonymi kryteriami pokazuje dialog „Zatwierdzić z nieruszonymi kryteriami?” z ich listą („Wróć do oceny” / „Zatwierdź”). Szkic w kolejce SCR-JDG-04 – podpis „szkic” przy nieocenionej zawodniczce. Po ocenieniu całej kolejki panel „Wszystkie zawodniczki ocenione.”; w zakończonym turnieju baner „Turniej zakończony – tylko podgląd”. Teksty do akceptacji IMP-650.
+
 ## SCR-JDG-06 – Parowanie tabletu ⟡ POZA DESIGNEM – PROPOZYCJA
 - **FR:** FR-504. **US:** US-043.
 - **Układ (styl SCR-JDG-01):** kwadrat 48 dp z ikoną `qr-code`; tytuł „Sparuj tablet z turniejem” (28 dp); tekst „Poproś organizatora o kod parowania (Sędziowie i urządzenia → Sparuj tablet).” (14 dp neutral-400); dwie kolumny:

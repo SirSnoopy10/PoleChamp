@@ -330,6 +330,9 @@ describe('IMP-313: zatwierdzenie i auto-przejście', () => {
     await env.local.tx((db) => db.runSync("DELETE FROM outbox WHERE type <> 'SUBMIT_SCORE_SHEET'"));
     const r = await startJudge(JUDGE_ROUTES, '/category/c1?entry=e1');
     await fireEvent.press(screen.getByTestId('criterion-k1-plus'));
+    // Pozostałe kryteria „dotknięte” bez zmiany wartości – bez potwierdzenia nieruszonych (UX-14).
+    await fireEvent.press(screen.getByTestId('criterion-k2-minus'));
+    await fireEvent.press(screen.getByTestId('criterion-k2-plus'));
     const submit = screen.getByTestId('score-submit');
     await fireEvent.press(submit);
     await fireEvent.press(submit);
@@ -348,14 +351,38 @@ describe('IMP-313: zatwierdzenie i auto-przejście', () => {
     expect(env.server.state.applied).toBe(1);
   });
 
-  it('TC-E2E-JDG-014: ostatnia nieoceniona – „Zatwierdź ocenę”, potem pusty panel', async () => {
+  it('TC-E2E-JDG-014 / UX-14 / UX-35: nieruszone kryteria – potwierdzenie z listą; potem „Wszystkie ocenione”', async () => {
     await signIn(env, 'jA');
     await sheet('e1', 'SYNCED');
     await sheet('e2', 'SYNCED');
     await startJudge(JUDGE_ROUTES, '/category/c1?entry=e3');
     expect(screen.getByTestId('score-submit')).toHaveTextContent('Zatwierdź ocenę');
+    expect(screen.getByTestId('criterion-k1-untouched')).toHaveTextContent('nieruszone');
+    await fireEvent.press(screen.getByTestId('criterion-k1-plus'));
+    expect(screen.queryByTestId('criterion-k1-untouched')).toBeNull();
     await fireEvent.press(screen.getByTestId('score-submit'));
+    expect(await screen.findByText('Zatwierdzić z nieruszonymi kryteriami?')).toBeOnTheScreen();
+    expect(screen.getByTestId('untouched-dialog')).toHaveTextContent(
+      /Nie zmieniono wartości domyślnych: .+\./,
+    );
+    expect(screen.getByTestId('untouched-dialog')).not.toHaveTextContent(/Technika,|Technika\./);
+    await fireEvent.press(screen.getByTestId('untouched-confirm'));
     await waitFor(() => expect(screen.getByTestId('pick-athlete')).toBeOnTheScreen());
+    expect(screen.getByTestId('pick-athlete-text')).toHaveTextContent('Wszystkie zawodniczki ocenione.');
+  });
+
+  it('UX-14: szkic oznaczony w kolejce od pierwszej zmiany; po zatwierdzeniu znacznik znika', async () => {
+    await signIn(env, 'jA');
+    await startJudge(JUDGE_ROUTES, '/category/c1?entry=e1');
+    expect(screen.queryByTestId('queue-draft-e1')).toBeNull();
+    await fireEvent.press(screen.getByTestId('criterion-k1-plus'));
+    expect(screen.getByTestId('queue-draft-e1')).toHaveTextContent('szkic');
+    await fireEvent.press(screen.getByTestId('queue-row-e2'));
+    expect(screen.getByTestId('queue-draft-e1')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('queue-row-e1'));
+    // Szkic wczytany – kryteria nie są już „nieruszone”, zatwierdzenie bez pytania.
+    await fireEvent.press(screen.getByTestId('score-submit'));
+    await waitFor(() => expect(screen.queryByTestId('queue-draft-e1')).toBeNull());
   });
 
   it('TC-E2E-JDG-015: poprawa oceny – „Oceniono”, zapisane wartości, rewizja 2', async () => {

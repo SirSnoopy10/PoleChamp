@@ -48,7 +48,8 @@ export const PenaltyCounter = memo(function PenaltyCounter({
       }}
     >
       <View style={styles.names}>
-        <Text variant="body" numberOfLines={1} style={styles.name}>
+        {/* Nazwa kary w 2 liniach – bez ucinania typowych nazw (UX-35). */}
+        <Text variant="body" numberOfLines={2} style={styles.name}>
           {name}
         </Text>
         <Text variant="caption" color={color.neutral[400]} numberOfLines={1}>
