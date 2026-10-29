@@ -46,6 +46,8 @@ export const EnvSchema = z
     S3_BUCKET: z.string().default('exports'),
     S3_REGION: z.string().default('eu-central-1'),
     S3_ENDPOINT: z.url().optional(),
+    /** Adres S3 w linkach pobrania, gdy klient widzi go inaczej niż API (emulator: `10.0.2.2`). */
+    S3_PUBLIC_ENDPOINT: z.url().optional(),
     S3_ACCESS_KEY_ID: z.string().optional(),
     S3_SECRET_ACCESS_KEY: z.string().optional(),
     /** Klucz KMS dla SSE-KMS (w chmurze); brak = bez nagłówka szyfrowania (MinIO). */

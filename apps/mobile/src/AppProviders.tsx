@@ -60,10 +60,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <I18nProvider>
               <QueryProvider>
                 <KeyboardProvider>
-                  <PortalProvider>
-                    {children}
-                    <ToastHost />
-                  </PortalProvider>
+                  <PortalProvider>{children}</PortalProvider>
+                  {/* Toast nad arkuszami (portal) – UX-13. */}
+                  <ToastHost />
                 </KeyboardProvider>
               </QueryProvider>
             </I18nProvider>

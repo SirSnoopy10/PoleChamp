@@ -4,10 +4,17 @@ import { color, layout, radius, shadow } from '@polechamp/tokens';
 import { formatTournamentDate } from '@polechamp/i18n';
 import type { ResultsResponse, TournamentDetails } from '@polechamp/contracts';
 import { useOnline } from '../../data/network/online';
-import { exportDeps, runExport, type ExportDeps, type ExportScope } from '../../data/org/exports';
+import {
+  exportDeps,
+  runExport,
+  type ExportDeps,
+  type ExportFormat,
+  type ExportScope,
+} from '../../data/org/exports';
 import { useT } from '../../i18n';
 import { Button } from '../../ui/Button';
 import { Icon } from '../../ui/Icon';
+import { Skeleton } from '../../ui/Skeleton';
 import { Sheet, SheetHeader } from '../../ui/sheet';
 import { Text } from '../../ui/Text';
 import { toast } from '../../ui/Toast';
@@ -42,22 +49,25 @@ export function PdfPreviewSheet({
 }: PdfPreviewSheetProps) {
   const t = useT();
   const online = useOnline();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<ExportFormat | null>(null);
   const names = new Map(tournament.categories.map((c) => [c.id, c.name]));
   const shown = (results ?? []).filter((r) => !categoryId || r.categoryId === categoryId);
 
-  const download = async () => {
+  // Każde „Pobierz” kończy się arkuszem udostępniania i toastem albo toastem błędu (UX-13).
+  const download = async (format: ExportFormat) => {
+    if (busy) return;
     const scope: ExportScope = categoryId
       ? { scope: 'CATEGORY', tournamentId: tournament.id, categoryId }
       : { scope: 'TOURNAMENT', tournamentId: tournament.id };
-    setBusy(true);
+    setBusy(format);
     try {
-      await runExport(scope, deps);
-      toast.success('toasts:pdfSaved');
-    } catch {
-      toast.error('toasts:pdfFailed');
+      await runExport(scope, deps, format);
+      toast.success(format === 'PDF' ? 'toasts:pdfSaved' : 'toasts:csvSaved');
+    } catch (e) {
+      console.error('export', e);
+      toast.error(format === 'PDF' ? 'toasts:pdfFailed' : 'toasts:csvFailed');
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
 
@@ -87,6 +97,14 @@ export function PdfPreviewSheet({
               </Text>
             </View>
           </View>
+          {results === undefined ? (
+            <View testID="pdf-skeleton" style={styles.category}>
+              <Skeleton width="60%" height={14} />
+              <Skeleton width="100%" height={12} />
+              <Skeleton width="100%" height={12} />
+              <Skeleton width="80%" height={12} />
+            </View>
+          ) : null}
           {shown.map((cat) => (
             <View key={cat.categoryId} style={styles.category}>
               <Text variant="meta">
@@ -143,15 +161,26 @@ export function PdfPreviewSheet({
       <View style={styles.footer}>
         <Button
           testID="pdf-download"
-          label={t(busy ? 'org:pdf.generating' : 'org:pdf.download')}
+          label={t(busy === 'PDF' ? 'org:pdf.generating' : 'org:pdf.download')}
           icon="download-simple"
           size={48}
           fullWidth
-          loading={busy}
-          disabled={!online}
-          onPress={() => void download()}
+          loading={busy === 'PDF'}
+          disabled={!online || busy !== null}
+          onPress={() => void download('PDF')}
         />
-        {online ? null : (
+        <Button
+          testID="csv-download"
+          variant="secondary"
+          label={t(busy === 'CSV' ? 'org:pdf.generating' : 'org:pdf.downloadCsv')}
+          size={48}
+          fullWidth
+          loading={busy === 'CSV'}
+          disabled={!online || busy !== null}
+          onPress={() => void download('CSV')}
+        />
+        {/* W trakcie generowania bez komunikatu offline (UX-13). */}
+        {online || busy ? null : (
           <Text variant="caption" align="center" color={color.neutral[400]}>
             {t('org:pdf.offline')}
           </Text>

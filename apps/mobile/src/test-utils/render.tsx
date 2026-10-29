@@ -39,10 +39,9 @@ export function Providers({
           <ThemedByMode reducedMotion={reducedMotion}>
             <I18nProvider>
               <QueryClientProvider client={queryClient ?? createTestQueryClient()}>
-                <PortalProvider>
-                  {children}
-                  <ToastHost />
-                </PortalProvider>
+                <PortalProvider>{children}</PortalProvider>
+                {/* Toast nad arkuszami (portal) – UX-13. */}
+                <ToastHost />
               </QueryClientProvider>
             </I18nProvider>
           </ThemedByMode>

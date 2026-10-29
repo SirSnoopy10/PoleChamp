@@ -212,6 +212,7 @@ export const org = {
     score: 'Wynik',
     place: '{rank}.',
     download: 'Pobierz PDF',
+    downloadCsv: 'Pobierz CSV',
     generating: 'Generowanie…',
     offline: 'Eksport wymaga połączenia z internetem.',
     noResults: 'Brak wyników.',

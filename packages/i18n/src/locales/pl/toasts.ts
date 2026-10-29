@@ -16,11 +16,13 @@ export const toasts = {
   penaltyDeleted: 'Usunięto karę',
   athleteAdded: 'Dodano zawodniczkę',
   pdfSaved: 'PDF zapisany',
+  csvSaved: 'CSV zapisany',
   categoryNotStarted: 'Ta kategoria jeszcze się nie rozpoczęła',
   scoreSaved: 'Zapisano ocenę: {name}',
   startListUpdated: 'Lista startowa została zaktualizowana',
   saveFailed: 'Nie udało się zapisać. Spróbuj ponownie.',
   pdfFailed: 'Nie udało się wygenerować PDF. Spróbuj ponownie.',
+  csvFailed: 'Nie udało się wygenerować CSV. Spróbuj ponownie.',
   startRequirement: {
     criteria: 'Dodaj co najmniej jedno kryterium.',
     entries: 'Dodaj co najmniej jedną zawodniczkę.',

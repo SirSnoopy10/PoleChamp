@@ -184,6 +184,63 @@ describe('SCR-ORG-12 podgląd PDF (IMP-270)', () => {
     expect(view.getByTestId('pdf-download')).toBeDisabled();
     await view.unmount();
   });
+
+  it('UX-13 / UX-42: szkielet do wczytania wyników; każdy eksport (też gotowy plik) – udostępnienie albo toast; CSV', async () => {
+    const delivered: string[] = [];
+    let failDelivery = false;
+    const bodies: { format: string }[] = [];
+    const deps: ExportDeps = {
+      create: async (body) => {
+        bodies.push(body);
+        return { exportId: 'x1' };
+      },
+      // Gotowy plik z poprzedniego eksportu – `READY` od razu.
+      status: async () => ({ status: 'READY', downloadUrl: 'https://s3.test/x1' }),
+      deliver: async (url, format) => {
+        if (failDelivery) throw new Error('download failed');
+        delivered.push(`${format} ${url}`);
+      },
+      sleep: async () => undefined,
+      now: () => 0,
+    };
+    network.reportHttpSuccess();
+    const silence = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const view = await renderWithProviders(
+      <PdfPreviewSheet
+        visible
+        onClose={() => undefined}
+        tournament={tournament}
+        results={undefined}
+        deps={deps}
+      />,
+    );
+    expect(view.getByTestId('pdf-skeleton')).toBeOnTheScreen();
+    await view.rerender(
+      <PdfPreviewSheet
+        visible
+        onClose={() => undefined}
+        tournament={tournament}
+        results={[results]}
+        deps={deps}
+      />,
+    );
+    expect(view.queryByTestId('pdf-skeleton')).toBeNull();
+
+    await fireEvent.press(view.getByTestId('pdf-download'));
+    expect(await view.findByText('PDF zapisany')).toBeOnTheScreen();
+    await fireEvent.press(view.getByTestId('pdf-download'));
+    await waitFor(() => expect(delivered).toHaveLength(2));
+    failDelivery = true;
+    await fireEvent.press(view.getByTestId('pdf-download'));
+    expect(await view.findByText('Nie udało się wygenerować PDF. Spróbuj ponownie.')).toBeOnTheScreen();
+    failDelivery = false;
+    await fireEvent.press(view.getByTestId('csv-download'));
+    expect(await view.findByText('CSV zapisany')).toBeOnTheScreen();
+    expect(delivered.at(-1)).toBe('CSV https://s3.test/x1');
+    expect(bodies.map((b) => b.format)).toEqual(['PDF', 'PDF', 'PDF', 'CSV']);
+    silence.mockRestore();
+    await view.unmount();
+  });
 });
 
 describe('SCR-ORG-22 odrzucone oceny (IMP-272)', () => {

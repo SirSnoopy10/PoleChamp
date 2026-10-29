@@ -17,13 +17,21 @@ export const DOWNLOAD_URL_TTL_S = 15 * 60;
  */
 export class ExportStorage {
   readonly client: S3Client;
+  /** Klient tylko do podpisywania linków (`S3_PUBLIC_ENDPOINT`); bez niego – `client`. */
+  private readonly signer: S3Client;
   readonly bucket: string;
 
   constructor(private readonly env: Env) {
     this.bucket = env.S3_BUCKET;
-    this.client = new S3Client({
+    this.client = this.createClient(env.S3_ENDPOINT);
+    this.signer = env.S3_PUBLIC_ENDPOINT ? this.createClient(env.S3_PUBLIC_ENDPOINT) : this.client;
+  }
+
+  private createClient(endpoint: string | undefined): S3Client {
+    const env = this.env;
+    return new S3Client({
       region: env.S3_REGION,
-      ...(env.S3_ENDPOINT ? { endpoint: env.S3_ENDPOINT, forcePathStyle: true } : {}),
+      ...(endpoint ? { endpoint, forcePathStyle: true } : {}),
       ...(env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY
         ? {
             credentials: {
@@ -73,7 +81,7 @@ export class ExportStorage {
       .replace(/[^\x20-\x7e]/g, '')
       .replace(/"/g, '');
     return getSignedUrl(
-      this.client,
+      this.signer,
       new GetObjectCommand({
         Bucket: this.bucket,
         Key: key,
@@ -85,5 +93,6 @@ export class ExportStorage {
 
   close(): void {
     this.client.destroy();
+    if (this.signer !== this.client) this.signer.destroy();
   }
 }
