@@ -1,4 +1,5 @@
 import { uuidv7 } from '../../../data/api/uuid';
+import { judgeRuntime } from '../../../data/judge/runtime';
 import { readJudge, readTournament } from '../../../data/judge/queries';
 import {
   judgeSessionStore,
@@ -315,6 +316,11 @@ describe('IMP-305: logowanie online / offline (SCR-JDG-08)', () => {
     await typePin('1111');
     await waitFor(() => expect(screen.queryByTestId('pin-pad')).toBeNull());
     expect(screen.queryByText('Wpisz 4-cyfrowy PIN')).toBeNull();
+    // UX2-37: ekran blokady sam pobiera zmiany.
+    const pull = jest.spyOn(judgeRuntime().engine, 'pullNow').mockResolvedValue();
+    await act(async () => void jest.advanceTimersByTime(10_000));
+    expect(pull).toHaveBeenCalledTimes(1);
+    pull.mockRestore();
     await act(async () => {
       await env.local.tx((db) =>
         db.runSync('UPDATE local_judge SET pin_version = pin_version + 1, pin_locked = 0 WHERE id = ?', 'jA'),

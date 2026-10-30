@@ -26,6 +26,8 @@ import { MEDIUM } from './styles';
 export const VERIFY_DELAY_MS = 160;
 /** Po tym czasie weryfikacji kropki pulsują (SCR-JDG-08). */
 export const PULSE_AFTER_MS = 500;
+/** Pobieranie zmian na ekranie blokady do resetu. */
+export const LOCKED_PULL_MS = 10_000;
 
 type Message = { key: string; params?: Record<string, number> } | null;
 
@@ -75,6 +77,20 @@ export function PinScreen({ judgeId, reauth = false }: { judgeId: string; reauth
     setLockedReset(false);
     setMessage(null);
   }, [pinVersion]);
+
+  // Blokada do resetu: bez sesji zmiany mogą nie przyjść od razu – własne pobieranie, żeby nowy PIN
+  // od organizatora zdjął blokadę w kilka sekund (UX2-37).
+  useEffect(() => {
+    if (!lockedReset) return;
+    const id = setInterval(
+      () =>
+        void judgeRuntime()
+          .engine.pullNow()
+          .catch(() => undefined),
+      LOCKED_PULL_MS,
+    );
+    return () => clearInterval(id);
+  }, [lockedReset]);
 
   // Lokalna blokada czasowa zapisana w SQLite – trwa także po restarcie aplikacji (TC-E2E-JDG-006).
   const lockedUntil = judge?.lockedUntil ?? null;

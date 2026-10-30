@@ -422,7 +422,7 @@ describe('IMP-314: kategoria zablokowana', () => {
       await env.local.tx(() => undefined);
     });
     await waitFor(() => expect(screen.getByTestId('queue-locked-banner')).toBeOnTheScreen());
-    expect(screen.getByText('Kategoria zakończona — tylko podgląd')).toBeOnTheScreen();
+    expect(screen.getByText('Kategoria zakończona – tylko podgląd')).toBeOnTheScreen();
     expect(screen.getByTestId('no-own-score')).toHaveTextContent('Brak Twojej oceny dla tej zawodniczki.');
     expect(screen.queryByTestId('score-footer')).toBeNull();
     await fireEvent.press(screen.getByTestId('queue-row-e1'));

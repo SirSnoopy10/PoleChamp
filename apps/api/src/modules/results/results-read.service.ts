@@ -77,7 +77,11 @@ export class ResultsReadService {
     const entryCount = await this.db.$count(entry, eq(entry.categoryId, c.id));
     if (c.status !== 'DRAFT' && stored.length === entryCount) {
       return {
-        judgeCount: await this.results.expectedJudgeCount(this.db, c.id),
+        // Po blokadzie J z zapisu razem z wynikami – późniejsza dezaktywacja nie zmienia „n/J” (UX2-38).
+        judgeCount:
+          c.status === 'LOCKED' && stored.length
+            ? Math.max(...stored.map((r) => r.expectedCount))
+            : await this.results.expectedJudgeCount(this.db, c.id),
         rows: stored.map((r) => ({
           entryId: r.entryId,
           startNumber: r.startNumber,

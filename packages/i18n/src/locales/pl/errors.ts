@@ -20,7 +20,7 @@ export const errors = {
   INVALID_STATE_TRANSITION: 'Tej operacji nie można wykonać w obecnym statusie.',
   TOURNAMENT_FINISHED: 'Turniej jest zakończony.',
   CATEGORY_NOT_STARTED: 'Ta kategoria jeszcze się nie rozpoczęła',
-  CATEGORY_LOCKED: 'Kategoria zakończona — tylko podgląd',
+  CATEGORY_LOCKED: 'Kategoria zakończona – tylko podgląd',
   CRITERIA_LOCKED: 'Kryteria są zablokowane po rozpoczęciu kategorii.',
   START_REQUIREMENTS_NOT_MET: 'Dodaj co najmniej jedną zawodniczkę.',
   START_NUMBER_TAKEN: 'Numer {nr} jest już zajęty.',

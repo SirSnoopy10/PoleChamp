@@ -49,7 +49,7 @@ describe('Toast, Banner, Dialog (IMP-208)', () => {
         <Banner variant="emailVerify" onAction={onAction} />
       </>,
     );
-    expect(screen.getByText('Kategoria zakończona — tylko podgląd')).toBeOnTheScreen();
+    expect(screen.getByText('Kategoria zakończona – tylko podgląd')).toBeOnTheScreen();
     expect(
       screen.getByText('Brak połączenia – dane mogą być nieaktualne. Zmiany są niedostępne.'),
     ).toBeOnTheScreen();

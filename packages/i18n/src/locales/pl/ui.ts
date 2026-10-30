@@ -57,7 +57,7 @@ export const ui = {
     unavailable: 'Niedostępne',
   },
   banner: {
-    locked: 'Kategoria zakończona — tylko podgląd',
+    locked: 'Kategoria zakończona – tylko podgląd',
     offline: 'Brak połączenia – dane mogą być nieaktualne. Zmiany są niedostępne.',
     emailVerify: 'Potwierdź adres e-mail, aby rozpocząć turniej.',
     resendCode: 'Wyślij kod ponownie',

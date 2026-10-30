@@ -16,7 +16,7 @@ tags: [p1, nightly, judge]
     visible:
       id: 'queue-locked-banner'
     timeout: 3000
-- assertVisible: 'Kategoria zakończona — tylko podgląd'
+- assertVisible: 'Kategoria zakończona – tylko podgląd'
 - assertNotVisible:
     id: 'score-footer'
 - tapOn:

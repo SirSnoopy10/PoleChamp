@@ -261,8 +261,11 @@ describe('wyniki, oceny i rewizje (IMP-151, IMP-152) – fikstura c3', () => {
     const withdrawn = (await org.req('GET', `/v1/categories/${fx.c.id}/results`)).body.rows;
     expect(withdrawn.at(-1)).toMatchObject({ startNumber: 44, entryStatus: 'WITHDRAWN', rank: null });
     await org.req('POST', `/v1/categories/${fx.c.id}/lock`, { force: true });
+    // UX2-38: sędzia dodany po blokadzie nie zmienia J zapisanego z wynikami.
+    await org.judge(fx.t.id, 'Sędzia Po Blokadzie');
     const locked = (await org.req('GET', `/v1/categories/${fx.c.id}/results`)).body;
     expect(locked.status).toBe('LOCKED');
+    expect(locked.judgeCount).toBe(5);
     const flags = locked.rows
       .filter((r: any) => r.rank !== null)
       .map((r: any) => [r.startNumber, r.isProvisional]);
