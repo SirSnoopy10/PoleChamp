@@ -82,7 +82,7 @@ Kolejność zadań = priorytet z raportu. Testy z ID ustalenia w nazwie (`UX2-01
 - **Zakres:** tabela „Niespójności w nazewnictwie” w `packages/i18n`; czeka na IMP-650.
 - **Szacunek:** 2 h (XS) | **Ryzyko:** niskie
 
-### IMP-760 – Runda 3 na emulatorze (niedokończona)
+### IMP-760 – Runda 3 na emulatorze
 - **Epik / obszar:** EP-17 | **Rola:** QA
 - **Zakres:** weryfikacja poprawek i testy z sekcji „Czego nie przetestowano”; wyniki w raporcie (`.ux/r3/`).
 - **Szacunek:** 6 h (M) | **Ryzyko:** niskie
