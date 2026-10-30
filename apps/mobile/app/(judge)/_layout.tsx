@@ -10,8 +10,8 @@ import { deviceCapabilities } from '../../src/features/system/deviceCapabilities
 import { judgeRedirect } from '../../src/features/system/guards';
 import { useMode } from '../../src/mode/mode';
 
-/** Ekrany, na których przycisk wstecz Androida nie zamyka aplikacji (formularz oceny, PIN). */
-const BLOCK_BACK = /^\/(category|pin)\//;
+/** Ekrany, na których przycisk wstecz Androida nic nie robi (PIN); kategoria ma własną obsługę (UX2-29). */
+const BLOCK_BACK = /^/inp; //;
 
 /**
  * Tryb sędziego (IMP-220, IMP-300): strażnik urządzenia i sesji sędziego (z `local_judge_session` –

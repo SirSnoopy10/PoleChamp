@@ -106,7 +106,8 @@ describe('IMP-308: kolejka (SCR-JDG-04)', () => {
     await startJudge(JUDGE_ROUTES, '/category/c1');
     const handlers = add.mock.calls.map(([, h]) => h as () => boolean | null | undefined);
     add.mockRestore();
-    await act(async () => expect(handlers.some((h) => h())).toBe(true));
+    // Android woła od ostatnio zarejestrowanego – blokada w layoucie przechwyciłaby Wstecz.
+    await act(async () => expect(handlers.reverse().some((h) => h())).toBe(true));
     expect(await screen.findByTestId('categories-screen')).toBeOnTheScreen();
   });
 
