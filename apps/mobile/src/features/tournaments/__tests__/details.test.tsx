@@ -189,6 +189,31 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
     ]);
   });
 
+  it('UX2-05: lista braków wymienia tylko to, czego brakuje', async () => {
+    server.use(
+      me(),
+      details(tournamentDetails({ status: 'DRAFT', stats: { categories: 1, athletes: 0, judges: 0 } })),
+    );
+    const r = await startOrg(routes, '/t/t1', state);
+    expect(await screen.findByTestId('tournament-start-hint-judge')).toBeOnTheScreen();
+    expect(screen.queryByTestId('tournament-start-hint-category')).toBeNull();
+    await r.unmount();
+  });
+
+  it('UX2-22: trwający turniej po dacie końca ma baner', async () => {
+    server.use(me(), details(tournamentDetails({ startDate: '2020-01-01', endDate: '2020-01-02' })));
+    const r = await startOrg(routes, '/t/t1', state);
+    expect(await screen.findByTestId('tournament-overdue')).toBeOnTheScreen();
+    await r.unmount();
+  });
+
+  it('UX2-35: PDF wyłączony bez rozpoczętej kategorii', async () => {
+    server.use(me(), details(tournamentDetails({ status: 'DRAFT', categories: [] })));
+    const r = await startOrg(routes, '/t/t1', state);
+    expect(await screen.findByTestId('tournament-pdf')).toBeDisabled();
+    await r.unmount();
+  });
+
   it('UX-06: pusty turniej – „Rozpocznij turniej” nieaktywny z podpisem', async () => {
     server.use(
       me(),
