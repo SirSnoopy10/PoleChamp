@@ -60,6 +60,12 @@ export function bindOrgEvents(socket: RtSocket, queryClient: QueryClient, tourna
         void queryClient.invalidateQueries({ queryKey: queryKeys.tournament(tournamentId) });
       }
     },
+    // Zmiana sędziów wpływa na J i braki startu kategorii (UX2-41).
+    'judges.changed': () => {
+      void queryClient.invalidateQueries({ queryKey: ['category'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.judges(tournamentId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.tournament(tournamentId) });
+    },
     'scoresheet.accepted': (e: ServerEventPayload<'scoresheet.accepted'>) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.scoreSheets(e.entryId) });
     },
