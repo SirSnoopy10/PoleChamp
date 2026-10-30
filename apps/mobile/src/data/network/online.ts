@@ -37,7 +37,8 @@ function update(patch: Partial<NetworkState>) {
 
 /**
  * Stan „online” aplikacji (IMP-215, TL-45): połączony WebSocket **lub** udane żądanie HTTP < 60 s.
- * NetInfo nie jest źródłem prawdy – tylko wyzwala ponowną próbę (`onReconnectHint`).
+ * NetInfo nie potwierdza „online” (tylko wyzwala ponowną próbę), ale jego „brak łączności” wystarcza
+ * do przejścia w offline.
  */
 export const network = {
   isOnline: () => online,
@@ -58,6 +59,10 @@ export const network = {
   setWsConnected(connected: boolean) {
     update({ wsConnected: connected });
   },
+  /** System zgłosił brak łączności – offline od razu, bez czekania na limit czasu (UX2-10). */
+  reportConnectionLost() {
+    update({ wsConnected: false, lastHttpAt: null });
+  },
   /** Tylko testy. */
   reset() {
     if (expiry) clearTimeout(expiry);
@@ -76,7 +81,8 @@ export function useReconnectTrigger(onReconnect: () => void): void {
   useEffect(
     () =>
       NetInfo.addEventListener((s) => {
-        if (s.isConnected && s.isInternetReachable !== false && !network.isOnline()) onReconnect();
+        if (s.isConnected === false) network.reportConnectionLost();
+        else if (s.isConnected && s.isInternetReachable !== false && !network.isOnline()) onReconnect();
       }),
     [onReconnect],
   );

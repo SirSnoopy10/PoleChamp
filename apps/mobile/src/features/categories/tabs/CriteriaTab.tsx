@@ -76,7 +76,6 @@ export function CriteriaTab({
               title={c.name}
               subtitle={t('org:criteria.scaleStep', { max: c.scaleMax, step: formatNumber(c.step) })}
               trailing={<Badge variant="weight" value={toTenths(c.weight)} />}
-              inactive={!editable}
               onPress={editable ? () => onEditCriterion(c) : undefined}
             />
           ))}
@@ -103,7 +102,6 @@ export function CriteriaTab({
                 title={p.name}
                 subtitle={t('org:criteria.maxPerRun', { n: p.maxOccurrences })}
                 trailing={<Badge variant="penalty" value={toTenths(p.points)} />}
-                inactive={!editable}
                 onPress={editable ? () => onEditPenalty(p) : undefined}
               />
             ))}

@@ -77,7 +77,10 @@ export default function CategoryRoute() {
   const results = useResults(id, tab === 'results' || pdfSheet.visible);
   const rejected = useRejected(tournamentId, rejectedSheet.visible);
   const resolve = useResolveRejected(tournamentId);
-  const [scoresRow, setScoresRow] = useState<ResultsResponse['rows'][number] | null>(null);
+  const [scoresRow, setScoresRow] = useState<Pick<
+    ResultsResponse['rows'][number],
+    'entryId' | 'fullName' | 'startNumber' | 'club'
+  > | null>(null);
   useOrgRealtime(category?.tournamentId);
 
   const start = useStartCategory(ref);
@@ -170,6 +173,11 @@ export default function CategoryRoute() {
       onEdit={editSheet.open}
       onAction={onAction}
       onRejected={rejectedSheet.open}
+      onAddEntry={() => {
+        setEntry(undefined);
+        entrySheet.open();
+      }}
+      onJudges={() => router.push(`/judges/${tournamentId}`)}
       sheets={
         category ? (
           <>
@@ -211,6 +219,15 @@ export default function CategoryRoute() {
               onRestore={(e) => entryMutations.restore.mutateAsync(e.id)}
               onRemove={(e) => entryMutations.remove.mutateAsync(e.id)}
               onAnonymize={(e) => entryMutations.anonymize.mutateAsync(e.id)}
+              onShowScores={(e) => {
+                entrySheet.close();
+                setScoresRow({
+                  entryId: e.id,
+                  fullName: e.athlete.fullName,
+                  startNumber: e.startNumber,
+                  club: e.athlete.club,
+                });
+              }}
             />
             {tournament.data ? (
               <PdfPreviewSheet

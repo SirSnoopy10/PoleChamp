@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { BackHandler, StyleSheet, View } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import { color, layout, radius, shadow } from '@polechamp/tokens';
@@ -106,6 +106,22 @@ function CategoryBody({
       }),
     [categoryId, entryId, judgeId],
   );
+
+  // Wejście bez wybranej zawodniczki – od razu pierwsza nieoceniona (UX2-12).
+  const firstUnscored =
+    !entryId && category?.status === 'IN_PROGRESS' ? queue.find((e) => !scored.has(e.id))?.id : undefined;
+  useEffect(() => {
+    if (firstUnscored) router.setParams({ entry: firstUnscored });
+  }, [firstUnscored, router]);
+
+  // Wstecz Androida = powrót do kategorii; szkic zapisuje się sam (UX2-29).
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.replace('/categories');
+      return true;
+    });
+    return () => sub.remove();
+  }, [router]);
 
   if (!category || category.status === 'DRAFT') return <Redirect href="/categories" />;
   const locked = category.status === 'LOCKED';

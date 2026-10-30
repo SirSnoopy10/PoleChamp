@@ -8,8 +8,8 @@ export const ui = {
     provisional: 'wstępny',
     synced: 'Wysłano',
     sending: 'Wysyłanie… ({count})',
-    offlineQueue: 'Offline · {count} w kolejce',
-    offline: 'Offline',
+    offlineQueue: 'Brak sieci · {count} w kolejce',
+    offline: 'Brak sieci',
     attention: 'Wymaga uwagi',
   },
   badge: {
@@ -58,7 +58,7 @@ export const ui = {
   },
   banner: {
     locked: 'Kategoria zakończona — tylko podgląd',
-    offline: 'Brak połączenia — dane mogą być nieaktualne. Zmiany są niedostępne.',
+    offline: 'Brak połączenia – dane mogą być nieaktualne. Zmiany są niedostępne.',
     emailVerify: 'Potwierdź adres e-mail, aby rozpocząć turniej.',
     resendCode: 'Wyślij kod ponownie',
   },

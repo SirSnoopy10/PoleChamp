@@ -18,7 +18,7 @@ export const toasts = {
   pdfSaved: 'PDF zapisany',
   csvSaved: 'CSV zapisany',
   categoryNotStarted: 'Ta kategoria jeszcze się nie rozpoczęła',
-  scoreSaved: 'Zapisano ocenę: {name}',
+  scoreSaved: 'Zapisano ocenę nr {number}: {name}',
   startListUpdated: 'Lista startowa została zaktualizowana',
   saveFailed: 'Nie udało się zapisać. Spróbuj ponownie.',
   pdfFailed: 'Nie udało się wygenerować PDF. Spróbuj ponownie.',

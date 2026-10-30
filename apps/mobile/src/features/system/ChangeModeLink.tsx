@@ -6,7 +6,7 @@ import { outbox } from '../../data/outbox/outbox';
 import { useT } from '../../i18n';
 import { useMode } from '../../mode/mode';
 import { Button } from '../../ui/Button';
-import { Dialog } from '../../ui/Dialog';
+import { ConfirmContent, Sheet } from '../../ui/sheet';
 import { toast } from '../../ui/Toast';
 import { exportPendingScores } from '../judge/exportPending';
 import { TabletDataLifecycle } from '../judge/TabletDataLifecycle';
@@ -59,45 +59,71 @@ export function ChangeModeLink({ from }: { from: 'org' | 'judge' }) {
         style={styles.link}
         testID="change-mode"
       />
-      <Dialog
+      {/* Arkusz jak pozostałe potwierdzenia (UX2-24). */}
+      <Sheet
         visible={prompt?.kind === 'confirm'}
         onClose={() => setPrompt(null)}
-        title={t('mode.changeTitle')}
-        text={t(from === 'judge' ? 'mode.changeTextJudge' : 'mode.changeText')}
+        accessibilityLabel={t('mode.changeTitle')}
         testID="change-mode-dialog"
-        actions={
-          <>
-            <Button variant="ghost" size={44} label={t('common:cancel')} onPress={() => setPrompt(null)} />
-            <Button
-              variant="secondary"
-              size={44}
-              label={t('mode.changeConfirm')}
-              onPress={() => void change()}
-              testID="change-mode-confirm"
-            />
-          </>
-        }
-      />
-      <Dialog
+      >
+        <ConfirmContent
+          icon="warning-circle"
+          title={t('mode.changeTitle')}
+          text={t(from === 'judge' ? 'mode.changeTextJudge' : 'mode.changeText')}
+          actions={
+            <>
+              <Button
+                variant="secondary"
+                destructive={from === 'judge'}
+                size={48}
+                fullWidth
+                label={t('mode.changeConfirm')}
+                onPress={() => void change()}
+                testID="change-mode-confirm"
+              />
+              <Button
+                variant="ghost"
+                size={48}
+                fullWidth
+                label={t('common:cancel')}
+                onPress={() => setPrompt(null)}
+              />
+            </>
+          }
+        />
+      </Sheet>
+      <Sheet
         visible={prompt?.kind === 'blocked'}
         onClose={() => setPrompt(null)}
-        title={t('mode.changeBlockedTitle')}
-        text={t('mode.changeBlocked', { count: prompt?.kind === 'blocked' ? prompt.count : 0 })}
+        accessibilityLabel={t('mode.changeBlockedTitle')}
         testID="change-mode-blocked"
-        actions={
-          <>
-            <Button variant="ghost" size={44} label={t('sheet.close')} onPress={() => setPrompt(null)} />
-            <Button
-              variant="secondary"
-              size={44}
-              icon="download-simple"
-              label={t('mode.exportScores')}
-              onPress={() => void exportScores()}
-              testID="change-mode-export"
-            />
-          </>
-        }
-      />
+      >
+        <ConfirmContent
+          icon="warning-circle"
+          title={t('mode.changeBlockedTitle')}
+          text={t('mode.changeBlocked', { count: prompt?.kind === 'blocked' ? prompt.count : 0 })}
+          actions={
+            <>
+              <Button
+                variant="secondary"
+                size={48}
+                fullWidth
+                icon="download-simple"
+                label={t('mode.exportScores')}
+                onPress={() => void exportScores()}
+                testID="change-mode-export"
+              />
+              <Button
+                variant="ghost"
+                size={48}
+                fullWidth
+                label={t('sheet.close')}
+                onPress={() => setPrompt(null)}
+              />
+            </>
+          }
+        />
+      </Sheet>
     </>
   );
 }

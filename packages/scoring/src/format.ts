@@ -38,29 +38,7 @@ export interface RankingDisplayRow {
   officialHundredths: Hundredths | null;
 }
 
-/**
- * Teksty wyników w kolejności rankingu. Gdy sąsiednie wiersze o różnych miejscach mają ten sam tekst
- * po zaokrągleniu do 0,1, oba (i ich wiersze ex aequo) pokazują 2 miejsca (07-reguly §4, D-SC-05).
- */
+/** Teksty wyników w kolejności rankingu: zawsze 2 miejsca (07-reguly §4, D-SC-05). */
 export function formatRanking(rows: readonly RankingDisplayRow[]): string[] {
-  const oneDecimal = rows.map((r) => formatScore(r.officialHundredths));
-  const twoDecimalRanks = new Set<number>();
-  for (let i = 1; i < rows.length; i++) {
-    const a = rows[i - 1];
-    const b = rows[i];
-    if (a?.rank == null || b?.rank == null || a.rank === b.rank) continue;
-    if (oneDecimal[i - 1] === oneDecimal[i]) {
-      twoDecimalRanks.add(a.rank);
-      twoDecimalRanks.add(b.rank);
-    }
-  }
-  return rows.map((r) =>
-    formatScore(r.officialHundredths, r.rank !== null && twoDecimalRanks.has(r.rank) ? 2 : 1),
-  );
-}
-
-/** Szerokość paska w rankingu: min(1, R / MAX), nigdy ujemna. */
-export function barRatio(totalHundredths: Hundredths | null, maxHundredths: Hundredths): number {
-  if (totalHundredths === null || maxHundredths <= 0) return 0;
-  return Math.min(1, Math.max(0, totalHundredths / maxHundredths));
+  return rows.map((r) => formatScore(r.officialHundredths, 2));
 }

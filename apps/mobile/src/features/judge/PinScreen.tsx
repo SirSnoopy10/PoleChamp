@@ -26,8 +26,6 @@ import { MEDIUM } from './styles';
 export const VERIFY_DELAY_MS = 160;
 /** Po tym czasie weryfikacji kropki pulsują (SCR-JDG-08). */
 export const PULSE_AFTER_MS = 500;
-/** Liczbę pozostałych prób pokazujemy od 5. błędu z 10 (UX-09). */
-export const SHOW_REMAINING_AT = 5;
 
 type Message = { key: string; params?: Record<string, number> } | null;
 
@@ -116,11 +114,7 @@ export function PinScreen({ judgeId, reauth = false }: { judgeId: string; reauth
     } else if (result.kind === 'lockedReset') {
       setLockedReset(true);
       setMessage(null);
-    } else if (
-      result.kind === 'invalid' &&
-      result.remaining !== undefined &&
-      result.remaining <= SHOW_REMAINING_AT
-    ) {
+    } else if (result.kind === 'invalid' && result.remaining !== undefined) {
       setMessage({ key: 'judge:pin.remaining', params: { count: result.remaining } });
     } else if (result.kind === 'error') {
       setMessage({ key: result.messageKey });

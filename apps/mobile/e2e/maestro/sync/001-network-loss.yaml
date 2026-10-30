@@ -13,7 +13,7 @@ tags: [p1, nightly, sync]
           id: 'score-submit'
 - assertVisible:
     id: 'sync-pill-offlineQueue'
-- assertVisible: 'Offline · 3 w kolejce'
+- assertVisible: 'Brak sieci · 3 w kolejce'
 - setAirplaneMode: disabled
 - extendedWaitUntil:
     visible:

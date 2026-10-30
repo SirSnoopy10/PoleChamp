@@ -51,7 +51,7 @@ describe('Toast, Banner, Dialog (IMP-208)', () => {
     );
     expect(screen.getByText('Kategoria zakończona — tylko podgląd')).toBeOnTheScreen();
     expect(
-      screen.getByText('Brak połączenia — dane mogą być nieaktualne. Zmiany są niedostępne.'),
+      screen.getByText('Brak połączenia – dane mogą być nieaktualne. Zmiany są niedostępne.'),
     ).toBeOnTheScreen();
     for (const icon of ['lock-simple', 'warning-circle', 'cloud-slash']) {
       expect(screen.getByTestId(`icon-${icon}`, { includeHiddenElements: true })).toBeOnTheScreen();

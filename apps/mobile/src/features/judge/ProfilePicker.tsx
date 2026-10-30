@@ -14,6 +14,7 @@ import { Dialog } from '../../ui/Dialog';
 import { Icon } from '../../ui/Icon';
 import { ScreenGlow } from '../../ui/layout/ScreenGlow';
 import { Text } from '../../ui/Text';
+import { ChangeModeLink } from '../system/ChangeModeLink';
 import { MEDIUM } from './styles';
 import { TabletDataLifecycle } from './TabletDataLifecycle';
 
@@ -61,9 +62,11 @@ function ProfileCard({ judge, onPress }: { judge: LocalJudge; onPress: () => voi
       <Text variant="body" align="center" numberOfLines={2} style={MEDIUM}>
         {judge.fullName}
       </Text>
-      <Text variant="caption" color={judge.pinLocked ? color.accentRamp[300] : color.neutral[400]}>
-        {t(judge.pinLocked ? 'judge:profiles.pinLocked' : 'judge:profiles.role')}
-      </Text>
+      {judge.pinLocked ? (
+        <Text variant="caption" color={color.accentRamp[300]}>
+          {t('judge:profiles.pinLocked')}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -147,6 +150,8 @@ export function ProfilePicker() {
               )}
             </>
           )}
+          {/* Wyjście z pomyłkowego trybu tabletu (UX2-31): blokada przy niewysłanych ocenach jak IMP-705a. */}
+          <ChangeModeLink from="judge" />
         </View>
       </ScrollView>
       <Dialog

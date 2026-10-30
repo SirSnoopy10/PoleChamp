@@ -31,7 +31,7 @@ export interface ResultsTabProps {
 
 /**
  * SCR-ORG-08 – ranking na żywo (IMP-268): miejsca (top 3 accent-300, „–” bez ocen – G-31), wynik
- * `display` z API, „wstępny” przy niekompletnych w zablokowanej, objaśnienie remisu.
+ * `display` z API, „wstępny” przy niepełnych, liczba pełnych wyników, objaśnienie remisu.
  */
 export function ResultsTab({ results, loading, error, onRetry, onOpen }: ResultsTabProps) {
   const t = useT();
@@ -48,9 +48,18 @@ export function ResultsTab({ results, loading, error, onRetry, onOpen }: Results
   }
   const draft = results.status === 'DRAFT';
   const tieBreak = results.tieBreak ? tieBreakSentence(results.tieBreak.criterionName) : '';
+  const ranked = draft ? [] : results.rows.filter((row) => row.rank !== null);
   return (
     <View testID="results-tab" style={styles.root}>
       <SectionHeader title={t('org:results.live')} />
+      {ranked.length ? (
+        <Text variant="caption" color={color.neutral[400]} testID="results-complete-count">
+          {t('org:results.completeCount', {
+            n: ranked.filter((row) => row.isComplete).length,
+            total: ranked.length,
+          })}
+        </Text>
+      ) : null}
       {results.rows.length ? (
         <GroupedList testID="results-list">
           {orderResults(results.rows).map((row) => {
@@ -72,14 +81,11 @@ export function ResultsTab({ results, loading, error, onRetry, onOpen }: Results
                 score={scored && !withdrawn ? row.display : '—'}
                 meta={meta}
                 judges={judges}
-                bar={
-                  scored && !withdrawn && results.maxJudgeScore
-                    ? (row.official ?? 0) / results.maxJudgeScore
-                    : 0
-                }
                 provisional={scored && row.isProvisional}
                 muted={withdrawn}
-                accessibilityLabel={`${row.fullName}, ${scored ? row.display : t('common:noScores')}, ${judges}`}
+                accessibilityLabel={`${row.fullName}, ${scored ? row.display : t('common:noScores')}, ${judges}${
+                  row.isProvisional ? `, ${t('common:provisional')}` : ''
+                }`}
                 onPress={scored ? () => onOpen(row) : undefined}
               />
             );

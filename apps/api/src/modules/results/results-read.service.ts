@@ -149,7 +149,8 @@ export class ResultsReadService {
         display: display[i] as string,
         sheetCount: r.aggregate.sheetCount,
         isComplete: r.aggregate.isComplete,
-        isProvisional: r.isProvisional,
+        // Wynik niepełny jest wstępny w każdym stanie po starcie kategorii (decyzja PO 30.10, UX2-01).
+        isProvisional: c.status !== 'DRAFT' && r.rank !== null && !r.aggregate.isComplete,
         tieBreak: r.aggregate.tieBreakHundredths === null ? null : r.aggregate.tieBreakHundredths / 100,
       })),
     };

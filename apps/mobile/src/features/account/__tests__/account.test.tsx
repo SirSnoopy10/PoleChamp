@@ -155,7 +155,7 @@ describe('Tryb offline organizatora (IMP-278)', () => {
     expect(await screen.findByTestId('tournament-start')).toBeEnabled();
     await act(async () => network.reportHttpFailure());
     expect(
-      await screen.findByText('Brak połączenia — dane mogą być nieaktualne. Zmiany są niedostępne.'),
+      await screen.findByText('Brak połączenia – dane mogą być nieaktualne. Zmiany są niedostępne.'),
     ).toBeOnTheScreen();
     expect(screen.getByTestId('tournament-start')).toBeDisabled();
     expect(screen.getByTestId('tournament-edit')).toBeDisabled();

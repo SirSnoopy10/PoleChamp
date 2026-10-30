@@ -196,7 +196,7 @@ export function ScoreForm({
         config: model.config,
       });
       markDraft(judge.judgeId, entry.id, false);
-      toast.success('toasts:scoreSaved', { name: entry.fullName });
+      toast.success('toasts:scoreSaved', { number: entry.startNumber, name: entry.fullName });
       onSubmitted();
     } catch {
       toast.error('toasts:saveFailed');

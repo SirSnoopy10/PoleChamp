@@ -106,11 +106,14 @@ export function JudgesDevicesScreen({
     )
   ) : (
     <View style={styles.section}>
-      <SectionHeader
-        title={t('org:judges.section')}
-        onAdd={finished || !canWrite ? undefined : onAddJudge}
-        addAccessibilityLabel={t('org:judges.addA11y')}
-      />
+      {/* Bez nagłówka powtarzającego nazwę zakładki (UX2-27) – tylko akcja dodania. */}
+      {finished || !canWrite ? null : (
+        <SectionHeader
+          title={t('org:judges.addA11y')}
+          onAdd={onAddJudge}
+          addAccessibilityLabel={t('org:judges.addA11y')}
+        />
+      )}
       {judges.length ? (
         <GroupedList testID="judges-list">
           {judges.map((j) => (
@@ -145,7 +148,6 @@ export function JudgesDevicesScreen({
     )
   ) : (
     <View style={styles.section}>
-      <SectionHeader title={t('org:judges.devicesSection')} />
       {devices.length ? (
         <GroupedList testID="devices-list">
           {devices.map((d) => (

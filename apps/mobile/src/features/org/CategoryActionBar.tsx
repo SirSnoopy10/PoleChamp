@@ -27,7 +27,8 @@ export function categoryActions(category: CategoryStatus, tournament: Tournament
 
 const ICON = {
   start: 'play',
-  lock: 'lock-simple',
+  // Flaga = zakończenie, kłódka tylko dla blokady (UX2-25).
+  lock: 'flag-checkered',
   unlock: 'lock-simple-open',
   exportPdf: 'file-pdf',
 } as const;
@@ -47,6 +48,8 @@ export interface CategoryActionBarProps {
   canWrite?: boolean;
   /** Akcja w toku – przycisk w stanie `loading`. */
   busy?: CategoryAction | null;
+  /** Są braki do startu – lista stoi na ekranie, przycisk wyłączony (UX2-04). */
+  startBlocked?: boolean;
 }
 
 export function CategoryActionBar({
@@ -55,6 +58,7 @@ export function CategoryActionBar({
   onAction,
   canWrite = true,
   busy = null,
+  startBlocked = false,
 }: CategoryActionBarProps) {
   const t = useT();
   const actions = categoryActions(category, tournament);
@@ -71,7 +75,7 @@ export function CategoryActionBar({
           icon={ICON[action]}
           loading={busy === action}
           label={t(LABEL[action])}
-          disabled={action !== 'exportPdf' && !canWrite}
+          disabled={(action !== 'exportPdf' && !canWrite) || (action === 'start' && startBlocked)}
           onPress={() => onAction(action)}
         />
       ))}

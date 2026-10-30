@@ -9,12 +9,12 @@ export const judge = {
     'Masz {count} niewysłane oceny. Zostaną wysłane automatycznie, gdy tablet połączy się z siecią.',
   logoutUnsent_many:
     'Masz {count} niewysłanych ocen. Zostaną wysłane automatycznie, gdy tablet połączy się z siecią.',
-  offlineQueue: 'Offline · {count} w kolejce',
+  offlineQueue: 'Brak sieci · {count} w kolejce',
   queueCount: 'Oceny w kolejce: {count}',
   exportUnsent: 'Eksportuj niewysłane oceny',
   sheetRejected: 'Ta ocena nie została przyjęta: {reason}.',
   deviceRevoked: 'To urządzenie zostało odłączone od turnieju.',
-  categoryLockedPreview: 'Kategoria zakończona — podgląd bez możliwości edycji.',
+  categoryLockedPreview: 'Kategoria zakończona – podgląd bez możliwości edycji.',
   submitButton: 'Zatwierdź i przejdź dalej',
   commentLabel: 'Komentarz (opcjonalnie)',
   /** Nagłówek wspólny (SCR-JDG-03…05). */
@@ -27,7 +27,6 @@ export const judge = {
   profiles: {
     title: 'Panel sędziego',
     kicker: 'Wybierz swój profil',
-    role: 'Sędzia',
     pinLocked: 'PIN zablokowany',
     empty: 'Organizator nie dodał jeszcze sędziów.',
     finished: 'Turniej „{name}” został zakończony.',
@@ -62,7 +61,7 @@ export const judge = {
     greeting: 'Dzień dobry, {name}',
     subtitle: 'Wybierz kategorię, aby rozpocząć ocenianie.',
     progress: '{done}/{total} ocenione',
-    notStarted: 'jeszcze nie rozpoczęto',
+    notStarted: 'W przygotowaniu',
     empty: 'Organizator nie dodał jeszcze kategorii do tego turnieju.',
     styleLevel: '{style} · {level}',
     cardA11y: '{name}, {status}, {progress}',
@@ -87,6 +86,7 @@ export const judge = {
   form: {
     /** Nieruszone kryteria (decyzja PO IMP-712, UX-14) – do akceptacji IMP-650. */
     untouched: 'nieruszone',
+    fromDefaults: 'zawiera wartości domyślne',
     untouchedTitle: 'Zatwierdzić z nieruszonymi kryteriami?',
     untouchedText: 'Nie zmieniono wartości domyślnych: {names}.',
     untouchedBack: 'Wróć do oceny',
@@ -112,7 +112,8 @@ export const judge = {
   /** SCR-JDG-07. */
   sync: {
     title: 'Synchronizacja',
-    lastPush: 'Ostatnia wysyłka ocen: {time}',
+    lastPush: 'Ostatnia udana wysyłka: {time}',
+    noNetwork: 'Brak sieci – synchronizacja ruszy sama po odzyskaniu połączenia.',
     lastPull: 'Ostatnie pobranie zmian: {time}',
     attention: 'Wymaga uwagi',
     stuckReason_one: 'serwer nie przyjął oceny ({count} próba), ponawiamy',

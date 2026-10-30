@@ -53,9 +53,9 @@ describe('SCR-ORG-14 sędziowie i urządzenia (IMP-273)', () => {
       [],
     );
     const r = await startOrg(routes, '/judges/t2', state);
-    expect(await screen.findByText('Aktywny · 12 ocen')).toBeOnTheScreen();
+    expect(await screen.findByText('Aktywne konto · 12 ocen')).toBeOnTheScreen();
     expect(screen.getByText('PIN zablokowany')).toBeOnTheScreen();
-    expect(screen.getByText('Nieaktywny')).toBeOnTheScreen();
+    expect(screen.getByText('Dezaktywowano')).toBeOnTheScreen();
     // UX-27: zakładka liczy aktywnych sędziów – jak kafel „Sędziowie” na ekranie turnieju.
     expect(screen.getByTestId('segment-judges-count')).toHaveTextContent('2');
     await fireEvent.press(screen.getAllByText('Tablety')[0]!);
@@ -156,7 +156,11 @@ describe('SCR-ORG-15 sędzia (IMP-274)', () => {
     await fireEvent.press(await screen.findByTestId('judge-j1'));
     expect(screen.queryByTestId('judge-delete')).toBeNull();
     await fireEvent.press(screen.getByTestId('judge-reset'));
-    expect(await screen.findByText('Sędzia zostanie wylogowany ze wszystkich tabletów.')).toBeOnTheScreen();
+    expect(
+      await screen.findByText(
+        'Sędzia zostanie wylogowany ze wszystkich tabletów. Pokażemy nowy PIN – przekaż go sędziemu. Oceny zostają.',
+      ),
+    ).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('judge-reset-confirm'));
     expect(await screen.findByText('PIN – Ewa Lis')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('pin-done'));

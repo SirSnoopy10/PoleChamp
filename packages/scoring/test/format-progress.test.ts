@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
-  barRatio,
   canonicalJson,
   canonicalResults,
   categoryProgress,
@@ -43,29 +42,15 @@ describe('formatowanie (IMP-055)', () => {
     expect(formatPenaltySum(400)).not.toContain('-');
   });
 
-  it('TC-SCORING-019: dwa miejsca tylko dla sąsiadów z różnym miejscem', () => {
+  it('TC-SCORING-019, UX2-02: wynik w rankingu zawsze z 2 miejscami', () => {
     const rows = [
+      { rank: 1, officialHundredths: 5550 },
       { rank: 5, officialHundredths: 5270 },
-      { rank: 6, officialHundredths: 5265 },
       { rank: 6, officialHundredths: 5265 },
       { rank: 8, officialHundredths: 4800 },
       { rank: null, officialHundredths: null },
     ];
-    expect(formatRanking(rows)).toEqual(['52,70', '52,65', '52,65', '48,0', '—']);
-    const exAequoOnly = [
-      { rank: 1, officialHundredths: 5265 },
-      { rank: 1, officialHundredths: 5265 },
-    ];
-    expect(formatRanking(exAequoOnly)).toEqual(['52,7', '52,7']);
-  });
-
-  it('TC-SCORING-041: szerokość paska rankingu', () => {
-    expect(barRatio(5550, 6500)).toBeCloseTo(0.854, 3);
-    expect(barRatio(6500, 6500)).toBe(1);
-    expect(barRatio(7000, 6500)).toBe(1);
-    expect(barRatio(0, 6500)).toBe(0);
-    expect(barRatio(null, 6500)).toBe(0);
-    expect(barRatio(100, 0)).toBe(0);
+    expect(formatRanking(rows)).toEqual(['55,50', '52,70', '52,65', '48,00', '—']);
   });
 });
 

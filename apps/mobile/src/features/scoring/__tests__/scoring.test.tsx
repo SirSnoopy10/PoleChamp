@@ -72,7 +72,7 @@ describe('IMP-307: kategorie sędziego (SCR-JDG-03)', () => {
     expect(screen.getByText('Wybierz kategorię, aby rozpocząć ocenianie.')).toBeOnTheScreen();
     expect(screen.getByTestId('category-c1')).toHaveTextContent(/1\/3 ocenione/);
     expect(screen.getByTestId('category-c1')).toHaveTextContent(/Pole Sport · Advanced/);
-    expect(screen.getByTestId('category-c2')).toHaveTextContent(/jeszcze nie rozpoczęto/);
+    expect(screen.getByTestId('category-c2')).toHaveTextContent(/W przygotowaniu/);
     await fireEvent.press(screen.getByTestId('category-c2'));
     expect(screen.getByText('Ta kategoria jeszcze się nie rozpoczęła')).toBeOnTheScreen();
     expect(r.getPathname()).toBe('/categories');
@@ -336,7 +336,7 @@ describe('IMP-313: zatwierdzenie i auto-przejście', () => {
     const submit = screen.getByTestId('score-submit');
     await fireEvent.press(submit);
     await fireEvent.press(submit);
-    await waitFor(() => expect(screen.getByText('Zapisano ocenę: Zawodniczka 1')).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText('Zapisano ocenę nr 41: Zawodniczka 1')).toBeOnTheScreen());
     expect(r.getSearchParams()).toMatchObject({ entry: 'e2' });
     const sheets = env.local.read.getAllSync<{ total_hundredths: number }>(
       "SELECT total_hundredths FROM local_score_sheet WHERE judge_id = 'jA'",
@@ -395,7 +395,7 @@ describe('IMP-313: zatwierdzenie i auto-przejście', () => {
     expect(screen.getByTestId('score-submit')).toHaveTextContent('Zaktualizuj ocenę');
     await fireEvent.press(screen.getByTestId('criterion-k1-plus'));
     await fireEvent.press(screen.getByTestId('score-submit'));
-    await waitFor(() => expect(screen.getByText('Zapisano ocenę: Zawodniczka 1')).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText('Zapisano ocenę nr 41: Zawodniczka 1')).toBeOnTheScreen());
     const row = env.local.read.getFirstSync<{ revision: number }>(
       "SELECT revision FROM local_score_sheet WHERE entry_id = 'e1'",
     );
@@ -465,7 +465,7 @@ describe('IMP-315: szkic formularza', () => {
     expect(value('k1')).toHaveTextContent('6,0');
     expect(value('k2')).toHaveTextContent('5,5');
     await fireEvent.press(screen.getByTestId('score-submit'));
-    await waitFor(() => expect(screen.getByText('Zapisano ocenę: Zawodniczka 1')).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText('Zapisano ocenę nr 41: Zawodniczka 1')).toBeOnTheScreen());
     expect(env.local.read.getFirstSync('SELECT COUNT(*) AS n FROM local_draft')).toEqual({ n: 0 });
   });
 });
@@ -563,8 +563,8 @@ describe('IMP-317: pigułka synchronizacji i popover (SCR-JDG-07)', () => {
     const states: [Partial<ReturnType<typeof syncStore.getState>>, string, string][] = [
       [{ online: true, pending: 0, isSyncing: false }, 'synced', 'Wysłano'],
       [{ online: true, pending: 3, isSyncing: true }, 'sending', 'Wysyłanie… (3)'],
-      [{ online: false, pending: 3, isSyncing: false }, 'offlineQueue', 'Offline · 3 w kolejce'],
-      [{ online: false, pending: 0 }, 'offline', 'Offline'],
+      [{ online: false, pending: 3, isSyncing: false }, 'offlineQueue', 'Brak sieci · 3 w kolejce'],
+      [{ online: false, pending: 0 }, 'offline', 'Brak sieci'],
       [{ online: true, rejected: 1 }, 'attention', 'Wymaga uwagi'],
     ];
     for (const [state, kind, text] of states) {
@@ -586,13 +586,17 @@ describe('IMP-317: pigułka synchronizacji i popover (SCR-JDG-07)', () => {
     await fireEvent.press(screen.getByTestId('sync-pill'));
     const popover = screen.getByTestId('sync-popover');
     expect(popover).toHaveTextContent(/Synchronizacja/);
-    expect(popover).toHaveTextContent(/Ostatnia wysyłka ocen: 2 min temu/);
+    expect(popover).toHaveTextContent(/Ostatnia udana wysyłka: 2 min temu/);
     expect(popover).toHaveTextContent(/Ostatnie pobranie zmian: przed chwilą/);
     expect(popover).toHaveTextContent(/Oceny w kolejce: 1/);
     expect(popover).toHaveTextContent(/Połączenie: offline/);
     expect(popover).toHaveTextContent(
       /Oceny są bezpieczne na tym tablecie. Wyślemy je automatycznie po odzyskaniu połączenia./,
     );
+    // UX2-10: offline przycisk wyłączony z opisem.
+    expect(screen.getByTestId('sync-now')).toBeDisabled();
+    expect(screen.getByTestId('sync-no-network')).toBeOnTheScreen();
+    await act(async () => syncStore.setState({ online: true }));
     await fireEvent.press(screen.getByTestId('sync-now'));
     await settleSync(env);
     await waitFor(() => expect(screen.getByTestId('sync-popover')).toHaveTextContent(/Oceny w kolejce: 0/));

@@ -18,6 +18,7 @@ import { SectionHeader } from '../../ui/SectionHeader';
 import { Skeleton, SkeletonCard } from '../../ui/Skeleton';
 import { StatusPill } from '../../ui/StatusPill';
 import { Text } from '../../ui/Text';
+import { StartMissing } from '../org/StartMissing';
 
 type Category = TournamentDetails['categories'][number];
 
@@ -101,6 +102,8 @@ export function TournamentDetailsScreen({
               variant="iconRound"
               icon="file-pdf"
               accessibilityLabel={t('org:tournament.pdf')}
+              // PDF ma sens od pierwszej rozpoczętej kategorii (UX2-35).
+              disabled={!tour.categories.some((c) => c.status !== 'DRAFT')}
               onPress={onPdf}
             />
           </>
@@ -130,6 +133,10 @@ export function TournamentDetailsScreen({
   }
 
   const { progress } = tour;
+  // Daty to ISO `RRRR-MM-DD` – porównanie tekstowe (UX2-22).
+  const lastDay = tour.endDate ?? tour.startDate;
+  const overdue =
+    tour.status === 'IN_PROGRESS' && !!lastDay && lastDay < new Date().toISOString().slice(0, 10);
   const summary = progress.startedCategories
     ? t('org:progressSummary', { done: progress.done, expected: progress.expected })
     : t('org:noStartedCategories');
@@ -146,11 +153,17 @@ export function TournamentDetailsScreen({
           loading={starting}
           onPress={onStart}
         />
-        {!tour.stats.categories || !tour.stats.judges ? (
-          <Text variant="caption" color={color.neutral[400]} testID="tournament-start-hint">
-            {t('org:tournament.startHint')}
-          </Text>
-        ) : null}
+        <StartMissing
+          testID="tournament-start-hint"
+          items={[
+            ...(tour.stats.categories
+              ? []
+              : [{ key: 'category', label: t('org:tournament.addCategory'), onPress: onAddCategory }]),
+            ...(tour.stats.judges
+              ? []
+              : [{ key: 'judge', label: t('org:tournament.addJudge'), onPress: onJudges }]),
+          ]}
+        />
       </View>
     ) : tour.status === 'IN_PROGRESS' ? (
       <Button
@@ -214,11 +227,16 @@ export function TournamentDetailsScreen({
             },
           ]}
         />
-        <Text variant="caption" color={color.neutral[500]} testID="tiles-note">
-          {t('org:tournament.tilesNote')}
-        </Text>
+        {tour.stats.categories || tour.stats.athletes || tour.stats.judges ? (
+          <Text variant="caption" color={color.neutral[500]} testID="tiles-note">
+            {t('org:tournament.tilesNote')}
+          </Text>
+        ) : null}
       </View>
       <View style={styles.banners}>
+        {overdue ? (
+          <Banner variant="emailVerify" text={t('org:tournament.overdue')} testID="tournament-overdue" />
+        ) : null}
         {emailUnverified && !finished ? <Banner variant="emailVerify" onAction={onResendCode} /> : null}
         {tour.pendingRejectedSubmissions > 0 ? (
           <Banner

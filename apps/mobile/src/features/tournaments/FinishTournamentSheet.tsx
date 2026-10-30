@@ -92,6 +92,8 @@ export function FinishTournamentSheet({
             </View>
             <Button
               testID="finish-confirm"
+              variant="secondary"
+              destructive
               label={t('org:finish.confirm')}
               size={48}
               fullWidth

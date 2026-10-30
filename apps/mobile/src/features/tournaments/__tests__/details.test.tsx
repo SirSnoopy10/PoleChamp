@@ -180,10 +180,10 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
       [device('d1', { name: 'Tablet stół 2', pendingMutations: 3 }), device('d2')],
     );
     expect(model.categories).toBe(
-      'Kategorie w toku (2) zostaną zakończone. Kategorie w przygotowaniu (3) zostaną oznaczone jako nierozegrane.',
+      'Trwające kategorie (2) zostaną zakończone. Kategorie w przygotowaniu (3) zostaną oznaczone jako nierozegrane.',
     );
     expect(model.warnings).toEqual([
-      'Brakuje 15 ocen w kategoriach w toku.',
+      'Brakuje 15 ocen w trwających kategoriach.',
       'Tablety z niewysłanymi ocenami: Tablet stół 2 (3)',
       'Nierozstrzygnięte odrzucone oceny (2) nie będą mogły zostać przyjęte.',
     ]);
@@ -206,7 +206,7 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
     const r = await startOrg(routes, '/t/t1', state);
     expect(await screen.findByTestId('tournament-start')).toBeDisabled();
     expect(screen.getByTestId('tournament-start-hint')).toHaveTextContent(
-      'Aby rozpocząć, dodaj co najmniej jedną kategorię i jednego sędziego.',
+      'Aby rozpocząć, brakuje:Dodaj kategorięDodaj sędziego',
     );
     await r.unmount();
   });
@@ -247,7 +247,7 @@ describe('SCR-ORG-04 zakończenie turnieju (IMP-258)', () => {
     expect(await screen.findByText('Zakończyć turniej?')).toBeOnTheScreen();
     expect(
       screen.getByText(
-        '„Mistrzostwa Polski Pole Sport 2026” zostanie zamknięty, a wyniki zapisane jako ostateczne.',
+        'Turniej „Mistrzostwa Polski Pole Sport 2026” zostanie zamknięty, a wyniki zapisane jako ostateczne. Tej operacji nie można cofnąć.',
       ),
     ).toBeOnTheScreen();
     await fireEvent.press(screen.getAllByText('Anuluj').at(-1)!);

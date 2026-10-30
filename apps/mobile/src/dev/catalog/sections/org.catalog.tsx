@@ -47,7 +47,7 @@ const RESULTS: ResultsResponse = {
     club: e.athlete.club,
     entryStatus: 'ACTIVE' as const,
     official: 55.5 - i * 0.4,
-    display: String(55.5 - i * 0.4).replace('.', ','),
+    display: (55.5 - i * 0.4).toFixed(2).replace('.', ','),
     sheetCount: e.judged.done,
     isComplete: e.judged.done === 5,
     isProvisional: false,

@@ -47,7 +47,7 @@ export function LockWarningsSheet({ warnings, onClose, busy, onForce }: LockWarn
       testID="lock-sheet"
     >
       <ConfirmContent
-        icon="lock-simple"
+        icon="flag-checkered"
         title={t('org:lock.title')}
         text={model?.missing ?? undefined}
         actions={
@@ -69,6 +69,8 @@ export function LockWarningsSheet({ warnings, onClose, busy, onForce }: LockWarn
             </Text>
             <Button
               testID="lock-force"
+              variant="secondary"
+              destructive
               label={t('org:lock.confirm')}
               size={48}
               fullWidth

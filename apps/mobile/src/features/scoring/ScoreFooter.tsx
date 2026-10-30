@@ -53,6 +53,8 @@ const LiveTotal = memo(function LiveTotal({
   const t = useT();
   const criteria = useForm(store, (s) => s.criteria);
   const penalties = useForm(store, (s) => s.penalties);
+  // Coś nieruszone – wynik zawiera wartości domyślne, nie jest jeszcze oceną sędziego (P14, UX2-09).
+  const fromDefaults = useForm(store, (s) => Object.keys(s.untouched).length > 0);
   const total = useMemo(() => sheetTotal({ criteria, penalties }, config), [criteria, penalties, config]);
   return (
     <>
@@ -61,13 +63,23 @@ const LiveTotal = memo(function LiveTotal({
           {t('judge:form.yourScore')}
         </Text>
         <View style={styles.score}>
-          <Text variant="numXL" tabular testID="score-total">
+          <Text
+            variant="numXL"
+            tabular
+            color={fromDefaults ? color.neutral[500] : undefined}
+            testID="score-total"
+          >
             {formatScore(total.totalHundredths, 1)}
           </Text>
           <Text variant="meta" color={color.neutral[500]}>
             {t('judge:form.outOf', { max: formatScore(maxHundredths, 1) })}
           </Text>
         </View>
+        {fromDefaults ? (
+          <Text variant="caption" color={color.accentRamp[300]} testID="score-from-defaults">
+            {t('judge:form.fromDefaults')}
+          </Text>
+        ) : null}
       </View>
       {total.penaltyHundredths > 0 ? (
         <View testID="penalty-chip" style={styles.chip}>

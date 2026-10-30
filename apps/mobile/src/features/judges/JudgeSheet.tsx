@@ -226,6 +226,8 @@ export function JudgeSheet({
           <>
             <Button
               testID="judge-reset-confirm"
+              variant="secondary"
+              destructive
               label={t('org:judgeForm.resetConfirm')}
               size={48}
               fullWidth
@@ -329,7 +331,7 @@ export function JudgeSheet({
           label={t(judge ? 'org:judgeForm.save' : 'org:judgeForm.add')}
           size={48}
           fullWidth
-          disabled={!canWrite}
+          disabled={!canWrite || (!!judge && !form.formState.isDirty)}
           loading={form.formState.isSubmitting}
           onPress={() => void submit()}
         />

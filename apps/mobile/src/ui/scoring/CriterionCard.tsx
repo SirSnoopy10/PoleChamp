@@ -47,7 +47,7 @@ export const CriterionCard = memo(function CriterionCard({
       <View style={styles.top}>
         <View style={styles.names}>
           <View style={styles.nameRow}>
-            <Text variant="body" numberOfLines={1} style={styles.name}>
+            <Text variant="body" numberOfLines={2} style={styles.name}>
               {name}
             </Text>
             <Badge variant="weight" value={weightTenths} compact />
@@ -58,24 +58,31 @@ export const CriterionCard = memo(function CriterionCard({
             </Text>
           ) : null}
         </View>
-        <View style={styles.value}>
-          <Text
-            variant="numXL"
-            tabular
-            color={untouched ? color.neutral[500] : color.accentRamp[200]}
-            numberOfLines={1}
-            testID={`criterion-${id}-value`}
-          >
-            {formatTenths(value)}
-          </Text>
-          <Text
-            variant="meta"
-            color={untouched ? color.accentRamp[300] : color.neutral[500]}
-            numberOfLines={1}
-            testID={untouched ? `criterion-${id}-untouched` : undefined}
-          >
-            {untouched ? t('judge:form.untouched') : t('judge:form.scale', { max: scaleMax })}
-          </Text>
+        <View style={styles.valueColumn}>
+          <View style={styles.value}>
+            <Text
+              variant="numXL"
+              tabular
+              color={untouched ? color.neutral[500] : color.accentRamp[200]}
+              numberOfLines={1}
+              testID={`criterion-${id}-value`}
+            >
+              {formatTenths(value)}
+            </Text>
+            <Text variant="meta" color={color.neutral[500]} numberOfLines={1}>
+              {t('judge:form.scale', { max: scaleMax })}
+            </Text>
+          </View>
+          {untouched ? (
+            <Text
+              variant="caption"
+              color={color.accentRamp[300]}
+              numberOfLines={1}
+              testID={`criterion-${id}-untouched`}
+            >
+              {t('judge:form.untouched')}
+            </Text>
+          ) : null}
         </View>
       </View>
       <View style={styles.controls}>
@@ -115,6 +122,7 @@ const styles = StyleSheet.create({
   names: { flex: 1, minWidth: 0, gap: 4 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { flexShrink: 1, fontFamily: 'Inter_500Medium' },
-  value: { flexDirection: 'row', alignItems: 'baseline', flexShrink: 0 },
+  valueColumn: { alignItems: 'flex-end', flexShrink: 0, gap: 2 },
+  value: { flexDirection: 'row', alignItems: 'baseline' },
   controls: { flexDirection: 'row', alignItems: 'center', gap: 12 },
 });

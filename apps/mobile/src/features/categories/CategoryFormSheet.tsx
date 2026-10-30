@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 import { layout } from '@polechamp/tokens';
@@ -15,12 +15,14 @@ import { toast } from '../../ui/Toast';
 
 type CategoryValues = {
   name: string;
-  style: (typeof Style.options)[number];
-  level: (typeof Level.options)[number];
+  style: (typeof Style.options)[number] | null;
+  level: (typeof Level.options)[number] | null;
   ageGroup: string;
 };
 
-const NEW: CategoryValues = { name: '', style: 'POLE_SPORT', level: 'BEGINNER', ageGroup: 'Open' };
+/** Styl i poziom bez domyślnych – świadomy wybór, bo trafiają do PDF i na tablety (UX2-34). */
+const NEW: CategoryValues = { name: '', style: null, level: null, ageGroup: 'Open' };
+const AGE_GROUPS = ['Open', 'Junior', 'Senior 18+', 'Masters 40+'] as const;
 
 export interface CategoryFormSheetProps {
   visible: boolean;
@@ -85,16 +87,28 @@ export function CategoryFormSheet({
     ? { name: category.name, style: category.style, level: category.level, ageGroup: category.ageGroup }
     : NEW;
   const form = useZodForm<typeof CategoryCreate>(CategoryCreate, {
-    defaultValues: initial,
+    defaultValues: initial as never,
     errorParams: { ageGroup: { max: 40 } },
   });
+  // Podpowiedź nazwy ze stylu i poziomu, dopóki użytkownik nie wpisał własnej (UX2-21).
+  const suggested = useRef('');
+  const suggestName = (patch: Partial<Pick<CategoryValues, 'style' | 'level'>>) => {
+    if (category) return;
+    const style = patch.style ?? form.getValues('style');
+    const level = patch.level ?? form.getValues('level');
+    const name = form.getValues('name');
+    if (!style || !level || (name && name !== suggested.current)) return;
+    suggested.current = `${t(`org:style.${style}`)} ${t(`org:level.${level}`)}`;
+    form.setValue('name', suggested.current, { shouldDirty: true, shouldValidate: true });
+  };
   const [key, setKey] = useState(uuidv7);
   const { step, setStep, reset } = useSheetStep<'form' | 'delete'>('form');
   const started = !!category && category.status !== 'DRAFT';
 
   useEffect(() => {
     if (!visible) return;
-    form.reset(initial);
+    form.reset(initial as never);
+    suggested.current = '';
     setKey(uuidv7());
     reset();
   }, [visible, category?.version]);
@@ -174,8 +188,12 @@ export function CategoryFormSheet({
                     label={t('org:categoryForm.style')}
                     options={styleOptions}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(style) => {
+                      field.onChange(style);
+                      suggestName({ style });
+                    }}
                     disabled={started}
+                    error={form.fieldError('style') ? t('org:categoryForm.choiceError') : undefined}
                   />
                 )}
               />
@@ -188,9 +206,13 @@ export function CategoryFormSheet({
                     label={t('org:categoryForm.level')}
                     options={levels}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(level) => {
+                      field.onChange(level);
+                      suggestName({ level });
+                    }}
                     disabled={started}
                     disabledHint={started ? t('org:categoryForm.lockedHint') : undefined}
+                    error={form.fieldError('level') ? t('org:categoryForm.choiceError') : undefined}
                   />
                 )}
               />
@@ -198,15 +220,24 @@ export function CategoryFormSheet({
                 control={form.control}
                 name="ageGroup"
                 render={({ field }) => (
-                  <TextField
-                    testID="category-age"
-                    label={t('org:categoryForm.ageGroup')}
-                    value={field.value ?? ''}
-                    onChangeText={field.onChange}
-                    onBlur={field.onBlur}
-                    error={form.fieldError('ageGroup')}
-                    maxLength={40}
-                  />
+                  <>
+                    <ChoiceChipGroup
+                      testID="category-age-chips"
+                      label={t('org:categoryForm.ageGroup')}
+                      options={AGE_GROUPS.map((value) => ({ value, label: value }))}
+                      value={AGE_GROUPS.find((g) => g === field.value) ?? null}
+                      onChange={field.onChange}
+                    />
+                    <TextField
+                      testID="category-age"
+                      label={t('org:categoryForm.ageGroupOther')}
+                      value={field.value ?? ''}
+                      onChangeText={field.onChange}
+                      onBlur={field.onBlur}
+                      error={form.fieldError('ageGroup')}
+                      maxLength={40}
+                    />
+                  </>
                 )}
               />
               <Button

@@ -67,13 +67,11 @@ R = brak („—”)                                               dla n = 0
 | Kara `c` | 0,5 | „−2 pkt”, „−0,5 pkt” |
 | Wynik sędziego `T_j` | 0,01 (dokładny, wielokrotność 0,25) | „Twój wynik” – 1 miejsce, half-up: 54,25 → „54,3” |
 | Suma kar w formularzu | 0,01 | chip „kary −4,0” (1 miejsce) |
-| Wynik oficjalny `R` | 0,01 (half-up ze średniej) | 1 miejsce, half-up **z wartości `R`** (D-SC-05): 54,75 → „54,8”; 55,13 → „55,1” |
-| Wynik przy pozornym remisie | 0,01 | Jeśli dwa **sąsiednie** wiersze rankingu mają różne miejsca, a ten sam wynik po zaokrągleniu do 0,1, oba pokazują 2 miejsca: „52,70” i „52,65” (D-SC-05) |
+| Wynik oficjalny `R` | 0,01 (half-up ze średniej) | Zawsze 2 miejsca (D-SC-05, decyzja PO 30.10.2026): „54,75”, „55,13”, „52,70”. Tak samo arkusz not, PDF i CSV |
 | PDF | jak ranking | jak ranking + stopka z wersją i sumą kontrolną |
 
 - Separator dziesiętny: przecinek. Minus: znak „−” (U+2212). Cyfry tabelaryczne.
 - `round_half_up` jest liczone na liczbach całkowitych (bez liczb zmiennoprzecinkowych). Prototyp używa `Math.round` na `double`, co daje identyczne wyniki dla wartości dodatnich poza przypadkami granicznymi błędów reprezentacji.
-- Pasek w rankingu: szerokość = `min(100%, R / MAX)`.
 
 ## 5. Ranking, remisy i miejsca
 
@@ -86,8 +84,8 @@ Kolejność sortowania startów **aktywnych z co najmniej jedną oceną**:
 Następnie:
 - Starty aktywne **bez ocen**: wynik „—”, miejsce „–” (D-SC-06), etykieta „brak ocen”, na końcu listy wg kolejności startowej.
 - Starty **wycofane**: poza rankingiem, w zakładce Wyniki na samym końcu z etykietą „Wycofana”, bez wyniku i miejsca (D-SC-10).
-- Wyniki niekompletne (`n < J`) uczestniczą w rankingu (jak w prototypie) z etykietą „{n}/{J} sędziów”. W kategorii zablokowanej i w PDF mają dodatkowo oznaczenie „wstępny” (D-SC-11).
-- Kolor miejsca: miejsca 1–3 (z wynikiem) accent-300, pozostałe neutral-500. Pasek: 1. miejsce accent, pozostałe accent-700.
+- Wyniki niekompletne (`n < J`) uczestniczą w rankingu (jak w prototypie) z etykietą „{n}/{J} sędziów” i oznaczeniem „wstępny” – w każdym stanie po starcie kategorii, także w PDF i CSV (D-SC-11, decyzja PO 30.10.2026). Nad rankingiem: „Pełne wyniki: {n} z {m}”.
+- Kolor miejsca: miejsca 1–3 (z wynikiem) accent-300, pozostałe neutral-500. Bez paska w wierszu (decyzja PO 30.10.2026).
 - Tekst objaśnienia pod rankingiem: „Wynik = średnia sędziów z (kryterium × waga − kary). Remis rozstrzyga wyższa ocena za Technikę.” (nazwa kryterium dynamicznie – [05-ekrany-organizatora.md](05-ekrany-organizatora.md#scr-org-08--zakładka-wyniki)).
 
 ## 6. Przykłady liczbowe
@@ -113,21 +111,21 @@ Wszystkie przykłady są zgodne z prototypem (dane demo i zrzuty z `uploads/`), 
 Noty 8,5 / 9 / 8 / 9 / 7,5, Przekroczenie czasu ×1: `K = 17 + 13,5 + 8 + 9 + 7,5 = 55,00`; `P = 1,00` → **T = 54,00** ✔ (zgodne z wynikiem 54 w danych prototypu).
 
 ### P4 – Średnia 5 sędziów (c3, nr 43 Amelia Król)
-`T = 55,25; 56,25; 55,25; 53,00; 54,00` → `S = 273,75`, `n = 5` → `R = 54,75` (setne: ⌊(2·27375 + 5)/10⌋ = ⌊5475,5⌋ = 5475) → wyświetlane **„54,8”** ✔.
+`T = 55,25; 56,25; 55,25; 53,00; 54,00` → `S = 273,75`, `n = 5` → `R = 54,75` (setne: ⌊(2·27375 + 5)/10⌋ = ⌊5475,5⌋ = 5475) → wyświetlane **„54,75”**.
 
 ### P5 – Średnia z wartością x,x0 (c3, nr 45 Magdalena Kaczmarek)
-`54,50 + 54,25 + 52,75 + 55,25 + 54,75 = 271,50` → `R = 54,30` → **„54,3”** ✔.
+`54,50 + 54,25 + 52,75 + 55,25 + 54,75 = 271,50` → `R = 54,30` → **„54,30”**.
 
 ### P6 – Pozorny remis po zaokrągleniu (c3, nr 42 i nr 41)
 - nr 42 Agnieszka Mazur: `51 + 53,75 + 51 + 52,5 + 55,25 = 263,50` → `R = 52,70`.
 - nr 41 Zuzanna Król: `54 + 50,5 + 55 + 53,5 + 50,25 = 263,25` → `R = 52,65`.
-- Prototyp pokazuje obie jako „52,7” na miejscach 5 i 6. **Specyfikacja (D-SC-05):** miejsca 5 i 6 bez zmian, wyświetlane **„52,70”** i **„52,65”**.
+- Prototyp pokazuje obie jako „52,7” na miejscach 5 i 6. **Specyfikacja (D-SC-05):** miejsca 5 i 6 bez zmian, wyświetlane **„52,70”** i **„52,65”** – jak każdy wynik oficjalny.
 
 ### P7 – Wynik niekompletny (c3, nr 47 Natalia Sikora, 3/5)
-`54,75 + 56,00 + 55,75 = 166,50`, `n = 3` → `R = 55,50` → „55,5”, „3/5 sędziów”, miejsce 1 (wynik wstępny – w kategorii Trwa bez pigułki, po blokadzie z pigułką „wstępny”).
+`54,75 + 56,00 + 55,75 = 166,50`, `n = 3` → `R = 55,50` → „55,50”, „3/5 sędziów”, miejsce 1, pigułka „wstępny”.
 
 ### P8 – Zaokrąglenie połówki (c3, nr 46 Paulina Lewandowska, 2/5)
-`54,00 + 56,25 = 110,25`, `n = 2` → dokładnie 55,125 → `R = 55,13` (half-up) → „55,1” ✔ (prototyp: „55,1”).
+`54,00 + 56,25 = 110,25`, `n = 2` → dokładnie 55,125 → `R = 55,13` (half-up) → „55,13”.
 
 ### P9 – Remis rozstrzygnięty kryterium „Technika” (przykład syntetyczny)
 | Start | `T_j` (2 sędziów) | `R` | Technika (noty) | Średnia Techniki | Miejsce |
@@ -191,13 +189,13 @@ Uwaga: w prototypie kryterium „Praca na podłodze” dostają tylko kategorie 
 | D-SC-02 | Arytmetyka całkowitoliczbowa, `R` z dokładnością 0,01 (half-up), ranking na `R` | `double`, ranking na wartości niezaokrąglonej | Determinizm klient/serwer, czytelność oficjalnego wyniku | – |
 | D-SC-03 | `T_j = max(0, K − P)` | brak dolnego ograniczenia | Wynik ujemny jest nieintuicyjny; IPSF: minimum 0 [S1] | Q-02 |
 | D-SC-04 | Remis: Technika → mniej kar → ex aequo | tylko Technika (dalej kolejność listy) | Jednoznaczność, brak arbitralności kolejności dodania | Q-01 |
-| D-SC-05 | Wyświetlanie z `R`; 2 miejsca przy pozornym remisie sąsiadów | 1 miejsce z wartości dokładnej | Czytelność rankingu (przykład P6) | – |
+| D-SC-05 | Wyświetlanie z `R`, zawsze 2 miejsca (decyzja PO 30.10.2026, wcześniej 2 miejsca tylko przy pozornym remisie) | 1 miejsce z wartości dokładnej | Jedna precyzja w rankingu i arkuszu not | – |
 | D-SC-06 | Starty bez ocen: miejsce „–” | numer pozycji | Nie przypisujemy miejsca bez oceny | – |
 | D-SC-07 | Konfiguracja punktacji edytowalna tylko w W przygotowaniu | edytowalna zawsze | Integralność wyników | – |
 | D-SC-08 | Kary liczone per sędzia (każdy sędzia w swoim arkuszu) | tak samo | Zgodność z designem. Kary sędziego głównego – v1.1 | – |
 | D-SC-09 | Domyślne noty = połowa skali | tak samo | Zgodność z designem | Q-03 (wskaźnik „nieruszone”) |
 | D-SC-10 | Wycofane starty poza rankingiem | brak pojęcia | Obsługa nieobecnych zawodniczek | – |
-| D-SC-11 | Wyniki niekompletne w rankingu z oznaczeniem, „wstępny” po blokadzie i w PDF | tylko „n/5 sędziów” | Przejrzystość | – |
+| D-SC-11 | Wyniki niekompletne w rankingu z oznaczeniem „wstępny” w każdym stanie po starcie kategorii (decyzja PO 30.10.2026) | tylko „n/5 sędziów” | Przejrzystość | – |
 | D-SC-12 | Szablon Exotic z „Praca na podłodze” także dla nowych kategorii | tylko w danych demo | Spójność | – |
 
 ## 10. Pseudokod referencyjny (`@polechamp/scoring`)

@@ -69,7 +69,7 @@ describe('SCR-ORG-06 zakładka Kryteria (IMP-262)', () => {
     const r = await startOrg(routes, '/c/c3', state);
     expect(await screen.findByText('Kryteria są zablokowane po rozpoczęciu kategorii.')).toBeOnTheScreen();
     expect(screen.queryByText('Dodaj')).toBeNull();
-    expect(screen.getByText('Brak kar punktowych.')).toBeOnTheScreen();
+    expect(screen.getByText('Brak kar.')).toBeOnTheScreen();
     expect(screen.getByTestId('category-action-lock')).toBeOnTheScreen();
     expect(screen.getByTestId('category-action-exportPdf')).toBeOnTheScreen();
     await r.unmount();
@@ -503,10 +503,10 @@ describe('SCR-ORG-08 zakładka Wyniki (IMP-268)', () => {
         club: 'Studio Vertical Wrocław',
         entryStatus: 'ACTIVE',
         official: 55.5,
-        display: '55,5',
+        display: '55,50',
         sheetCount: 3,
         isComplete: false,
-        isProvisional: false,
+        isProvisional: true,
       },
       {
         entryId: 'e48',
@@ -530,8 +530,12 @@ describe('SCR-ORG-08 zakładka Wyniki (IMP-268)', () => {
     server.use(http.get(`${API}/v1/categories/c3/results`, () => HttpResponse.json(results())));
     const r = await startOrg(routes, '/c/c3?tab=results', state);
     const row = await screen.findByTestId('result-e47');
-    expect(within(row).getByText('55,5')).toBeOnTheScreen();
+    expect(within(row).getByText('55,50')).toBeOnTheScreen();
     expect(within(row).getByText('3/5 sędziów')).toBeOnTheScreen();
+    // UX2-01, UX2-03: „wstępny” w kategorii trwającej, liczba pełnych wyników, bez paska.
+    expect(within(row).getByText('wstępny')).toBeOnTheScreen();
+    expect(screen.getByTestId('results-complete-count')).toHaveTextContent('Pełne wyniki: 0 z 1');
+    expect(within(row).queryByRole('progressbar')).toBeNull();
     expect(within(row).getByText('#47 · Studio Vertical Wrocław')).toBeOnTheScreen();
     const empty = screen.getByTestId('result-e48');
     expect(within(empty).getByText('–')).toBeOnTheScreen();

@@ -178,20 +178,20 @@ describe('wyniki, oceny i rewizje (IMP-151, IMP-152) – fikstura c3', () => {
     });
     const table = res.body.rows.map((r: any) => [r.startNumber, r.rank, r.display, r.sheetCount]);
     expect(table).toEqual([
-      [47, 1, '55,5', 3],
-      [46, 2, '55,1', 2],
-      [43, 3, '54,8', 5],
-      [45, 4, '54,3', 5],
+      [47, 1, '55,50', 3],
+      [46, 2, '55,13', 2],
+      [43, 3, '54,75', 5],
+      [45, 4, '54,30', 5],
       [42, 5, '52,70', 5],
       [41, 6, '52,65', 5],
-      [44, 7, '48,0', 5],
+      [44, 7, '48,00', 5],
       [48, null, '—', 0],
       [49, null, '—', 0],
     ]);
     expect(res.body.rows[0]).toMatchObject({
       official: 55.5,
       isComplete: false,
-      isProvisional: false,
+      isProvisional: true, // UX2-01
       entryStatus: 'ACTIVE',
     });
     expect(res.body.rows[0].fullName).toBeTruthy();
@@ -220,7 +220,7 @@ describe('wyniki, oceny i rewizje (IMP-151, IMP-152) – fikstura c3', () => {
     expect(res.body.missingJudges).toEqual([]);
     expect(res.body.summary).toEqual({
       official: 54.75,
-      display: '54,8',
+      display: '54,75',
       rank: 3,
       sheetCount: 5,
       expectedCount: 5,

@@ -48,6 +48,8 @@ export interface EntrySheetProps {
   onRestore: (entry: EntryRow) => Promise<unknown>;
   onRemove: (entry: EntryRow) => Promise<unknown>;
   onAnonymize: (entry: EntryRow) => Promise<unknown>;
+  /** „Zobacz oceny” – SCR-ORG-19 z listy startowej (UX2-18). */
+  onShowScores?: (entry: EntryRow) => void;
 }
 
 /**
@@ -70,6 +72,7 @@ export function EntrySheet({
   onRestore,
   onRemove,
   onAnonymize,
+  onShowScores,
 }: EntrySheetProps) {
   const t = useT();
   const offline = !useOnline();
@@ -189,7 +192,7 @@ export function EntrySheet({
     remove: {
       icon: 'trash' as const,
       title: t('org:entryForm.removeTitle', { name }),
-      text: undefined,
+      text: t('org:entryForm.removeText'),
       label: t('org:entryForm.removeConfirm'),
       onPress: () => void run(onRemove, 'toasts:athleteRemoved'),
     },
@@ -327,6 +330,16 @@ export function EntrySheet({
                 />
               ) : (
                 <>
+                  {scored && onShowScores ? (
+                    <Button
+                      testID="entry-show-scores"
+                      variant="secondary"
+                      label={t('org:entryForm.showScores')}
+                      size={48}
+                      fullWidth
+                      onPress={() => onShowScores(entry)}
+                    />
+                  ) : null}
                   {canChangeList && !(categoryDraft && !scored && entry.status === 'ACTIVE') ? (
                     entry.status === 'ACTIVE' ? (
                       <Button

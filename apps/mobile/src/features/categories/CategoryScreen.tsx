@@ -15,6 +15,7 @@ import { Skeleton } from '../../ui/Skeleton';
 import { StatusPill } from '../../ui/StatusPill';
 import { Text } from '../../ui/Text';
 import { CategoryActionBar, type CategoryAction } from '../org/CategoryActionBar';
+import { StartMissing } from '../org/StartMissing';
 
 export type CategoryTab = 'criteria' | 'entries' | 'results';
 
@@ -40,6 +41,9 @@ export interface CategoryScreenProps {
   children: ReactNode;
   /** Arkusze ekranu. */
   sheets?: ReactNode;
+  /** Kategoria w przygotowaniu: dodanie zawodniczki / przejście do sędziów (linki braków, UX2-04). */
+  onAddEntry?: () => void;
+  onJudges?: () => void;
 }
 
 /**
@@ -63,6 +67,8 @@ export function CategoryScreen({
   onRejected,
   children,
   sheets,
+  onAddEntry,
+  onJudges,
 }: CategoryScreenProps) {
   const t = useT();
   const barHeight = useStickyBarHeight();
@@ -104,6 +110,26 @@ export function CategoryScreen({
   }
 
   const rejected = category.pendingRejectedSubmissions ?? 0;
+  const missing =
+    category.status !== 'DRAFT' || tournamentStatus === 'FINISHED'
+      ? []
+      : [
+          ...(category.criteria.length
+            ? []
+            : [
+                {
+                  key: 'criteria',
+                  label: t('org:category.addCriterion'),
+                  onPress: () => onTab('criteria'),
+                },
+              ]),
+          ...(category.entryCount || !onAddEntry
+            ? []
+            : [{ key: 'entries', label: t('org:category.addEntry'), onPress: onAddEntry }]),
+          ...(category.judgeCount || !onJudges
+            ? []
+            : [{ key: 'judges', label: t('org:tournament.addJudge'), onPress: onJudges }]),
+        ];
   return (
     <>
       <ScreenContainer
@@ -116,6 +142,7 @@ export function CategoryScreen({
             onAction={onAction}
             canWrite={canWrite}
             busy={busy}
+            startBlocked={missing.length > 0}
           />
         }
       >
@@ -147,6 +174,9 @@ export function CategoryScreen({
             />
           </View>
         ) : null}
+        <View style={styles.missing}>
+          <StartMissing testID="category-start-missing" items={missing} />
+        </View>
         <View style={styles.segments}>
           <SegmentedControl<CategoryTab>
             testID="category-tabs"
@@ -171,5 +201,6 @@ const styles = StyleSheet.create({
   name: { marginTop: layout[4], marginBottom: layout[10] },
   pill: { flexDirection: 'row' },
   banner: { marginTop: layout[12] },
+  missing: { marginTop: layout[8] },
   segments: { marginVertical: layout[18] },
 });

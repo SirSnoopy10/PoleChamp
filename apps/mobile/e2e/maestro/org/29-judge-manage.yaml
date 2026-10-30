@@ -23,7 +23,7 @@ tags: [p1, nightly, org]
     id: 'judge-toggle'
 - tapOn:
     id: 'judge-save'
-- assertVisible: 'Nieaktywny'
+- assertVisible: 'Dezaktywowano'
 - tapOn:
     id: 'judge-${output.ids.jC}'
 - tapOn:

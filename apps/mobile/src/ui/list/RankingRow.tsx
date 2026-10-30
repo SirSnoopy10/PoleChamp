@@ -3,7 +3,6 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import { color } from '@polechamp/tokens';
 import { PRESSED_OVERLAY } from '../cards/Card';
 import { useReducedMotion } from '../motion';
-import { ProgressBar } from '../ProgressBar';
 import { StatusPill } from '../StatusPill';
 import { Text } from '../Text';
 
@@ -17,11 +16,9 @@ export interface RankingRowProps {
   meta: string;
   /** „{n}/{J} sędziów” / „brak ocen” / „Wycofana”. */
   judges: string;
-  /** Szerokość paska 0–1 (wynik / maks. wynik sędziego). */
-  bar: number;
-  /** Pigułka „wstępny” (wynik niekompletny w kategorii Zakończona). */
+  /** Pigułka „wstępny” (wynik niepełny, n < J). */
   provisional?: boolean;
-  /** Wycofana – przygaszona, bez paska. */
+  /** Wycofana – przygaszona. */
   muted?: boolean;
   onPress?: () => void;
   accessibilityLabel?: string;
@@ -30,14 +27,13 @@ export interface RankingRowProps {
 
 const transition = LinearTransition.duration(200);
 
-/** Wiersz rankingu (SCR-ORG-08): miejsce 26 dp, nazwisko + wynik, meta, pasek 3 dp; zmiana kolejności 200 ms. */
+/** Wiersz rankingu (SCR-ORG-08): miejsce 26 dp, nazwisko + wynik, meta; zmiana kolejności 200 ms. */
 export function RankingRow({
   rank,
   name,
   score,
   meta,
   judges,
-  bar,
   provisional,
   muted,
   onPress,
@@ -91,7 +87,6 @@ export function RankingRow({
               {judges}
             </Text>
           </View>
-          {muted ? null : <ProgressBar value={bar} height={3} tone={rank === 1 ? 'primary' : 'secondary'} />}
         </View>
       </Pressable>
     </Animated.View>

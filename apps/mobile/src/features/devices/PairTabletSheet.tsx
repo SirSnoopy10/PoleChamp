@@ -152,6 +152,11 @@ export function PairTabletSheet({
           disabled={offline || !expired}
           onPress={() => void refresh()}
         />
+        {expired ? null : (
+          <Text variant="caption" align="center" color={color.neutral[400]} testID="pair-new-code-hint">
+            {t('org:pairing.newCodeHint')}
+          </Text>
+        )}
         <Button testID="pair-done" label={t('org:pairing.done')} size={48} fullWidth onPress={onClose} />
       </View>
     </Sheet>

@@ -33,6 +33,8 @@ export const JudgeCreated = z.object({
 
 /** Alfabet kodów parowania bez znaków mylących (0/O, 1/I/L). */
 export const PAIRING_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+/** Generowane kody bez par łatwych do pomylenia: S/5, G/6, B/8 (UX2-23); `PAIRING_ALPHABET` waliduje wpis. */
+export const PAIRING_CODE_CHARS = 'ACDEFHJKMNPQRTUVWXYZ23479';
 const PAIRING_RE = new RegExp(`^[${PAIRING_ALPHABET}]{8}$`);
 
 /** Kod parowania wpisany ręcznie: „k7qm 4ztx” / „K7QM-4ZTX” → „K7QM4ZTX”. */

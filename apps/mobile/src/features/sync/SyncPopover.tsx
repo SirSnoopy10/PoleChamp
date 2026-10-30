@@ -130,9 +130,15 @@ export function SyncPopover({ onClose }: { onClose: () => void }) {
           icon="arrows-clockwise"
           label={t('judge:sync.syncNow')}
           loading={running || isSyncing}
+          disabled={!online}
           onPress={() => void syncNow()}
           testID="sync-now"
         />
+        {online ? null : (
+          <Text variant="caption" color={color.accentRamp[300]} testID="sync-no-network">
+            {t('judge:sync.noNetwork')}
+          </Text>
+        )}
         <Text variant="caption" color={color.neutral[400]}>
           {t('judge:sync.safe')}
         </Text>

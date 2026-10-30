@@ -446,3 +446,7 @@ SCR-PUB-01 (publiczne wyniki, FR-709) i FR-407 (import CSV) są poza MVP – bra
 | [IMP-716](16-poprawki-ux.md#imp-716--usunięcie-danych-osobowych-każdej-zawodniczki-zakończonego-turnieju) | Usunięcie danych osobowych każdej zawodniczki zakończonego turnieju | EP-16 | FULL | 3 h | średnie | – | ustalenie #40; FR-904; SCR-ORG-17; TL-17; US-091 |
 | [IMP-717](16-poprawki-ux.md#imp-717--tablet-po-zakończeniu-turnieju) | Tablet po zakończeniu turnieju | EP-16 | FULL | 8 h | wysokie | IMP-701 | ustalenie #41; SCR-JDG-01 (TL-47), SCR-JDG-02, SCR-JDG-10, SCR-ORG-14; FR-808 |
 | [IMP-718](16-poprawki-ux.md#imp-718--ścieżki-konta-organizatora-adres-e-mail-reset-hasła-e-maile) | Ścieżki konta organizatora: adres e-mail, reset hasła, e-maile | EP-16 | FULL | 6 h | niskie | IMP-715, decyzja PO (zmiana e-maila) | ustalenie #45; SCR-ORG-13, SCR-ORG-21; FR-101…107 |
+
+## EP-17 – Poprawki UX po przeglądzie 30.10
+
+Zadania IMP-750…760: [17-poprawki-ux-2.md](17-poprawki-ux-2.md).

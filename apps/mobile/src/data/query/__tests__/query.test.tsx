@@ -85,7 +85,7 @@ describe('TanStack Query, cache MMKV i offline (IMP-215)', () => {
     }
     const { unmount } = await renderWithProviders(<Screen />, { queryClient: client });
     expect(
-      screen.getByText('Brak połączenia — dane mogą być nieaktualne. Zmiany są niedostępne.'),
+      screen.getByText('Brak połączenia – dane mogą być nieaktualne. Zmiany są niedostępne.'),
     ).toBeOnTheScreen();
     expect(screen.getByText('Mistrzostwa Polski')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Zapisz' })).toBeDisabled();

@@ -86,7 +86,7 @@ describe('SCR-ORG-19 oceny zawodniczki (IMP-269)', () => {
             sheet('s2', 'Ewa Lis', { authMode: 'OFFLINE_PIN' }),
           ],
           missingJudges: [{ id: 'j9', fullName: 'Jan Kowal' }],
-          summary: { official: 54.8, display: '54,8', rank: 1, sheetCount: 2, expectedCount: 3 },
+          summary: { official: 54.75, display: '54,75', rank: 1, sheetCount: 2, expectedCount: 3 },
         }),
       ),
       http.get(`${API}/v1/score-sheets/s1/revisions`, () =>
@@ -100,7 +100,7 @@ describe('SCR-ORG-19 oceny zawodniczki (IMP-269)', () => {
     );
     const r = await startOrg(routes, '/c/c3?tab=results', state);
     await fireEvent.press(await screen.findByTestId('result-e43'));
-    expect(await screen.findByText('Wynik 54,8 · miejsce 1 · 2/3 sędziów')).toBeOnTheScreen();
+    expect(await screen.findByText('Wynik 54,75 · miejsce 1 · 2/3 sędziów')).toBeOnTheScreen();
     const card = screen.getByTestId('sheet-s1');
     expect(within(card).getByText('Technika 8,5 ×2')).toBeOnTheScreen();
     expect(within(card).getByText('Upadek ×1 (−2)')).toBeOnTheScreen();
@@ -108,7 +108,7 @@ describe('SCR-ORG-19 oceny zawodniczki (IMP-269)', () => {
     expect(within(screen.getByTestId('sheet-s2')).getByText('offline')).toBeOnTheScreen();
     expect(screen.getByText('brak oceny')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('history-s1'));
-    expect(await screen.findByText(/^rew\. 1 · .* · 52,0$/)).toBeOnTheScreen();
+    expect(await screen.findByText(/^rew\. 1 · .* · 52,00$/)).toBeOnTheScreen();
     await r.unmount();
   });
 });

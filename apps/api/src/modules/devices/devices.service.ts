@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PAIRING_ALPHABET, type Heartbeat, type PairRequest } from '@polechamp/contracts';
+import { PAIRING_CODE_CHARS, type Heartbeat, type PairRequest } from '@polechamp/contracts';
 import { and, asc, eq, gt, isNull, lt, sql } from 'drizzle-orm';
 import type Valkey from 'iovalkey';
 import { randomBytes, randomInt } from 'node:crypto';
@@ -26,7 +26,9 @@ type DeviceRow = typeof device.$inferSelect;
 
 /** Kod 8 znaków z alfabetu bez znaków mylących (0/O/1/I/L), wyświetlany jako `XXXX-XXXX`. */
 export function generatePairingCode(): string {
-  return Array.from({ length: 8 }, () => PAIRING_ALPHABET[randomInt(0, PAIRING_ALPHABET.length)]).join('');
+  return Array.from({ length: 8 }, () => PAIRING_CODE_CHARS[randomInt(0, PAIRING_CODE_CHARS.length)]).join(
+    '',
+  );
 }
 
 /** Tablety sędziowskie: parowanie, tokeny, lista, odłączanie, heartbeat (03-api §3.5; IMP-140…142). */

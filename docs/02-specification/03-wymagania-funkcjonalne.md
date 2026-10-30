@@ -109,7 +109,7 @@
 
 | ID | Wymaganie | Prio | Ekrany | US |
 |---|---|---|---|---|
-| FR-701 | Zakładka „Wyniki” – sekcja „Ranking na żywo”: wiersz z miejscem (top 3 w kolorze accent-300 – tylko z ocenami), imieniem i nazwiskiem, wynikiem, „#{nr} · {klub}”, „{n}/{J} sędziów” lub „brak ocen”, paskiem (wynik / maks.; 1. miejsce accent, pozostałe accent-700). Pod listą informacja „Wynik = średnia sędziów z (kryterium × waga − kary). Remis rozstrzyga wyższa ocena za Technikę.” (nazwa kryterium dynamicznie). | M | SCR-ORG-08 | US-070 |
+| FR-701 | Zakładka „Wyniki” – sekcja „Ranking na żywo”: wiersz z miejscem (top 3 w kolorze accent-300 – tylko z ocenami), imieniem i nazwiskiem, wynikiem, „#{nr} · {klub}”, „{n}/{J} sędziów” lub „brak ocen”, pigułką „wstępny” przy wyniku niepełnym; nad listą „Pełne wyniki: {n} z {m}” (decyzja PO 30.10.2026). Pod listą informacja „Wynik = średnia sędziów z (kryterium × waga − kary). Remis rozstrzyga wyższa ocena za Technikę.” (nazwa kryterium dynamicznie). | M | SCR-ORG-08 | US-070 |
 | FR-702 | Wynik, zaokrąglenia, remisy i miejsca liczone wg [07-reguly-punktacji.md](07-reguly-punktacji.md). Starty bez ocen: „—”, bez miejsca („–”), na końcu wg numeru. Wycofane – poza rankingiem. | M | SCR-ORG-08, 12 | US-071 |
 | FR-703 | Ranking i liczniki postępu aktualizują się automatycznie (≤ 2 s od przyjęcia oceny przez serwer, przy połączeniu online). | M | SCR-ORG-03, 07, 08 | US-072 |
 | FR-704 | Wyniki niekompletne (n < J) mają etykietę „{n}/{J} sędziów”. W kategorii zablokowanej i w PDF dodatkowo pigułkę „wstępny” / adnotację. | M | SCR-ORG-08, 12 | US-071 |

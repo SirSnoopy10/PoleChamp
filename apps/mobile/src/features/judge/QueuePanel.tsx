@@ -80,12 +80,12 @@ const QueueRow = memo(function QueueRow({
             {entry.club}
           </Text>
         ) : null}
+        {draft ? (
+          <Text variant="micro" color={color.accentRamp[300]} testID={`queue-draft-${entry.id}`}>
+            {t('judge:queue.draft')}
+          </Text>
+        ) : null}
       </View>
-      {draft ? (
-        <Text variant="micro" color={color.accentRamp[300]} testID={`queue-draft-${entry.id}`}>
-          {t('judge:queue.draft')}
-        </Text>
-      ) : null}
       <Icon
         name={icon.icon}
         size={18}

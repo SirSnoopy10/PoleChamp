@@ -158,6 +158,8 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
               autoCorrect={false}
               maxLength={9}
               editable={!busy}
+              returnKeyType="go"
+              onSubmitEditing={() => code.length === 9 && void connect(code)}
               testID="pair-code"
             />
             <TextField
@@ -167,6 +169,8 @@ export function PairScreen({ initialCode }: { initialCode?: string }) {
               placeholder={t('judge:pair.deviceNamePlaceholder')}
               maxLength={60}
               editable={!busy}
+              returnKeyType="go"
+              onSubmitEditing={() => code.length === 9 && void connect(code)}
               testID="pair-device-name"
             />
             {error ? (

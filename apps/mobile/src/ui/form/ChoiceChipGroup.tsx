@@ -15,6 +15,8 @@ export interface ChoiceChipGroupProps<V extends string> {
   disabled?: boolean;
   /** Podpis stanu nieaktywnego (np. „Kategoria trwa – zmiana niedostępna”). */
   disabledHint?: string;
+  /** Brak wymaganego wyboru (UX2-34). */
+  error?: string;
   testID?: string;
 }
 
@@ -26,6 +28,7 @@ export function ChoiceChipGroup<V extends string>({
   onChange,
   disabled,
   disabledHint,
+  error,
   testID,
 }: ChoiceChipGroupProps<V>) {
   return (
@@ -74,6 +77,11 @@ export function ChoiceChipGroup<V extends string>({
       {disabled && disabledHint ? (
         <Text variant="caption" color={color.neutral[400]}>
           {disabledHint}
+        </Text>
+      ) : null}
+      {error ? (
+        <Text variant="caption" color={color.accentRamp[300]}>
+          {error}
         </Text>
       ) : null}
     </View>
