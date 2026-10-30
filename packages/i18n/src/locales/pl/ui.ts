@@ -6,7 +6,7 @@ export const ui = {
     done: 'Zakończona',
     unplayed: 'Nierozegrana',
     provisional: 'wstępny',
-    synced: 'Wysłano',
+    synced: 'Zsynchronizowano',
     sending: 'Wysyłanie… ({count})',
     offlineQueue: 'Brak sieci · {count} w kolejce',
     offline: 'Brak sieci',

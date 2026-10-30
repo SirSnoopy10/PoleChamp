@@ -1,3 +1,4 @@
+import { BackHandler } from 'react-native';
 import * as RN from 'react-native';
 import { visibleCategories } from '../../../data/judge/queries';
 import { upsertScoreSheet } from '../../../data/local/scoreSheets';
@@ -99,6 +100,16 @@ describe('IMP-307: kategorie sędziego (SCR-JDG-03)', () => {
 });
 
 describe('IMP-308: kolejka (SCR-JDG-04)', () => {
+  it('UX2-29: Wstecz Androida na formularzu wraca do kategorii', async () => {
+    const add = jest.spyOn(BackHandler, 'addEventListener');
+    await signIn(env, 'jA');
+    await startJudge(JUDGE_ROUTES, '/category/c1');
+    const handlers = add.mock.calls.map(([, h]) => h as () => boolean | null | undefined);
+    add.mockRestore();
+    await act(async () => expect(handlers.some((h) => h())).toBe(true));
+    expect(await screen.findByTestId('categories-screen')).toBeOnTheScreen();
+  });
+
   it('TC-E2E-JDG-010 / TC-UI-029: ikony stanów, etykiety a11y, wycofane ukryte, panel „Wybierz zawodniczkę…”', async () => {
     await signIn(env, 'jA');
     await sheet('e1', 'SYNCED');
@@ -561,7 +572,7 @@ describe('IMP-317: pigułka synchronizacji i popover (SCR-JDG-07)', () => {
     await signIn(env, 'jA');
     await startJudge(JUDGE_ROUTES, '/categories');
     const states: [Partial<ReturnType<typeof syncStore.getState>>, string, string][] = [
-      [{ online: true, pending: 0, isSyncing: false }, 'synced', 'Wysłano'],
+      [{ online: true, pending: 0, isSyncing: false }, 'synced', 'Zsynchronizowano'],
       [{ online: true, pending: 3, isSyncing: true }, 'sending', 'Wysyłanie… (3)'],
       [{ online: false, pending: 3, isSyncing: false }, 'offlineQueue', 'Brak sieci · 3 w kolejce'],
       [{ online: false, pending: 0 }, 'offline', 'Brak sieci'],

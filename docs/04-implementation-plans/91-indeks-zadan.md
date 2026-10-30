@@ -449,4 +449,16 @@ SCR-PUB-01 (publiczne wyniki, FR-709) i FR-407 (import CSV) są poza MVP – bra
 
 ## EP-17 – Poprawki UX po przeglądzie 30.10
 
-Zadania IMP-750…760: [17-poprawki-ux-2.md](17-poprawki-ux-2.md).
+| Zadanie | Tytuł | Rola | Szacunek |
+|---|---|---|---|
+| [IMP-750](17-poprawki-ux-2.md) | Ranking na żywo | FULL | 10 h |
+| [IMP-751](17-poprawki-ux-2.md) | Formularz oceny | MOB | 5 h |
+| [IMP-752](17-poprawki-ux-2.md) | Stan offline tabletu | MOB | 6 h |
+| [IMP-753](17-poprawki-ux-2.md) | Wzorzec braków startu | MOB | 4 h |
+| [IMP-754](17-poprawki-ux-2.md) | Akcje nieodwracalne | MOB | 4 h |
+| [IMP-755](17-poprawki-ux-2.md) | Zmiana trybu z profili | MOB | 3 h |
+| [IMP-756](17-poprawki-ux-2.md) | Drobne: tablet | MOB | 6 h |
+| [IMP-757](17-poprawki-ux-2.md) | Drobne: organizator | MOB | 6 h |
+| [IMP-758](17-poprawki-ux-2.md) | Kategoria, parowanie, potwierdzenia | MOB | 4 h |
+| [IMP-759](17-poprawki-ux-2.md) | Nazewnictwo | MOB | 2 h |
+| [IMP-760](17-poprawki-ux-2.md) | Runda 3 na emulatorze | QA | 6 h |

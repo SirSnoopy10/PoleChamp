@@ -152,6 +152,17 @@ describe('UX-05: zmiana trybu na tablecie', () => {
   });
 });
 
+describe('IMP-755: zmiana trybu z profili', () => {
+  it('UX2-31, UX2-24: „Zmień tryb urządzenia” na profilach z potwierdzeniem w arkuszu', async () => {
+    await startJudge(JUDGE_ROUTES, '/profiles');
+    await fireEvent.press(await screen.findByTestId('change-mode'));
+    expect(await screen.findByTestId('change-mode-confirm')).toBeOnTheScreen();
+    expect(
+      screen.getByText('Dane turnieju zostaną usunięte z tabletu. Wrócisz do wyboru trybu.'),
+    ).toBeOnTheScreen();
+  });
+});
+
 describe('IMP-302: rozruch tabletu (SCR-JDG-00)', () => {
   it('TC-E2E-JDG-003: online – token, odtworzenie IN_FLIGHT, push i pull; etapy splashu', async () => {
     await signIn(env, 'jA');

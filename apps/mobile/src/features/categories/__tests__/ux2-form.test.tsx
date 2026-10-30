@@ -1,8 +1,41 @@
 import { fireEvent, renderWithProviders, screen, waitFor } from '../../../test-utils/render';
+import { EntrySheet } from '../../entries/EntrySheet';
 import { CategoryActionBar } from '../../org/CategoryActionBar';
 import { CategoryFormSheet } from '../CategoryFormSheet';
 
 describe('kategoria (IMP-753, IMP-758)', () => {
+  it('UX2-18: „Zobacz oceny” w arkuszu ocenionej zawodniczki', async () => {
+    const onShowScores = jest.fn();
+    const none = jest.fn();
+    const entry = {
+      id: 'e1',
+      startNumber: 1,
+      status: 'ACTIVE',
+      version: 1,
+      judged: { done: 1, expected: 2 },
+      athlete: { fullName: 'Ola Nowak', club: null, birthYear: null },
+    } as never;
+    await renderWithProviders(
+      <EntrySheet
+        visible
+        onClose={() => {}}
+        entry={entry}
+        suggestedNumber={2}
+        numberLocked={false}
+        canChangeList
+        onCreate={none}
+        onUpdate={none}
+        onWithdraw={none}
+        onRestore={none}
+        onRemove={none}
+        onAnonymize={none}
+        onShowScores={onShowScores}
+      />,
+    );
+    await fireEvent.press(screen.getByTestId('entry-show-scores'));
+    expect(onShowScores).toHaveBeenCalledWith(entry);
+  });
+
   it('UX2-04: start wyłączony przy brakach', async () => {
     await renderWithProviders(
       <CategoryActionBar category="DRAFT" tournament="IN_PROGRESS" onAction={() => {}} startBlocked />,

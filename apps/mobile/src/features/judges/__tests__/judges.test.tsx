@@ -85,6 +85,17 @@ describe('SCR-ORG-14 sędziowie i urządzenia (IMP-273)', () => {
 });
 
 describe('SCR-ORG-15 sędzia (IMP-274)', () => {
+  it('UX2-19, UX2-27: „Zapisz zmiany” wyłączony do pierwszej zmiany; bez nagłówka zakładki', async () => {
+    mockLists([judge('j1')], []);
+    const r = await startOrg(routes, '/judges/t2', state);
+    await fireEvent.press(await screen.findByTestId('judge-j1'));
+    expect(await screen.findByTestId('judge-save')).toBeDisabled();
+    await fireEvent.changeText(screen.getByTestId('judge-name'), 'Nowe Nazwisko');
+    expect(screen.getByTestId('judge-save')).toBeEnabled();
+    expect(screen.queryByText('SĘDZIOWIE')).toBeNull();
+    await r.unmount();
+  });
+
   it('TC-E2E-ORG-028: dodanie → PIN jednorazowo, „Kopiuj”; duplikat nazwiska pod polem', async () => {
     const box = mockLists([], []);
     let attempts = 0;

@@ -110,6 +110,7 @@
 - **Dostępność:** suwak z rolą `adjustable` i etykietą „{kryterium}, {v} z {skala}”; akcje zwiększ/zmniejsz o 0,5; licznik kary jako `adjustable` „{kara}, {n} z {maks.}”.
 
 - **Decyzja PO 28.10.2026 (IMP-712, UX-14):** w nowej ocenie (bez szkicu i zapisanej oceny) wartość domyślna kryterium jest przygaszona (neutral-500) z podpisem „nieruszone” zamiast „/ {skala}” do pierwszej zmiany (także „−”/„+” wracające do tej samej wartości). Zatwierdzenie z nieruszonymi kryteriami pokazuje dialog „Zatwierdzić z nieruszonymi kryteriami?” z ich listą („Wróć do oceny” / „Zatwierdź”). Szkic w kolejce SCR-JDG-04 – podpis „szkic” przy nieocenionej zawodniczce. Po ocenieniu całej kolejki panel „Wszystkie zawodniczki ocenione.”; w zakończonym turnieju baner „Turniej zakończony – tylko podgląd”. Teksty do akceptacji IMP-650.
+- **EP-17 (30.10.2026):** gdy są nieruszone kryteria, pod „Twój wynik” stoi „zawiera wartości domyślne” (P14 bez zmian); „nieruszone” pod notą, „/{max}” zawsze; szkic pod nazwiskiem w kolejce; wejście do kategorii otwiera pierwszą nieocenioną; Wstecz Androida wraca do kategorii; pasek: „Zsynchronizowano”, „Brak sieci”.
 
 ## SCR-JDG-06 – Parowanie tabletu ⟡ POZA DESIGNEM – PROPOZYCJA
 - **FR:** FR-504. **US:** US-043.

@@ -143,6 +143,7 @@
   - Pod listą: ikona `info` + „Wynik = średnia sędziów z (kryterium × waga − kary). Remis rozstrzyga wyższa ocena za {nazwa kryterium rozstrzygającego}.” (12 dp, interlinia 1,45; w designie „…za Technikę.” – nazwa w bierniku z pola kryterium, a gdy odmiana jest niepewna, wariant „…wyższa ocena w kryterium „{nazwa}”.”).
 - **Wyświetlanie wyniku:** 1 miejsce po przecinku. Gdy sąsiednie wiersze z różnym miejscem mają ten sam wynik po zaokrągleniu, oba pokazują 2 miejsca ([07-reguly-punktacji.md §4](07-reguly-punktacji.md#4-zaokrąglenia-i-prezentacja)). Pole `display` pochodzi z API.
 - **⟡ Rozszerzenia:** pigułka „wstępny” (neutral, 11 dp) obok wyniku niekompletnego w kategorii Zakończona; tapnięcie wiersza z ocenami → SCR-ORG-19.
+- **Decyzja PO 30.10.2026 (EP-17):** „wstępny” przy każdym wyniku niepełnym po starcie kategorii, nad listą „Pełne wyniki: {n} z {m}”, wynik zawsze z 2 miejscami, bez paska w wierszu. Po blokadzie J pochodzi z zapisu wyników.
 - **Stany:** kategoria W przygotowaniu – wszystkie wiersze „—”, „brak ocen”, miejsca „–” (UI-01); aktualizacja na żywo bez przeskoku przewinięcia (animacja zmiany kolejności 200 ms).
 
 ## SCR-ORG-09 – Nowe kryterium / Edytuj kryterium (bottom sheet)
