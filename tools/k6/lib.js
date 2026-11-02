@@ -92,7 +92,8 @@ export function submitMutation(judge, category, entryId, baseRevision, scoreShee
 
 /** Profile obciążenia: 1× (NFR-802) i 2× (NFR-804, przed wydaniem 1.0). */
 export const PROFILES = {
-  smoke: { tournaments: 2, ws: 20, scoresPerSecond: 2, duration: '1m' },
+  // Limit 120 zapytań/min na token: 2 oceny/s × (push + changes) = 240/min na 5 tabletów.
+  smoke: { tournaments: 5, ws: 20, scoresPerSecond: 2, duration: '1m' },
   '1x': { tournaments: 100, ws: 3000, scoresPerSecond: 50, duration: '60m' },
   '2x': { tournaments: 200, ws: 6000, scoresPerSecond: 100, duration: '30m' },
 };
