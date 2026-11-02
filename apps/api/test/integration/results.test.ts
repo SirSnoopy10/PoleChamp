@@ -266,6 +266,8 @@ describe('wyniki, oceny i rewizje (IMP-151, IMP-152) – fikstura c3', () => {
     const locked = (await org.req('GET', `/v1/categories/${fx.c.id}/results`)).body;
     expect(locked.status).toBe('LOCKED');
     expect(locked.judgeCount).toBe(5);
+    // Te same „n/J” w szczegółach kategorii i na liście startowej co w rankingu i PDF.
+    expect((await org.req('GET', `/v1/categories/${fx.c.id}`)).body.judgeCount).toBe(5);
     const flags = locked.rows
       .filter((r: any) => r.rank !== null)
       .map((r: any) => [r.startNumber, r.isProvisional]);

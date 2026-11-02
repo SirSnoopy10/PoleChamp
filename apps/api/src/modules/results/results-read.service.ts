@@ -68,7 +68,6 @@ export class ResultsReadService {
         officialHundredths: categoryResult.officialHundredths,
         tieBreakHundredths: categoryResult.tieBreakHundredths,
         sheetCount: categoryResult.sheetCount,
-        expectedCount: categoryResult.expectedCount,
         isComplete: categoryResult.isComplete,
       })
       .from(categoryResult)
@@ -77,11 +76,7 @@ export class ResultsReadService {
     const entryCount = await this.db.$count(entry, eq(entry.categoryId, c.id));
     if (c.status !== 'DRAFT' && stored.length === entryCount) {
       return {
-        // Po blokadzie J z zapisu razem z wynikami – późniejsza dezaktywacja nie zmienia „n/J” (UX2-38).
-        judgeCount:
-          c.status === 'LOCKED' && stored.length
-            ? Math.max(...stored.map((r) => r.expectedCount))
-            : await this.results.expectedJudgeCount(this.db, c.id),
+        judgeCount: await this.results.settledJudgeCount(this.db, c),
         rows: stored.map((r) => ({
           entryId: r.entryId,
           startNumber: r.startNumber,

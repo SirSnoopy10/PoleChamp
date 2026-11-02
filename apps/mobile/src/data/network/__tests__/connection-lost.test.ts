@@ -9,6 +9,18 @@ describe('stan sieci (IMP-752)', () => {
     expect(network.isOnline()).toBe(true);
     network.reportConnectionLost();
     expect(network.isOnline()).toBe(false);
-    expect(network.isWsConnected()).toBe(false);
+  });
+
+  it('UX2-10: krótki zanik przy żywym gnieździe – po powrocie online bez zdarzenia connect', () => {
+    network.setWsConnected(true);
+    network.reportConnectionLost();
+    network.reportConnectionBack();
+    expect(network.isOnline()).toBe(true);
+  });
+
+  it('UX2-10: odpowiedź serwera kasuje błędny „brak łączności” z systemu', () => {
+    network.reportConnectionLost();
+    network.reportHttpSuccess();
+    expect(network.isOnline()).toBe(true);
   });
 });

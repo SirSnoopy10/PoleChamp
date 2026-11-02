@@ -91,7 +91,6 @@ export function ToastHost() {
   const success = message.variant === 'success';
   const duration = reduced ? 0 : theme.motion.toast.duration;
   return (
-    // Nad przyklejonym paskiem akcji i przyciskami arkusza (48 dp + odstępy) – UX-29.
     <View pointerEvents="none" style={[styles.host, { top: insets.top + TOAST_OFFSET }]}>
       <Animated.View
         key={message.id}

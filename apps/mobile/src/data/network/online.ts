@@ -10,14 +10,18 @@ export const ONLINE_PROBE_MS = 45_000;
 interface NetworkState {
   wsConnected: boolean;
   lastHttpAt: number | null;
+  /** System zgłosił brak łączności – do jej powrotu lub odpowiedzi serwera. */
+  connectionLost: boolean;
 }
 
-let state: NetworkState = { wsConnected: false, lastHttpAt: null };
+const INITIAL: NetworkState = { wsConnected: false, lastHttpAt: null, connectionLost: false };
+let state = INITIAL;
 let online = false;
 const listeners = new Set<() => void>();
 let expiry: ReturnType<typeof setTimeout> | null = null;
 
 function compute(now = Date.now()): boolean {
+  if (state.connectionLost) return false;
   return state.wsConnected || (state.lastHttpAt !== null && now - state.lastHttpAt < HTTP_ONLINE_WINDOW_MS);
 }
 
@@ -50,7 +54,7 @@ export const network = {
   },
   /** Odpowiedź serwera (dowolny status HTTP) – serwer osiągalny. */
   reportHttpSuccess(now = Date.now()) {
-    update({ lastHttpAt: now });
+    update({ lastHttpAt: now, connectionLost: false });
   },
   /** Błąd sieci / limit czasu – bez odpowiedzi serwera. */
   reportHttpFailure() {
@@ -61,12 +65,19 @@ export const network = {
   },
   /** System zgłosił brak łączności – offline od razu, bez czekania na limit czasu (UX2-10). */
   reportConnectionLost() {
-    update({ wsConnected: false, lastHttpAt: null });
+    update({ lastHttpAt: null, connectionLost: true });
+  },
+  /**
+   * Łączność wróciła. Stan gniazda zostaje prawdziwy: krótki zanik nie rozłącza WebSocketu, więc bez
+   * zdarzenia `connect` – zerowanie go dawałoby fałszywe „offline” po wygaśnięciu okna HTTP.
+   */
+  reportConnectionBack() {
+    update({ connectionLost: false });
   },
   /** Tylko testy. */
   reset() {
     if (expiry) clearTimeout(expiry);
-    state = { wsConnected: false, lastHttpAt: null };
+    state = INITIAL;
     online = false;
     listeners.forEach((l) => l());
   },
@@ -82,7 +93,11 @@ export function useReconnectTrigger(onReconnect: () => void): void {
     () =>
       NetInfo.addEventListener((s) => {
         if (s.isConnected === false) network.reportConnectionLost();
-        else if (s.isConnected && s.isInternetReachable !== false && !network.isOnline()) onReconnect();
+        else if (s.isConnected && s.isInternetReachable !== false) {
+          const wasOffline = !network.isOnline();
+          network.reportConnectionBack();
+          if (wasOffline) onReconnect();
+        }
       }),
     [onReconnect],
   );

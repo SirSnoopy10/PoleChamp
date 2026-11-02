@@ -20,7 +20,7 @@ type ScoreSheet = EntryScoreSheets['items'][number];
 
 /** Liczba z przecinkiem bez zbędnych zer („8,5”, „2”). */
 const num = (value: number) => (Number.isInteger(value) ? String(value) : formatDecimal(value, 1));
-/** Noty i sumy zawsze z 1 miejscem po przecinku – jak na tablecie (UX-31). */
+/** Sumy zawsze z 2 miejscami po przecinku – jak wynik oficjalny (D-SC-05). */
 const score = (value: number) => formatDecimal(value, 2);
 
 function Revisions({ sheet }: { sheet: ScoreSheet }) {

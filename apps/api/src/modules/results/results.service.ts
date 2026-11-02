@@ -175,6 +175,18 @@ export class ResultsService {
     );
   }
 
+  /** J kategorii po starcie; po blokadzie z zapisu – późniejsza dezaktywacja nie zmienia „n/J” (UX2-38). */
+  async settledJudgeCount(conn: Conn, cat: { id: string; status: string }): Promise<number> {
+    if (cat.status === 'LOCKED') {
+      const [stored] = await conn
+        .select({ n: sql<number | null>`max(${categoryResult.expectedCount})::int` })
+        .from(categoryResult)
+        .where(eq(categoryResult.categoryId, cat.id));
+      if (stored?.n != null) return stored.n;
+    }
+    return this.expectedJudgeCount(conn, cat.id);
+  }
+
   async recompute(tx: Tx, categoryId: string, options: { forPdf?: boolean } = {}): Promise<RecomputeResult> {
     const { cat, ranked, judgeCount } = await this.compute(tx, categoryId, options);
     const resultsVersion = cat.resultsVersion + 1;
@@ -304,7 +316,7 @@ export class ResultsService {
         .where(and(eq(judge.tournamentId, cat.tournamentId), eq(judge.isActive, true)));
       judgeCount = j?.n ?? 0;
     } else {
-      judgeCount = await this.expectedJudgeCount(conn, cat.id);
+      judgeCount = await this.settledJudgeCount(conn, cat);
     }
     const entryCount = active?.n ?? 0;
     return { progress: categoryProgress(done?.n ?? 0, entryCount, judgeCount), entryCount, judgeCount };
