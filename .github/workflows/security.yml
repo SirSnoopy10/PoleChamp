@@ -12,6 +12,21 @@ permissions:
   contents: read
 
 jobs:
+  # SEC-GAP-02: bez staging. Semgrep przerywa przebieg przy ustaleniu; SBOM jako artefakt wydania.
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Semgrep
+        run: pipx run semgrep==1.183.0 scan --config p/typescript --config p/nodejs --error --metrics off apps packages tools
+      - name: SBOM (CycloneDX)
+        run: npx --yes @cyclonedx/cdxgen@12.9.0 -t pnpm -r -o reports/sbom.cdx.json .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: reports/sbom.cdx.json
+
   abuse:
     if: vars.STAGING_ENABLED == 'true'
     runs-on: ubuntu-latest

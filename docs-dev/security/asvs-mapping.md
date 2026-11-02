@@ -20,7 +20,7 @@ Wyjątki wymagają akceptacji TL (kolumna „Uwagi”).
 | V10 | OAuth i OIDC | – | – | nie dotyczy | Brak OAuth/OIDC w MVP (ADR-008); Sign in with Apple/Google – v1.1 |
 | V11 | Kryptografia | `apps/api/src/crypto/pin-wrap.ts` (HKDF + AES-GCM, TL-04), `apps/api/src/modules/auth/password.service.ts` | TC-SEC-025, TC-SEC-009 | spełnione | `crypto.randomBytes` dla sekretów; klucze w Secrets Manager (IMP-014 – SEC-GAP-01) |
 | V12 | Bezpieczna komunikacja | ALB + ACM (Terraform IMP-012), HSTS w `apps/api/src/bootstrap.ts` | TC-SEC-003 | częściowo | TLS kończy się na ALB – konfiguracja polityki TLS w Terraform niewykonana (SEC-GAP-01) |
-| V13 | Konfiguracja | `apps/api/src/config/env.ts` (walidacja zmiennych, blokada `E2E_HELPERS` w produkcji), `pnpm-workspace.yaml` (`allowBuilds`) | TC-SEC-004, TC-SEC-005, TC-SEC-018 | częściowo | gitleaks i SBOM w CI – SEC-GAP-02 |
+| V13 | Konfiguracja | `apps/api/src/config/env.ts` (walidacja zmiennych, blokada `E2E_HELPERS` w produkcji), `pnpm-workspace.yaml` (`allowBuilds`) | TC-SEC-004, TC-SEC-005, TC-SEC-018 | częściowo | ZAP w CI – SEC-GAP-02 |
 | V14 | Ochrona danych | `packages/contracts/src/privacy.ts` (`scrubPii`), `apps/api/src/worker/retention/retention.job.ts`, `apps/api/src/modules/audit` | TC-SEC-017, TC-RODO-001, TC-RODO-003 | spełnione | Inwentarz – `docs-dev/privacy/data-inventory.md` (IMP-406) |
 | V15 | Bezpieczne kodowanie i architektura | `apps/api/src/db/sequence.ts`, `apps/api/src/db/repositories`, `apps/api/test/integration/db-integrity.test.ts` | TC-INT-008, TC-SEC-019, TC-SEC-005 | spełnione | Test architektury repozytoriów i ról bazy (IMP-409) |
 | V16 | Logowanie i obsługa błędów | `apps/api/src/common/errors/problem.filter.ts` (RFC 9457 bez stosu), `apps/api/src/modules/audit`, `apps/api/src/common/request-context.ts` | TC-AUDIT-001, TC-AUDIT-002, TC-SEC-017 | spełnione | Audyt tylko do dopisywania (rola `pc_app` bez UPDATE/DELETE) |
@@ -31,8 +31,8 @@ Wyjątki wymagają akceptacji TL (kolumna „Uwagi”).
 | ID | Priorytet | Opis | Zadanie | W zakresie pentestu |
 |---|---|---|---|---|
 | SEC-GAP-01 | P1 | Infrastruktura AWS (TLS na ALB, KMS, Secrets Manager, WAF) nie istnieje – konfiguracja tylko w planie | IMP-012, IMP-014 | tak (konfiguracja TLS, WAF) |
-| SEC-GAP-02 | P1 | gitleaks, SBOM (CycloneDX), Semgrep i ZAP nie są w CI | IMP-027 | tak (wynik ZAP jako wejście) |
+| SEC-GAP-02 | P1 | Brak ZAP w CI (wymaga staging). Gitleaks w `pr.yml`; Semgrep i SBOM w `security.yml` (job `static`, jeszcze nie uruchomiony) | IMP-027 | tak (wynik ZAP jako wejście) |
 | SEC-GAP-03 | P2 | MFA (TOTP) dla organizatora | v1.1 | nie |
 | SEC-GAP-04 | P2 | Reguła wygaśnięcia bucketu eksportów (tag `expires=7d`) | IMP-012 | tak (dostęp do starych podpisanych URL) |
 | SEC-GAP-06 | P3 | iOS: baza tabletu bez `NSURLIsExcludedFromBackupKey` (moduł natywny); tablety referencyjne to Android | backlog (MASVS-STORAGE-2) | tak (aplikacja iOS) |
-| SEC-GAP-05 | P2 | Adapter Socket.IO bez `commandTimeout` Valkey (odporność na DoS) | backlog | tak (DoS WS) |
+| SEC-GAP-05 | P2 | ZAMKNIĘTE 2.11: `commandTimeout` 500 ms na publikatorze adaptera Socket.IO (subskrybent bez limitu) | – | nie |

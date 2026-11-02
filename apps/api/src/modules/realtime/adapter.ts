@@ -14,8 +14,10 @@ export class RealtimeAdapter extends IoAdapter {
 
   constructor(app: INestApplicationContext, valkeyUrl: string) {
     super(app);
-    this.pub = new Valkey(valkeyUrl, { lazyConnect: true, maxRetriesPerRequest: 1 });
-    this.sub = this.pub.duplicate();
+    // Węzeł bez odpowiedzi nie wstrzymuje emisji – jak klient w `infra.module.ts` (SEC-GAP-05). Subskrybent
+    // bez limitu: nieudany `psubscribe` adaptera byłby nieobsłużonym odrzuceniem.
+    this.pub = new Valkey(valkeyUrl, { lazyConnect: true, maxRetriesPerRequest: 1, commandTimeout: 500 });
+    this.sub = this.pub.duplicate({ commandTimeout: undefined });
     for (const client of [this.pub, this.sub]) {
       let lastError = '';
       client.on('error', (err: Error) => {
