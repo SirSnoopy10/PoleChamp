@@ -41,8 +41,10 @@ Dane FX-SEED to port seedu prototypu (`@polechamp/test-fixtures`) – ranking c3
 ```bash
 # API z helperami (lokalnie: docker compose up -d, potem kroki z apps/api/README.md)
 pnpm --filter @polechamp/api build && E2E_HELPERS=1 pnpm --filter @polechamp/api start
-# emulator Androida: API_URL=http://10.0.2.2:3000; symulator iOS: http://localhost:3000
-maestro test apps/mobile/e2e/maestro --env API_URL=http://10.0.2.2:3000 --include-tags p1
+# `runScript` działa na hoście, nie na urządzeniu – API_URL=http://localhost:3000 także dla emulatora
+maestro test apps/mobile/e2e/maestro --env API_URL=http://localhost:3000 --include-tags p1
 ```
+
+Dev client po `clearState` otwiera launcher Expo – przepływy wymagają buildu z dołączonym JS (lokalnie `gradlew assembleRelease`, `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000`). AVD `PoleChamp_Tablet` ma naturalny poziom: `user_rotation` 0 to poziom, a `setOrientation` Maestro liczy rotacje jak dla naturalnego pionu.
 
 CI: `.github/workflows/mobile-e2e.yml` – nocny przebieg na emulatorze Androida (tablet + telefon) i iOS (runner macOS lub Maestro Cloud) na buildzie `preview`; artefakty: wideo, zrzuty (`reports/maestro`), `adb logcat` / `simctl` przy porażce. Workflow jest wyłączony, dopóki nie ustawi się zmiennej repozytorium `E2E_ENABLED=true` i sekretów (EAS, API staging).

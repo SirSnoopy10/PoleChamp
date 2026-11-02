@@ -21,8 +21,9 @@ export function realtime(data) {
     if (msg.startsWith('0')) ws.send(`40/rt,${JSON.stringify({ token })}`);
     else if (msg === '2') ws.send('3');
     else if (msg.startsWith('40/rt'))
-      ws.send(`421/rt,${JSON.stringify(['subscribe', { tournamentId: t.tournamentId }])}`);
-    else if (msg.startsWith('431/rt')) {
+      // Pakiet Socket.IO: typ, przestrzeń, id potwierdzenia, treść.
+      ws.send(`42/rt,1${JSON.stringify(['subscribe', { tournamentId: t.tournamentId }])}`);
+    else if (msg.startsWith('43/rt,1')) {
       const ok = msg.includes('"ok":true');
       check(ok, { 'subscribe ok': (v) => v });
       if (ok) wsSubscribed.add(1);

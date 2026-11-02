@@ -15,4 +15,4 @@ Profile: `1x` – 100 trwających turniejów, 3 000 WS, 50 ocen/s, 60 min (TC-PE
 
 Wymagania: API z `E2E_HELPERS=1` (staging-e2e), Valkey i worker eksportów. Raport: `docs-dev/perf/k6-<data>.md` wg `docs-dev/perf/k6-template.md`.
 
-Stan: skrypty sprawdzone składniowo (`node --check`); przebieg nie był uruchamiany – brak k6 na stanowisku i środowiska staging (AWS).
+Stan: profil `smoke` uruchamiany lokalnie (`docs-dev/perf/k6-2026-11-02.md`); staging (AWS) – bez przebiegu.
