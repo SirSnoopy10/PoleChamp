@@ -107,7 +107,15 @@ export class ExportsService {
       });
       return row;
     });
-    await this.pdf.enqueue(job.id);
+    try {
+      await this.pdf.enqueue(job.id);
+    } catch (err) {
+      // Kolejka niedostępna: zlecenie od razu FAILED – aplikacja pokazuje błąd i pozwala ponowić.
+      await this.db
+        .update(exportJob)
+        .set({ status: 'FAILED', error: (err as Error).message.slice(0, 500), finishedAt: new Date() })
+        .where(eq(exportJob.id, job.id));
+    }
     return { exportId: job.id };
   }
 

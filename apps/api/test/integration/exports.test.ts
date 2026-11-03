@@ -2,11 +2,12 @@ import { GetObjectTaggingCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { eq } from 'drizzle-orm';
 import { PDFParse } from 'pdf-parse';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../../src/config/env.js';
 import type { DbHandle } from '../../src/db/client.js';
 import * as s from '../../src/db/schema.js';
 import { ExportStorage } from '../../src/infra/storage.js';
+import { ENQUEUE_TIMEOUT_MS, PdfProducer } from '../../src/modules/exports/pdf.queue.js';
 import { PDF_COLORS } from '../../src/modules/exports/pdf/templates/results.js';
 import { startWorker, type WorkerHandle } from '../../src/worker/bootstrap.js';
 import { startApp } from '../support/app.js';
@@ -271,6 +272,25 @@ describe('eksport PDF (IMP-171, IMP-172)', () => {
     const [row] = await handle.db.select().from(s.exportJob).where(eq(s.exportJob.id, job!.id));
     expect(row).toMatchObject({ status: 'FAILED', error: expect.stringContaining('NOT_FOUND') });
     expect((await queue.getJob(job!.id))?.attemptsMade).toBe(3);
+  });
+
+  it('CHAOS-VALKEY-01: kolejka PDF bez odpowiedzi → 202 w limicie czasu i FAILED', async () => {
+    const producer = app.get(PdfProducer);
+    const add = vi.spyOn(producer.queue, 'add').mockReturnValue(new Promise(() => undefined));
+    try {
+      const started = Date.now();
+      const res = await org.req('POST', '/v1/exports', {
+        scope: 'CATEGORY',
+        tournamentId: ctx.t.id,
+        categoryId: ctx.c.id,
+        format: 'CSV',
+      });
+      expect(res.status).toBe(202);
+      expect(Date.now() - started).toBeLessThan(ENQUEUE_TIMEOUT_MS + 2_000);
+      expect((await org.req('GET', `/v1/exports/${res.body.exportId}`)).body.status).toBe('FAILED');
+    } finally {
+      add.mockRestore();
+    }
   });
 
   it('TC-API-109: CSV wyników – UTF-8 z BOM, „;”, przecinek dziesiętny, kolumny PL', async () => {

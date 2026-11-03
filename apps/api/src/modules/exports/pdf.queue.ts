@@ -4,6 +4,9 @@ import { ENV, type Env } from '../../config/env.js';
 import { DEFAULT_JOB_OPTIONS, PDF_QUEUE_NAME } from '../../worker/runtime.js';
 import { bullConnection } from '../email/email.queue.js';
 
+/** Limit czekania na dodanie zlecenia do kolejki (awaria Valkey). */
+export const ENQUEUE_TIMEOUT_MS = 3_000;
+
 export interface PdfJob {
   exportId: string;
 }
@@ -20,8 +23,20 @@ export class PdfProducer implements OnModuleDestroy {
     });
   }
 
+  /**
+   * Połączenie BullMQ czeka na Valkey bez limitu (`maxRetriesPerRequest: null`) – przy awarii żądanie
+   * wisiałoby do powrotu Valkey. Po `ENQUEUE_TIMEOUT_MS` odrzuca; zlecenie może jeszcze trafić do kolejki.
+   */
   async enqueue(exportId: string): Promise<void> {
-    await this.queue.add('export', { exportId }, { jobId: exportId });
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Kolejka PDF niedostępna')), ENQUEUE_TIMEOUT_MS);
+    });
+    try {
+      await Promise.race([this.queue.add('export', { exportId }, { jobId: exportId }), timeout]);
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async onModuleDestroy(): Promise<void> {
