@@ -93,7 +93,7 @@ U2–U7 wprowadzone tego samego dnia na prośbę użytkownika (specyfikacja ozna
 
 1. **Konta i EAS (IMP-550, IMP-023):** projekt EAS, `EAS_PROJECT_ID`, poświadczenia podpisu, App Store Connect i Google Play; build `production` przez EAS nigdy nie powstał.
 2. **Produkcja (IMP-555):** `infra/terraform` jest pusty – brak `api.polechamp.app`, S3, SES, Valkey, sekretów; `SHUTDOWN_DELAY_MS=30000` do ustawienia w ECS.
-3. **Grafika:** ikona i splash to zastępczy okrąg (`assets/icon.png`) – akceptacja projektanta (IMP-650); zrzuty sklepowe i opisy (IMP-551).
+3. **Grafika:** ikona, ikona adaptacyjna i splash z pikselowej tancerki silnika splash (6.11.2026) – do akceptacji projektanta (IMP-650); zrzuty sklepowe i opisy (IMP-551).
 4. **Prawne (Q-10):** regulamin, polityka prywatności, umowa powierzenia i strona usunięcia konta w `apps/site` to szkice „PROJEKT”; deklaracje prywatności sklepów (IMP-407).
 5. **Obserwowalność:** brak `EXPO_PUBLIC_SENTRY_DSN`, `SENTRY_ORG/PROJECT` – brak raportów awarii w dniu zawodów.
 6. **Linki sklepów:** `EXPO_PUBLIC_APP_STORE_URL` / `PLAY_STORE_URL` – wartości zastępcze (ekran wymuszonej aktualizacji).

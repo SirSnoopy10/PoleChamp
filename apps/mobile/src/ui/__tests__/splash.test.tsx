@@ -1,5 +1,5 @@
 import { act, renderWithProviders, screen } from '../../test-utils/render';
-import { GRID, PoleEngine, renderStill } from '../splash/pole-engine';
+import { GRID, PoleEngine, pose, renderStill } from '../splash/pole-engine';
 import { SPLASH_MIN_MS, SplashScreen } from '../splash/SplashScreen';
 import { POLE_PALETTE } from '../splash/usePoleFrames';
 
@@ -14,6 +14,25 @@ describe('splash (IMP-211)', () => {
     expect(a.out).toHaveLength(GRID.width * GRID.height);
     expect(Array.from(a.out)).toEqual(Array.from(b.out));
     expect(new Set(a.out).size).toBeGreaterThan(8);
+  });
+
+  it('wejście i zejście z odwrócenia blisko rury – bez ciała wyrzuconego w bok (próba 6.11.2026)', () => {
+    const POLE_X = GRID.width / 2;
+    for (const [from, to] of [
+      [1.35, 2.3],
+      [2.8, 3.9],
+    ] as const) {
+      let legs = 0;
+      let hips = 0;
+      for (let t = from; t <= to; t += 1 / GRID.fps) {
+        const s = pose(t);
+        hips = Math.max(hips, Math.abs(s.P[0] - POLE_X));
+        for (const p of [s.lN.m, s.lN.e, s.lF.m, s.lF.e]) legs = Math.max(legs, Math.abs(p[0] - POLE_X));
+      }
+      // Poprzednia choreografia: nogi do 33,5 px, biodra do 19,5 px od rury przy zejściu.
+      expect(legs).toBeLessThanOrEqual(17);
+      expect(hips).toBeLessThanOrEqual(8);
+    }
   });
 
   it('TC-DESIGN-016/019: statyczna klatka jest powtarzalna (źródło wzorca zrzutu)', () => {

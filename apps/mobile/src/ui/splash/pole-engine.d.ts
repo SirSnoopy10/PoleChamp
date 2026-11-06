@@ -17,3 +17,8 @@ export class PoleEngine {
 
 /** Statyczna klatka czasu `t` (s) – tryb „Ogranicz ruch”. */
 export function renderStill(palette: PolePalette, t: number): Uint32Array;
+
+type Pt = [number, number];
+type Limb = { m: Pt; e: Pt };
+/** Szkielet w czasie `t` (piksele siatki; rura w x = 40) – testy naturalności ruchu. */
+export function pose(t: number): { P: Pt; S: Pt; N: Pt; lN: Limb; lF: Limb; aN: Limb; aF: Limb };

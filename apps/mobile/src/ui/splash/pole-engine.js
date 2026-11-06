@@ -1,6 +1,7 @@
 // Silnik animacji splash (IMP-211): port `design/pole-spinner.js` bez DOM – rysuje klatkę 80×70
 // do bufora RGBA (`out`, piksele ABGR little-endian jak ImageData). Algorytm bez zmian względem
-// prototypu; paleta z tokenów Nocturne zamiast zmiennych CSS, losowość wstrzykiwana (testy).
+// prototypu poza choreografią (wejście i zejście z odwrócenia w kulce – 6.11.2026); paleta
+// z tokenów Nocturne zamiast zmiennych CSS, losowość wstrzykiwana (testy).
 const Q = 1.25,
   GW = 80,
   GH = 70,
@@ -56,6 +57,9 @@ const K = (t, P, a, hd, f, pf, hN, eN, hF, eF, fN, kN, fF, kF) => ({
   fF,
   kF,
 });
+// Choreografia (pętla 5,5 s): krok i obrót przy rurze → wejście w odwrócenie „w kulce” (kolana przy klatce,
+// biodra przy rurze) → odwrócony szpagat (V) → zejście tą samą drogą w kulce → zejście na podłogę → obejście rury.
+// Biodra nie przechodzą przez rurę, nogi nie odlatują wyprostowane na bok (próba 6.11.2026).
 const KF = [
   K(
     0.0,
@@ -121,22 +125,40 @@ const KF = [
     [3.2, 44.5],
     [-1, -0.2],
   ),
+  // Kulka: biodra w górę i do rury, kolana do klatki, tułów odchyla się do tyłu.
+  K(
+    1.6,
+    [3.6, 28.5],
+    24,
+    10,
+    -1,
+    1,
+    [0.8, 17.5],
+    [0.5, 1],
+    [0.8, 22.5],
+    [0.3, 1],
+    [0.6, 32],
+    [-1, -0.6],
+    [2.4, 33],
+    [-1, -0.4],
+  ),
   K(
     1.85,
-    [-4.3, 24],
-    90,
-    10,
+    [1.8, 24.5],
+    85,
+    12,
     -1,
     1,
     [0.8, 21],
     [0, -1],
     [0.8, 26.5],
     [0, 1],
-    [-5.5, 10.5],
-    [-1, 0],
-    [-2.5, 11],
-    [-1, 0],
+    [-0.4, 19.5],
+    [0.3, -1],
+    [1.6, 18.8],
+    [0.3, -1],
   ),
+  // Wyprost z kulki do odwróconego szpagatu i zatrzymanie.
   K(
     2.35,
     [3.4, 16.7],
@@ -169,24 +191,73 @@ const KF = [
     [-9.5, 8.5],
     [0, -1],
   ),
+  // Zejście: nogi razem, kolana zgięte, ta sama droga w kulce.
   K(
-    3.35,
-    [15.3, 25.7],
-    265,
-    -20,
+    3.05,
+    [3.4, 17.2],
+    172,
+    12,
     -1,
-    1,
-    [0.8, 22.5],
-    [0, -1],
-    [0.8, 29],
-    [0, 1],
-    [12.5, 39],
+    0,
+    [0.8, 19.5],
+    [1, 0],
+    [0.8, 33],
     [-1, 0],
-    [16.5, 39.5],
-    [-1, 0],
+    [1.5, 8.5],
+    [1, 0],
+    [4, 8.2],
+    [1, 0],
   ),
   K(
-    3.85,
+    3.4,
+    [1.8, 24],
+    88,
+    8,
+    -1,
+    1,
+    [0.8, 21],
+    [0, -1],
+    [0.8, 27],
+    [0, 1],
+    [-0.3, 19],
+    [0.3, -1],
+    [1.6, 18.5],
+    [0.3, -1],
+  ),
+  K(
+    3.53,
+    [2.8, 26.8],
+    50,
+    0,
+    -1,
+    1,
+    [0.8, 19],
+    [0.5, 1],
+    [0.8, 24.5],
+    [0.3, 1],
+    [2, 34.5],
+    [-1, -0.2],
+    [4, 35],
+    [-1, -0.2],
+  ),
+  K(
+    3.68,
+    [4, 29.5],
+    18,
+    -6,
+    -1,
+    1,
+    [0.8, 17],
+    [1, 0.6],
+    [0.8, 22],
+    [0.3, 1],
+    [2.5, 41],
+    [-1, -0.3],
+    [5, 42],
+    [-1, -0.2],
+  ),
+  K(
+    3.95,
     [6, 33.8],
     6,
     -10,
@@ -839,6 +910,9 @@ export class PoleEngine {
 }
 
 export const GRID = { width: GW, height: GH, fps: FPS, loop: LOOP };
+
+/** Szkielet w czasie `t` (piksele siatki; rura w x = 40) – testy naturalności ruchu. */
+export const pose = (t) => skel(t, {});
 
 /** Klatka czasu `t` (s) bez symulacji historii – statyczna klatka przy „Ogranicz ruch”. */
 export function renderStill(palette, t) {
