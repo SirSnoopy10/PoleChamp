@@ -11,3 +11,8 @@ design
 docs
 .git
 .claude
+# Lokalne artefakty buildów natywnych i zrzuty QA – nie należą do obrazu API.
+apps/mobile/android
+apps/mobile/ios
+.ux
+.rc

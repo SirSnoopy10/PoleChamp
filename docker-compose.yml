@@ -33,5 +33,56 @@ services:
     image: axllent/mailpit
     ports: ['1025:1025', '8025:8025']
 
+  # Profil `app` – API, worker i migracje z obrazu produkcyjnego (apps/api/Dockerfile), jak w ECS.
+  # Turniej próbny na emulatorach (Android: 10.0.2.2), czysta baza w osobnym projekcie:
+  #   docker compose -p polechamp-rc --profile app up -d --build
+  # Klucze JWT_KEYS i PIN_FINGERPRINT_KEY z apps/api/.env (pnpm --filter @polechamp/api dev-keys).
+  migrate:
+    profiles: [app]
+    image: polechamp-api:local
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    command: ['node', 'dist/cli.js', 'migrate']
+    env_file: [apps/api/.env]
+    environment: &app-env
+      NODE_ENV: production
+      DEPLOY_ENV: staging
+      LOG_LEVEL: info
+      HOST: '0.0.0.0'
+      E2E_HELPERS: 'false'
+      DATABASE_URL: postgres://pc_app:pc_app_dev@postgres:5432/polechamp
+      MIGRATION_DATABASE_URL: postgres://postgres:postgres@postgres:5432/polechamp
+      PC_APP_PASSWORD: pc_app_dev
+      VALKEY_URL: redis://valkey:6379
+      APP_MIN_VERSION: 1.0.0
+      APP_MIN_SYNC_VERSION: 1.0.0
+      SMTP_URL: smtp://mailpit:1025
+      S3_ENDPOINT: http://s3:9090
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://10.0.2.2:9090}
+      SHUTDOWN_DELAY_MS: '2000'
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    profiles: [app]
+    image: polechamp-api:local
+    env_file: [apps/api/.env]
+    environment: *app-env
+    ports: ['3000:3000']
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      valkey: { condition: service_healthy }
+
+  worker:
+    profiles: [app]
+    image: polechamp-api:local
+    command: ['node', 'dist/worker.js']
+    env_file: [apps/api/.env]
+    environment: *app-env
+    # HEALTHCHECK obrazu sprawdza /health/live API (port 3000) – worker nie nasłuchuje HTTP.
+    healthcheck: { disable: true }
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      valkey: { condition: service_healthy }
+
 volumes:
   pgdata:
