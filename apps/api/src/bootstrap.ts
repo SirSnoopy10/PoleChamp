@@ -42,7 +42,10 @@ export async function createApp(
   );
   app.setGlobalPrefix('v1', { exclude: ['health/{*path}', '__e2e/{*path}'] });
   app.useWebSocketAdapter(new RealtimeAdapter(app, env.VALKEY_URL));
-  app.enableShutdownHooks();
+  // Bez `enableShutdownHooks()`: SIGTERM/SIGINT obsługuje wyłącznie `installShutdown` (503 → opóźnienie
+  // deregistracji ALB → wygaszenie WS → `app.close()`, które i tak wywołuje haki zamknięcia). Haki Nesta
+  // zamykały aplikację natychmiast – połączenia odrzucane w trakcie wdrożenia, a drugi `close()` kończył
+  // się błędem „Called end on pool more than once” (próba turnieju 6.11.2026).
 
   const fastify = app.getHttpAdapter().getInstance();
   await fastify.register(compress, { global: true, threshold: 1024 });

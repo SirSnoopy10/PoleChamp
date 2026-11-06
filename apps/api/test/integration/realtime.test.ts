@@ -414,6 +414,17 @@ describe('zdarzenia komend (IMP-156)', () => {
 });
 
 describe('wdrożenie z połączeniami WS (IMP-505)', () => {
+  it('TC-REL-005: aplikacja nie rejestruje haków sygnałów Nesta – SIGTERM obsługuje tylko installShutdown', async () => {
+    const before = process.listenerCount('SIGTERM');
+    const second = await startApp({ env });
+    try {
+      // `enableShutdownHooks()` zamykał serwer natychmiast po SIGTERM (bez 503, opóźnienia i wygaszenia WS).
+      expect(process.listenerCount('SIGTERM')).toBe(before);
+    } finally {
+      await second.app.close();
+    }
+  });
+
   it('TC-REL-005: SIGTERM – server.restarting, rozłączanie paczkami, druga instancja bez zmian, zmiany z przerwy w sync/changes', async () => {
     const second = await startApp({ env });
     const secondUrl = await listen(second.app);

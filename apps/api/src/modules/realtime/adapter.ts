@@ -17,7 +17,10 @@ export class RealtimeAdapter extends IoAdapter {
     // Węzeł bez odpowiedzi nie wstrzymuje emisji – jak klient w `infra.module.ts` (SEC-GAP-05). Subskrybent
     // bez limitu: nieudany `psubscribe` adaptera byłby nieobsłużonym odrzuceniem.
     this.pub = new Valkey(valkeyUrl, { lazyConnect: true, maxRetriesPerRequest: 1, commandTimeout: 500 });
-    this.sub = this.pub.duplicate({ commandTimeout: undefined });
+    // Subskrybent czeka na Valkey bez limitu prób: `psubscribe`/`subscribe` adaptera wysłane przy starcie
+    // bez Valkey kończyły proces (`MaxRetriesPerRequestError` bez obsługi) – API nie wstawało w czasie
+    // awarii Valkey. Teraz subskrypcje czekają w kolejce i wykonują się po powrocie Valkey.
+    this.sub = this.pub.duplicate({ commandTimeout: undefined, maxRetriesPerRequest: null });
     for (const client of [this.pub, this.sub]) {
       let lastError = '';
       client.on('error', (err: Error) => {
@@ -34,6 +37,17 @@ export class RealtimeAdapter extends IoAdapter {
         this.logger.warn(`Publikacja realtime przez Valkey nieudana: ${err.message}`);
         return 0;
       })) as typeof this.pub.publish;
+    // Adapter nie obsługuje też odrzuconych (un)subskrypcji – `close()` adaptera przy zamykaniu serwera
+    // wywołuje `unsubscribe`/`punsubscribe` bez `catch`; bez Valkey proces kończył się błędem.
+    const swallow = (err: Error) => {
+      this.logger.warn(`Subskrypcja realtime w Valkey nieudana: ${err.message}`);
+      return 0;
+    };
+    const sub = this.sub as unknown as Record<string, (...args: unknown[]) => Promise<unknown>>;
+    for (const method of ['subscribe', 'psubscribe', 'unsubscribe', 'punsubscribe']) {
+      const original = sub[method]?.bind(this.sub);
+      if (original) sub[method] = (...args: unknown[]) => original(...args).catch(swallow);
+    }
   }
 
   override createIOServer(port: number, options?: ServerOptions): Server {
