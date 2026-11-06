@@ -199,7 +199,7 @@ describe('IMP-309…312: formularz oceny (SCR-JDG-05)', () => {
     expect(screen.getByText('Kryteria')).toBeOnTheScreen();
     expect(value('k1')).toHaveTextContent('5,0');
     expect(value('k2')).toHaveTextContent('5,0');
-    expect(screen.getByTestId('score-total')).toHaveTextContent('12,5');
+    expect(screen.getByTestId('score-total')).toHaveTextContent('12,50');
     expect(screen.getByTestId('score-footer')).toHaveTextContent(/\/ 25,0/);
     expect(screen.queryByTestId('penalty-chip')).toBeNull();
     expect(screen.getByTestId('penalty-p1')).toHaveTextContent(/−0,5 pkt za każde · maks. 3×/);
@@ -214,12 +214,12 @@ describe('IMP-309…312: formularz oceny (SCR-JDG-05)', () => {
     expect(screen.getByTestId('criterion-k1-plus')).toBeDisabled();
     await fireEvent.press(screen.getByTestId('criterion-k2-minus'));
     expect(value('k2')).toHaveTextContent('4,5');
-    expect(screen.getByTestId('score-total')).toHaveTextContent('16,8');
+    expect(screen.getByTestId('score-total')).toHaveTextContent('16,75');
     for (let i = 0; i < 4; i++) await fireEvent.press(screen.getByTestId('penalty-p1-plus'));
     expect(screen.getByTestId('penalty-p1-count')).toHaveTextContent('3');
     expect(screen.getByTestId('penalty-p1-plus')).toBeDisabled();
     expect(screen.getByTestId('penalty-chip')).toHaveTextContent('kary −1,5');
-    expect(screen.getByTestId('score-total')).toHaveTextContent('15,3');
+    expect(screen.getByTestId('score-total')).toHaveTextContent('15,25');
     for (let i = 0; i < 4; i++) await fireEvent.press(screen.getByTestId('penalty-p1-minus'));
     expect(screen.getByTestId('penalty-p1-count')).toHaveTextContent('0');
     expect(screen.getByTestId('penalty-p1-minus')).toBeDisabled();
@@ -502,6 +502,27 @@ describe('IMP-316: stany dodatkowe formularza', () => {
     expect(value('k2')).toHaveTextContent('5,5');
   });
 
+  it('U5: wycofanie otwartej zawodniczki – baner, brak zatwierdzania; po przywróceniu znowu edycja', async () => {
+    await signIn(env, 'jA');
+    await startJudge(JUDGE_ROUTES, '/category/c1?entry=e1');
+    expect(screen.getByTestId('score-submit')).toBeOnTheScreen();
+    const setStatus = (status: string) =>
+      act(async () => {
+        await env.local.tx((db) =>
+          db.runSync('UPDATE local_entry SET status = ? WHERE id = ?', status, 'e1'),
+        );
+        syncEvents.emit([{ type: 'startListChanged', categoryId: 'c1' }]);
+      });
+    await setStatus('WITHDRAWN');
+    expect(screen.getByTestId('form-withdrawn-banner')).toHaveTextContent(
+      'Zawodniczka wycofana przez organizatora – tej oceny nie można zatwierdzić.',
+    );
+    expect(screen.queryByTestId('score-submit')).toBeNull();
+    await setStatus('ACTIVE');
+    expect(screen.queryByTestId('form-withdrawn-banner')).toBeNull();
+    expect(screen.getByTestId('score-submit')).toBeOnTheScreen();
+  });
+
   it('ocena odrzucona – „Ta ocena nie została przyjęta: {powód}.”', async () => {
     await signIn(env, 'jA');
     await sheet('e1', 'REJECTED', 'ENTRY_WITHDRAWN');
@@ -613,6 +634,8 @@ describe('IMP-317: pigułka synchronizacji i popover (SCR-JDG-07)', () => {
     await settleSync(env);
     await waitFor(() => expect(screen.getByTestId('sync-popover')).toHaveTextContent(/Oceny w kolejce: 0/));
     expect(env.calls.some((c) => c.path === '/v1/sync/push')).toBe(true);
+    // U6: online bez kolejki – bez „po odzyskaniu połączenia”.
+    expect(screen.queryByTestId('sync-safe')).toBeNull();
     await fireEvent.press(screen.getByTestId('sync-popover-backdrop', { includeHiddenElements: true }));
     expect(screen.queryByTestId('sync-popover')).toBeNull();
   });

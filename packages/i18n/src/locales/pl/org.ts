@@ -248,7 +248,7 @@ export const org = {
   /** SCR-ORG-22 – odrzucone oceny. */
   rejected: {
     title: 'Odrzucone oceny',
-    intro: 'Tych ocen nie przyjęto do wyników. Aby przyjąć ocenę, najpierw odblokuj kategorię.',
+    intro: 'Tych ocen nie przyjęto do wyników. Przyjmij ocenę, aby trafiła do wyników, albo ją odrzuć.',
     introFinished: 'Tych ocen nie przyjęto do wyników. Turniej jest zakończony – lista tylko do wglądu.',
     row: '{judge} → #{nr} {athlete}',
     meta: '{category} · {reason}',

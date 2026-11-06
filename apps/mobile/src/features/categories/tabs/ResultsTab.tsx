@@ -56,7 +56,9 @@ export function ResultsTab({ results, loading, error, onRetry, onOpen }: Results
         <Text variant="caption" color={color.neutral[400]} testID="results-complete-count">
           {t('org:results.completeCount', {
             n: ranked.filter((row) => row.isComplete).length,
-            total: ranked.length,
+            // Mianownik: wszystkie aktywne zawodniczki, także jeszcze nieocenione – „3 z 3”, gdy połowa
+            // nie wystąpiła, sugerowało komplet (próba turnieju 6.11.2026, U3).
+            total: results.rows.filter((row) => row.entryStatus !== 'WITHDRAWN').length,
           })}
         </Text>
       ) : null}

@@ -18,7 +18,7 @@ import { toast } from '../../../ui/Toast';
 const IDLE_CHECK_MS = 60_000;
 
 /** Komunikaty zdalnego zakończenia sesji (IMP-306 krok 2); bez komunikatu – SCR-JDG-01/10 mówią same. */
-const ENDED_TOAST: Partial<Record<JudgeSessionEndReason, string>> = {
+export const ENDED_TOAST: Partial<Record<JudgeSessionEndReason, string>> = {
   REPLACED: 'toasts:sessionReplaced',
   PIN_CHANGED: 'errors:PIN_VERSION_OUTDATED',
   PIN_VERSION_OUTDATED: 'errors:PIN_VERSION_OUTDATED',

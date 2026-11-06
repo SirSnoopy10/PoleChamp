@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { formatScore } from '@polechamp/scoring';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { color, layout } from '@polechamp/tokens';
 import type { RejectedSubmission } from '@polechamp/contracts';
@@ -151,7 +152,7 @@ export function RejectedSheet({
                           })}
                         </Text>
                         <Text variant="subhead" tabular>
-                          {String(item.payloadTotal).replace('.', ',')}
+                          {formatScore(Math.round(item.payloadTotal * 100), 2)}
                         </Text>
                       </View>
                       <Text variant="caption" color={color.neutral[400]}>

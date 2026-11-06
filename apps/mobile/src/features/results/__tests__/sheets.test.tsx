@@ -276,7 +276,7 @@ describe('SCR-ORG-22 odrzucone oceny (IMP-272)', () => {
     await fireEvent.press(await screen.findByText('Odrzucone oceny (2)'));
     expect(
       await screen.findByText(
-        'Tych ocen nie przyjęto do wyników. Aby przyjąć ocenę, najpierw odblokuj kategorię.',
+        'Tych ocen nie przyjęto do wyników. Przyjmij ocenę, aby trafiła do wyników, albo ją odrzuć.',
       ),
     ).toBeOnTheScreen();
     expect(await screen.findAllByText('Anna Nowak → #47 Natalia Sikora')).toHaveLength(2);

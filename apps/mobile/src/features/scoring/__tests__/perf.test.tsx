@@ -123,7 +123,7 @@ describe('IMP-500: wydajność formularza oceny', () => {
       },
       model.config,
     );
-    expect(screen.getByTestId('score-total')).toHaveTextContent(formatScore(expected.totalHundredths, 1));
+    expect(screen.getByTestId('score-total')).toHaveTextContent(formatScore(expected.totalHundredths, 2));
     // Czas renderu Reacta (Profiler) i pełnej obsługi zdarzenia w Jest – górna granica dla urządzenia
     // mierzona Flashlight/Instruments (docs-dev/perf/score-form.md).
     expect(Math.max(...commits)).toBeLessThanOrEqual(50);
@@ -156,7 +156,7 @@ describe('IMP-500: wydajność formularza oceny', () => {
       { criteria: model.initial.criteria, penalties: { ...model.initial.penalties, p10: 2 } },
       model.config,
     );
-    expect(screen.getByTestId('score-total')).toHaveTextContent(formatScore(total.totalHundredths, 1));
+    expect(screen.getByTestId('score-total')).toHaveTextContent(formatScore(total.totalHundredths, 2));
     expect(screen.getByTestId('penalty-chip')).toBeOnTheScreen();
     await act(async () => undefined);
   });

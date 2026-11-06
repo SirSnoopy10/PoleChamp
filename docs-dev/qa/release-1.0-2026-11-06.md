@@ -63,17 +63,19 @@ Turniej próbny „Puchar Wrocławia Pole Dance 2026” przeprowadzony w całoś
 
 Dodatkowo: `apps/mobile/eas.json` z profilami `development` / `preview` (kanał `staging`) / `production` (kanał `production`, `autoIncrement`) wg IMP-023 krok 1 – bez projektu EAS nieprzetestowany.
 
-## Uwagi do decyzji PO (bez zmian w kodzie)
+## Uwagi do decyzji PO
+
+U2–U7 wprowadzone tego samego dnia na prośbę użytkownika (specyfikacja oznaczona „decyzja 6.11.2026”, teksty do akceptacji IMP-650). Na tablecie potwierdzone U2, U5, U6, U7 (zrzuty `.ux/rc-2026-11-06/u/`); U3 i U4 (telefon organizatora) – tylko testy Jest. Otwarte: U1, U8, U9.
 
 | ID | Obserwacja | Propozycja |
 |---|---|---|
 | U1 | Tablet 8,7″ (1340×800, 213 dpi – Galaxy Tab A7 Lite / A9) nie może być sędziowski (NFR-702, ≥ 1024 dp) | Wymagania sprzętowe w opisie sklepu i instrukcji dla organizatorów (IMP-557) |
-| U2 | Ta sama ocena: „42,8” w stopce sędziego (FR-606: 1 miejsce) i „42,75” w arkuszu organizatora | Rozważyć 2 miejsca w stopce |
-| U3 | „Pełne wyniki: 3 z 3”, gdy 3 z 6 zawodniczek jeszcze nie występowały (mianownik = ocenione) | Mianownik = aktywne zawodniczki |
-| U4 | Arkusz „Odrzucone oceny”: kwoty „45”, „33,5” (gdzie indziej zawsze 2 miejsca); podpis „najpierw odblokuj kategorię” także przy powodzie „Zawodniczka wycofana” | Format 2 miejsca; podpis zależny od powodu |
-| U5 | Formularz wycofanej zawodniczki zostaje otwarty z aktywnym „Zatwierdź”, baner ogólny „Lista startowa została zaktualizowana” (zgodnie ze specyfikacją) | Baner „Zawodniczka wycofana” i wyłączone zatwierdzanie |
-| U6 | Popover online z pustą kolejką: „Wyślemy je automatycznie po odzyskaniu połączenia.” | Tekst tylko offline |
-| U7 | Po resecie PIN-u tablet wraca do profili bez trwałego komunikatu o powodzie (toast znika) | Komunikat na ekranie profili |
+| U2 | Ta sama ocena: „42,8” w stopce sędziego (FR-606: 1 miejsce) i „42,75” w arkuszu organizatora | **Zrobione:** stopka 2 miejsca |
+| U3 | „Pełne wyniki: 3 z 3”, gdy 3 z 6 zawodniczek jeszcze nie występowały (mianownik = ocenione) | **Zrobione:** mianownik = aktywne zawodniczki |
+| U4 | Arkusz „Odrzucone oceny”: kwoty „45”, „33,5” (gdzie indziej zawsze 2 miejsca); podpis „najpierw odblokuj kategorię” także przy powodzie „Zawodniczka wycofana” | **Zrobione:** 2 miejsca; wstęp ogólny, wskazówka o odblokowaniu tylko przy wierszach zablokowanej kategorii |
+| U5 | Formularz wycofanej zawodniczki zostaje otwarty z aktywnym „Zatwierdź”, baner ogólny „Lista startowa została zaktualizowana” (zgodnie ze specyfikacją) | **Zrobione:** baner „Zawodniczka wycofana przez organizatora…”, podgląd bez stopki; po przywróceniu edycja |
+| U6 | Popover online z pustą kolejką: „Wyślemy je automatycznie po odzyskaniu połączenia.” | **Zrobione:** offline – tekst o sieci, online z kolejką – „Wysyłamy je teraz.”, bez kolejki – brak |
+| U7 | Po resecie PIN-u tablet wraca do profili bez trwałego komunikatu o powodzie (toast znika) | **Zrobione:** baner „{sędzia}: {powód}” na profilach do następnego logowania |
 | U8 | Nazwa pliku eksportu zawsze „PoleChamp-wyniki.pdf/.csv” (znane z IMP-710) | Nazwa z turnieju i daty |
 | U9 | „Wersja wyników 27” w PDF pokazuje wewnętrzny licznik | Bez zmian albo opis |
 

@@ -120,6 +120,8 @@ export interface ScoreFormProps {
   othersUnscored: boolean;
   /** Lista startowa zmieniła się w trakcie edycji (IMP-316). */
   listChanged: boolean;
+  /** Zawodniczka wycofana w trakcie oceniania – podgląd bez zatwierdzania (U5, próba 6.11.2026). */
+  withdrawn?: boolean;
   onSubmitted: () => void;
   /** Wersja serwera pobrana („Pokaż aktualną”) – ponowne wczytanie formularza. */
   onReload: () => void;
@@ -137,6 +139,7 @@ export function ScoreForm({
   readOnly,
   othersUnscored,
   listChanged,
+  withdrawn = false,
   onSubmitted,
   onReload,
 }: ScoreFormProps) {
@@ -271,7 +274,9 @@ export function ScoreForm({
             />
           </View>
         ) : null}
-        {listChanged ? (
+        {withdrawn ? (
+          <Banner variant="emailVerify" text={t('judge:form.withdrawn')} testID="form-withdrawn-banner" />
+        ) : listChanged ? (
           <Banner variant="emailVerify" text={t('toasts:startListUpdated')} testID="form-list-banner" />
         ) : null}
         <View style={readOnly ? styles.readOnly : null} pointerEvents={readOnly ? 'none' : 'auto'}>

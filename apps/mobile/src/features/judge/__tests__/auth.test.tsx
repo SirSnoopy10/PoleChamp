@@ -568,6 +568,18 @@ describe('IMP-306: sesja sędziego i wylogowanie (SCR-JDG-09)', () => {
     expect(screen.getByTestId('sync-pill')).toBeOnTheScreen();
   });
 
+  it('U7: reset PIN-u w trakcie pracy – profile z trwałym banerem powodu', async () => {
+    await signIn(env, 'jA');
+    await startJudge(JUDGE_ROUTES, '/categories');
+    await act(async () =>
+      syncEvents.emit([{ type: 'judgeSessionEnded', judgeId: 'jA', reason: 'PIN_CHANGED' }]),
+    );
+    expect(await screen.findByTestId('profiles-screen')).toBeOnTheScreen();
+    expect(screen.getByTestId('profiles-session-ended')).toHaveTextContent(
+      /: PIN został zmieniony\. Zaloguj się ponownie\./,
+    );
+  });
+
   it('zdarzenie judgeSessionEnded innego sędziego nie wylogowuje bieżącego', async () => {
     await signIn(env, 'jA');
     await act(async () =>

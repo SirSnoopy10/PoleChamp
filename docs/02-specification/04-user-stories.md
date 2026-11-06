@@ -254,9 +254,9 @@ FR: FR-602 · Ekrany: SCR-JDG-04
 ### US-057 – Ocena kryteriów · **Must**
 Jako **sędzia** chcę ustawić noty suwakiem lub przyciskami −/+, aby szybko i precyzyjnie ocenić występ.
 FR: FR-603, FR-605, FR-606 · Ekrany: SCR-JDG-05
-- **Given** nowa ocena **When** otwieram formularz **Then** każde kryterium ma wartość „5,0 /10”, a „Twój wynik” to „32,5 / 65”.
+- **Given** nowa ocena **When** otwieram formularz **Then** każde kryterium ma wartość „5,0 /10”, a „Twój wynik” to „32,50 / 65”.
 - **Given** kryterium „Technika” = 8,5 **When** tapnę „+” 4 razy **Then** wartość to „10,0” (nie więcej), a kolejne „+” nic nie zmienia.
-- **Given** noty 8,5 / 8,5 / 8 / 8 / 8,5 i brak kar **When** patrzę na stopkę **Then** „Twój wynik” to „54,3 / 65”.
+- **Given** noty 8,5 / 8,5 / 8 / 8 / 8,5 i brak kar **When** patrzę na stopkę **Then** „Twój wynik” to „54,25 / 65”.
 - **Given** przeciągam suwak **When** puszczam go między wartościami **Then** wartość przyciąga się do najbliższej wielokrotności 0,5.
 - **Given** wpiszę komentarz dłuższy niż 500 znaków **When** piszę dalej **Then** dodatkowe znaki nie są przyjmowane, a pod polem widzę licznik „500/500”.
 
@@ -266,7 +266,7 @@ FR: FR-604 · Ekrany: SCR-JDG-05
 - **Given** kara „Upadek −2 pkt za każde · maks. 3×” **When** tapnę „+” 2 razy **Then** licznik to „2”, karta jest wyróżniona, chip w stopce pokazuje „kary −4,0”, a „Twój wynik” spada o 4.
 - **Given** licznik = 3 (maks.) **When** patrzę na „+” **Then** jest nieaktywny (przygaszony).
 - **Given** licznik = 0 **When** tapnę „−” **Then** licznik zostaje 0.
-- **Given** noty z poprzedniego przykładu i Upadek ×2 **When** patrzę na stopkę **Then** „Twój wynik” to „50,3 / 65”.
+- **Given** noty z poprzedniego przykładu i Upadek ×2 **When** patrzę na stopkę **Then** „Twój wynik” to „50,25 / 65”.
 
 ### US-059 – Zatwierdzenie i przejście dalej · **Must**
 Jako **sędzia** chcę zatwierdzić ocenę i automatycznie przejść do kolejnej zawodniczki, aby nie tracić czasu między występami.

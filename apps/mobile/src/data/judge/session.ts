@@ -31,6 +31,8 @@ export interface JudgeSessionState {
   backgroundAt: number | null;
   /** Powód ostatniego zdalnego zakończenia sesji (toast na SCR-JDG-01). */
   ended: JudgeSessionEndReason | null;
+  /** Ostatnie zdalne zakończenie (kto, dlaczego) – baner na SCR-JDG-01 do następnego logowania (U7). */
+  endedNotice: { judgeName: string; reason: JudgeSessionEndReason } | null;
   /** Sesja odczytana z bazy przy starcie (strażnik tras czeka na `true`). */
   restored: boolean;
 }
@@ -41,6 +43,7 @@ const initial = (): JudgeSessionState => ({
   lastActivityAt: 0,
   backgroundAt: null,
   ended: null,
+  endedNotice: null,
   restored: false,
 });
 
@@ -168,6 +171,7 @@ export async function startJudgeSession(local: LocalDb, input: StartSessionInput
     lastActivityAt: now,
     backgroundAt: null,
     ended: null,
+    endedNotice: null,
     restored: true,
   });
 }
@@ -194,7 +198,13 @@ export async function endActiveSession(
 /** Sesja zakończona zdalnie lub odrzuceniem (zdarzenie `judgeSessionEnded` – już zapisane w bazie). */
 export async function onSessionEnded(judgeId: string, reason: JudgeSessionEndReason): Promise<void> {
   if (activeJudgeId() !== judgeId) return;
-  judgeSessionStore.setState({ active: null, reauth: false, ended: reason });
+  const judgeName = judgeSessionStore.getState().active?.fullName ?? '';
+  judgeSessionStore.setState({
+    active: null,
+    reauth: false,
+    ended: reason,
+    endedNotice: { judgeName, reason },
+  });
   await tokenStore.setJudge(null);
 }
 

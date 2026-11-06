@@ -532,9 +532,9 @@ describe('SCR-ORG-08 zakładka Wyniki (IMP-268)', () => {
     const row = await screen.findByTestId('result-e47');
     expect(within(row).getByText('55,50')).toBeOnTheScreen();
     expect(within(row).getByText('3/5 sędziów')).toBeOnTheScreen();
-    // UX2-01, UX2-03: „wstępny” w kategorii trwającej, liczba pełnych wyników, bez paska.
+    // UX2-01, UX2-03: „wstępny” w kategorii trwającej, liczba pełnych wyników (mianownik – aktywne, także bez ocen), bez paska.
     expect(within(row).getByText('wstępny')).toBeOnTheScreen();
-    expect(screen.getByTestId('results-complete-count')).toHaveTextContent('Pełne wyniki: 0 z 1');
+    expect(screen.getByTestId('results-complete-count')).toHaveTextContent('Pełne wyniki: 0 z 2');
     expect(within(row).queryByRole('progressbar')).toBeNull();
     expect(within(row).getByText('#47 · Studio Vertical Wrocław')).toBeOnTheScreen();
     const empty = screen.getByTestId('result-e48');

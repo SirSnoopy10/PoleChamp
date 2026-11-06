@@ -236,7 +236,7 @@
 
 ## SCR-ORG-22 – Odrzucone oceny (bottom sheet) ⟡ POZA DESIGNEM – PROPOZYCJA
 - **FR:** FR-805. **US:** US-083.
-- **Układ:** tytuł „Odrzucone oceny”; tekst objaśniający (13 dp neutral-300): „Te oceny dotarły po zablokowaniu kategorii. Aby przyjąć ocenę, najpierw odblokuj kategorię.”; lista wierszy: „{sędzia} → #{nr} {zawodniczka}”, „{kategoria} · {powód}” (np. „Kategoria zablokowana”), „wysłano {czas}”, wynik sędziego z treści; akcje w wierszu: ghost „Przyjmij” (accent; nieaktywny przy zablokowanej kategorii) i ghost „Odrzuć” (neutral-300, z potwierdzeniem). Stan pusty: „Brak odrzuconych ocen.”.
+- **Układ:** tytuł „Odrzucone oceny”; tekst objaśniający (13 dp neutral-300): „Tych ocen nie przyjęto do wyników. Przyjmij ocenę, aby trafiła do wyników, albo ją odrzuć.” (decyzja 6.11.2026; wskazówka „Aby przyjąć, odblokuj kategorię …” tylko przy wierszach zablokowanej kategorii); lista wierszy: „{sędzia} → #{nr} {zawodniczka}”, „{kategoria} · {powód}” (np. „Kategoria zablokowana”), „wysłano {czas}”, wynik sędziego z treści (2 miejsca); akcje w wierszu: ghost „Przyjmij” (accent; nieaktywny przy zablokowanej kategorii) i ghost „Odrzuć” (neutral-300, z potwierdzeniem). Stan pusty: „Brak odrzuconych ocen.”.
 
 <a id="scr-pub-01"></a>
 ## SCR-PUB-01 – Publiczne wyniki (web, v2) ⟡ POZA DESIGNEM – PROPOZYCJA (poza MVP)

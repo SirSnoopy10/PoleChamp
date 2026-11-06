@@ -139,15 +139,18 @@ function CategoryBody({
 
   let main = <PickAthlete allScored={queue.length > 0 && queue.every((e) => scored.has(e.id))} />;
   if (model && model.entry.categoryId === categoryId) {
+    // Otwarta zawodniczka zniknęła z kolejki aktywnych – wycofana: podgląd bez zatwierdzania (U5).
+    const withdrawn = !queue.some((e) => e.id === model.entry.id);
     if (locked && !sheet) main = <NoOwnScore />;
     else
       main = (
         <ScoreForm
-          key={`${model.entry.id}:${configVersion}:${locked}`}
+          key={`${model.entry.id}:${configVersion}:${locked}:${withdrawn}`}
           judge={judge}
           model={model}
           sheet={sheet}
-          readOnly={locked}
+          readOnly={locked || withdrawn}
+          withdrawn={withdrawn && !locked}
           othersUnscored={queue.some((e) => e.id !== model.entry.id && !scored.has(e.id))}
           listChanged={listChanged}
           onSubmitted={advance}

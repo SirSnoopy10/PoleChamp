@@ -5,10 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { color, layout, radius, shadow } from '@polechamp/tokens';
 import { listActiveJudges, readTournament, type LocalJudge } from '../../data/judge/queries';
 import { judgeRuntime } from '../../data/judge/runtime';
+import { useJudgeSession } from '../../data/judge/session';
 import { useLocalQuery } from '../../data/judge/useLocalQuery';
 import { useSyncStore } from '../../data/sync/syncStore';
 import { useT } from '../../i18n';
 import { Avatar } from '../../ui/Avatar';
+import { Banner } from '../../ui/Banner';
 import { Button } from '../../ui/Button';
 import { Dialog } from '../../ui/Dialog';
 import { Icon } from '../../ui/Icon';
@@ -16,6 +18,7 @@ import { ScreenGlow } from '../../ui/layout/ScreenGlow';
 import { Text } from '../../ui/Text';
 import { ChangeModeLink } from '../system/ChangeModeLink';
 import { MEDIUM } from './styles';
+import { ENDED_TOAST } from './session/useJudgeSession';
 import { TabletDataLifecycle } from './TabletDataLifecycle';
 
 const COLUMNS = 3;
@@ -85,6 +88,9 @@ export function ProfilePicker() {
   const pending = useSyncStore((s) => s.pending);
   const [confirm, setConfirm] = useState(false);
   const finished = tournament?.status === 'FINISHED';
+  // Wylogowanie zdalne (reset PIN-u, inne urządzenie, dezaktywacja) – toast znikał po 3 s (U7).
+  const notice = useJudgeSession((s) => s.endedNotice);
+  const endedKey = notice ? ENDED_TOAST[notice.reason] : undefined;
 
   const wipe = async () => {
     setConfirm(false);
@@ -100,6 +106,16 @@ export function ProfilePicker() {
       <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + layout[48] }]}>
         <View style={styles.column}>
           <JudgeTitleBlock tournamentName={tournament?.name ?? ''} />
+          {endedKey && notice ? (
+            <Banner
+              variant="emailVerify"
+              text={t('judge:profiles.sessionEnded', {
+                name: notice.judgeName,
+                reason: t(endedKey as never),
+              })}
+              testID="profiles-session-ended"
+            />
+          ) : null}
           {finished ? (
             <View testID="profiles-finished" style={styles.finished}>
               <Text variant="body" align="center">

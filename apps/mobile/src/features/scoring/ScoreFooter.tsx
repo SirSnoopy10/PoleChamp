@@ -69,7 +69,7 @@ const LiveTotal = memo(function LiveTotal({
             color={fromDefaults ? color.neutral[500] : undefined}
             testID="score-total"
           >
-            {formatScore(total.totalHundredths, 1)}
+            {formatScore(total.totalHundredths, 2)}
           </Text>
           <Text variant="meta" color={color.neutral[500]}>
             {t('judge:form.outOf', { max: formatScore(maxHundredths, 1) })}

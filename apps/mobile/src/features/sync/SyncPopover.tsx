@@ -139,9 +139,13 @@ export function SyncPopover({ onClose }: { onClose: () => void }) {
             {t('judge:sync.noNetwork')}
           </Text>
         )}
-        <Text variant="caption" color={color.neutral[400]}>
-          {t('judge:sync.safe')}
-        </Text>
+        {/* Offline – oceny czekają na sieć; online z kolejką – wysyłka trwa; online bez kolejki – nic do
+            dodania (wcześniej „po odzyskaniu połączenia” także online, U6). */}
+        {!online || pending > 0 ? (
+          <Text variant="caption" color={color.neutral[400]} testID="sync-safe">
+            {t(online ? 'judge:sync.safeOnline' : 'judge:sync.safe')}
+          </Text>
+        ) : null}
       </View>
     </Portal>
   );

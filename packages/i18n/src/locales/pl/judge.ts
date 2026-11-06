@@ -27,6 +27,8 @@ export const judge = {
   profiles: {
     title: 'Panel sędziego',
     kicker: 'Wybierz swój profil',
+    /** Baner po zdalnym wylogowaniu (U7, próba 6.11.2026) – do akceptacji IMP-650. */
+    sessionEnded: '{name}: {reason}',
     pinLocked: 'PIN zablokowany',
     empty: 'Organizator nie dodał jeszcze sędziów.',
     finished: 'Turniej „{name}” został zakończony.',
@@ -87,6 +89,8 @@ export const judge = {
     /** Nieruszone kryteria (decyzja PO IMP-712, UX-14) – do akceptacji IMP-650. */
     untouched: 'nieruszone',
     fromDefaults: 'zawiera wartości domyślne',
+    /** Zawodniczka wycofana w trakcie oceniania (próba turnieju 6.11.2026, U5) – do akceptacji IMP-650. */
+    withdrawn: 'Zawodniczka wycofana przez organizatora – tej oceny nie można zatwierdzić.',
     untouchedTitle: 'Zatwierdzić z nieruszonymi kryteriami?',
     untouchedText: 'Nie zmieniono wartości domyślnych: {names}.',
     untouchedBack: 'Wróć do oceny',
@@ -130,6 +134,8 @@ export const judge = {
     organizerDecides: 'Organizator zdecyduje o ich uwzględnieniu.',
     syncNow: 'Synchronizuj teraz',
     safe: 'Oceny są bezpieczne na tym tablecie. Wyślemy je automatycznie po odzyskaniu połączenia.',
+    /** Online z ocenami w kolejce (U6, próba 6.11.2026) – do akceptacji IMP-650. */
+    safeOnline: 'Oceny są bezpieczne na tym tablecie. Wysyłamy je teraz.',
   },
   /** SCR-JDG-09. */
   logout: {
