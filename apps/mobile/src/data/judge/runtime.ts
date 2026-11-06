@@ -7,7 +7,7 @@ import { tokenStore } from '../api/tokens';
 import { createDeviceAuth, type DeviceAuth } from '../auth/deviceAuth';
 import { localDb, type LocalDb } from '../local/LocalDb';
 import { bindJudgeEvents } from '../realtime/judgeBindings';
-import { createRealtimeClient, type RealtimeClient } from '../realtime/socket';
+import { createRealtimeClient, type RealtimeClient, type RealtimeOptions } from '../realtime/socket';
 import { systemClock, type SyncClock } from '../sync/clock';
 import { syncEvents } from '../sync/events';
 import { SyncEngine } from '../sync/SyncEngine';
@@ -34,6 +34,8 @@ export interface JudgeRuntimeDeps {
   clock?: SyncClock;
   /** Wyłączenie WebSocket (testy – brak serwera Socket.IO). */
   realtime?: boolean;
+  /** Fabryka gniazda (testy – atrapa Socket.IO). */
+  connectSocket?: RealtimeOptions['connect'];
   netInfo?: Pick<typeof NetInfo, 'addEventListener'>;
   appState?: Pick<typeof AppState, 'addEventListener'>;
 }
@@ -41,6 +43,7 @@ export interface JudgeRuntimeDeps {
 export function createJudgeRuntime(deps: JudgeRuntimeDeps): JudgeRuntime {
   const clock = deps.clock ?? systemClock;
   let realtime: RealtimeClient | null = null;
+  let realtimeTournamentId: string | null = null;
   let unbind: (() => void) | null = null;
   const auth = createDeviceAuth({ api: deps.api, now: () => clock.now() });
   const engine = new SyncEngine({
@@ -68,8 +71,15 @@ export function createJudgeRuntime(deps: JudgeRuntimeDeps): JudgeRuntime {
     auth,
     engine,
     connectRealtime(tournamentId) {
-      if (realtime || deps.realtime === false) return;
+      if (deps.realtime === false || (realtime && realtimeTournamentId === tournamentId)) return;
+      // Parowanie z innym turniejem bez restartu aplikacji („Sparuj z nowym turniejem”, SCR-JDG-01):
+      // stare gniazdo subskrybowało poprzedni turniej – bez zamiany tablet nie dostawał zdarzeń
+      // (sync.hint, zmiany list) i pobierał zmiany tylko okresowo (próba turnieju 6.11.2026).
+      unbind?.();
+      realtime?.close();
+      realtimeTournamentId = tournamentId;
       realtime = createRealtimeClient({
+        ...(deps.connectSocket ? { connect: deps.connectSocket } : {}),
         url: env.wsUrl,
         tournamentId,
         getToken: () => tokenStore.current('judge'),
@@ -83,6 +93,7 @@ export function createJudgeRuntime(deps: JudgeRuntimeDeps): JudgeRuntime {
       unbind?.();
       realtime?.close();
       realtime = null;
+      realtimeTournamentId = null;
       offRevoked();
       offEvents();
     },

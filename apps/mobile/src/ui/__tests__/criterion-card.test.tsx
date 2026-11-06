@@ -12,4 +12,12 @@ describe('CriterionCard (IMP-751)', () => {
     expect(screen.getByTestId('criterion-k1-value')).toHaveTextContent('5,0');
     expect(screen.getByText('Technika').props.numberOfLines).toBe(2);
   });
+
+  it('po zmianie podpis „nieruszone” zostaje niewidoczny – karta nie zmienia wysokości (próba turnieju)', async () => {
+    await renderWithProviders(<CriterionCard {...props} untouched={false} />);
+    expect(screen.queryByTestId('criterion-k1-untouched')).toBeNull();
+    expect(screen.queryByText('nieruszone')).toBeNull();
+    const reserved = screen.getByText('nieruszone', { includeHiddenElements: true });
+    expect(reserved).toHaveStyle({ opacity: 0 });
+  });
 });

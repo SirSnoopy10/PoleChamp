@@ -2,6 +2,7 @@ import { SYNC_REJECTION_CODES } from '@polechamp/contracts';
 import { createI18n } from '@polechamp/i18n';
 import type { LocalDb } from '../../local/LocalDb';
 import { ScoreSheetRepo } from '../../local/scoreSheets';
+import { outbox } from '../../outbox/outbox';
 import { syncEvents, type SyncEvent } from '../events';
 import { applyChanges } from '../pull';
 import { pushOnce } from '../push';
@@ -136,6 +137,7 @@ describe('obsługa odrzuceń (IMP-357)', () => {
   it('TC-SYNC-008: przyjęcie po odblokowaniu – arkusz SYNCED po zmianie audience DEVICE', async () => {
     const { scoreSheetId } = await submit('jA', 'e1');
     await rejectAll('CATEGORY_LOCKED');
+    expect(outbox.countFailed(local.read)).toBe(1);
     await local.tx((db) =>
       applyChanges(
         db,
@@ -173,6 +175,8 @@ describe('obsługa odrzuceń (IMP-357)', () => {
       serverRevision: 1,
     });
     expect(countQueueRejections(local.read, 'jA')).toBe(0);
+    // Rozwiązane odrzucenie nie podtrzymuje „Wymaga uwagi” (próba turnieju 6.11 – pigułka zostawała).
+    expect(outbox.countFailed(local.read)).toBe(0);
   });
 
   it('TC-SYNC-009: ENTRY_WITHDRAWN – „Zawodniczka wycofana” bez kończenia sesji', async () => {

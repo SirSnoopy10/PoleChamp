@@ -193,10 +193,20 @@ export const outbox = {
     );
   },
 
+  /**
+   * Odrzucenia wymagające uwagi („Wymaga uwagi”). Wiersze `FAILED_PERMANENT` zostają do końca turnieju,
+   * więc ocena rozwiązana później (organizator przyjął ją po odblokowaniu, sędzia ocenił ponownie)
+   * nie może już podtrzymywać ostrzeżenia – liczymy tylko arkusze nadal w stanie `REJECTED`
+   * (jak lista w popoverze) i odrzucone mutacje bez arkusza.
+   */
   countFailed(db: Db): number {
     return (
-      db.getFirstSync<{ n: number }>("SELECT COUNT(*) AS n FROM outbox WHERE state = 'FAILED_PERMANENT'")
-        ?.n ?? 0
+      db.getFirstSync<{ n: number }>(
+        `SELECT COUNT(*) AS n FROM outbox o
+         WHERE o.state = 'FAILED_PERMANENT'
+           AND (o.score_sheet_id IS NULL OR EXISTS (
+             SELECT 1 FROM local_score_sheet s WHERE s.id = o.score_sheet_id AND s.sync_state = 'REJECTED'))`,
+      )?.n ?? 0
     );
   },
 

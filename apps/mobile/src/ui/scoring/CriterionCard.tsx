@@ -73,16 +73,19 @@ export const CriterionCard = memo(function CriterionCard({
               {t('judge:form.scale', { max: scaleMax })}
             </Text>
           </View>
-          {untouched ? (
-            <Text
-              variant="caption"
-              color={color.accentRamp[300]}
-              numberOfLines={1}
-              testID={`criterion-${id}-untouched`}
-            >
-              {t('judge:form.untouched')}
-            </Text>
-          ) : null}
+          {/* Podpis zawsze zajmuje miejsce: znikający po pierwszej zmianie skracał kartę i przesuwał
+              kolejny rząd kryteriów pod palcem sędziego (próba turnieju 6.11.2026). */}
+          <Text
+            variant="caption"
+            color={color.accentRamp[300]}
+            numberOfLines={1}
+            testID={untouched ? `criterion-${id}-untouched` : undefined}
+            style={untouched ? undefined : styles.reserved}
+            accessibilityElementsHidden={!untouched}
+            importantForAccessibility={untouched ? 'auto' : 'no-hide-descendants'}
+          >
+            {t('judge:form.untouched')}
+          </Text>
         </View>
       </View>
       <View style={styles.controls}>
@@ -117,6 +120,8 @@ export const CriterionCard = memo(function CriterionCard({
 });
 
 const styles = StyleSheet.create({
+  /** Miejsce na podpis „nieruszone” po zmianie wartości – bez skoku układu. */
+  reserved: { opacity: 0 },
   card: { padding: 16, gap: 16, borderRadius: radius.lg, backgroundColor: color.surface },
   top: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   names: { flex: 1, minWidth: 0, gap: 4 },
