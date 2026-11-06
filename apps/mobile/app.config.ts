@@ -6,6 +6,8 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  */
 const BG = '#161826';
 const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
+/** API bez TLS (lokalnie, emulator) – jedyny przypadek, w którym Android dopuszcza ruch `http://`. */
+const CLEARTEXT_API = (process.env.EXPO_PUBLIC_API_URL ?? '').startsWith('http://');
 /** Sentry (region UE) – plugin tylko po ustawieniu organizacji i projektu (wysyłka source map w EAS). */
 const SENTRY =
   process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
@@ -24,7 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: 'PoleChamp',
   slug: 'polechamp',
   scheme: 'polechamp',
-  version: '0.1.0',
+  version: '1.0.0',
   runtimeVersion: { policy: 'appVersion' },
   // Aktualizacje EAS dopiero po założeniu projektu (EAS_PROJECT_ID); do tego czasu wyłączone.
   updates: EAS_PROJECT_ID ? { url: `https://u.expo.dev/${EAS_PROJECT_ID}` } : { enabled: false },
@@ -60,6 +62,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.ACCESS_FINE_LOCATION',
       'android.permission.ACCESS_COARSE_LOCATION',
       'android.permission.ACCESS_BACKGROUND_LOCATION',
+      // Z szablonu Expo i expo-secure-store – aplikacja nie rysuje nad innymi aplikacjami ani nie używa
+      // biometrii (`requireAuthentication: false`); zbędne uprawnienia komplikują deklaracje w Google Play.
+      'android.permission.SYSTEM_ALERT_WINDOW',
+      'android.permission.USE_BIOMETRIC',
+      'android.permission.USE_FINGERPRINT',
     ],
   },
   web: { bundler: 'metro', output: 'single', backgroundColor: BG },
@@ -80,6 +87,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           // robi Google Play (AAB).
           enableMinifyInReleaseBuilds: true,
           enableShrinkResourcesInReleaseBuilds: true,
+          // MASVS-NETWORK-1: ruch bez TLS tylko dla lokalnego API (http://…, emulator 10.0.2.2);
+          // szablon Expo włączał go w każdym buildzie, także produkcyjnym.
+          usesCleartextTraffic: CLEARTEXT_API,
         },
       },
     ],
