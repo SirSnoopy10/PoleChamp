@@ -63,7 +63,7 @@ describe('seed prototypu (IMP-450, 03-analiza-designu §8)', () => {
     expect(['c1', 'c2', 'c4', 'c5'].map((c) => categorySheets(c).length)).toEqual([45, 50, 24, 24]);
   });
 
-  it('ranking c3 zgodny z 03-analiza-designu §8.6 (z poprawką G-26 – dwa miejsca przy 52,7)', () => {
+  it('ranking c3 zgodny z 03-analiza-designu §8.6 (D-SC-05 – zawsze dwa miejsca)', () => {
     const rows = seedRanking('c3').map((r) => [
       r.rank,
       r.startNumber,
@@ -73,13 +73,13 @@ describe('seed prototypu (IMP-450, 03-analiza-designu §8)', () => {
       r.sheetCount,
     ]);
     expect(rows).toEqual([
-      [1, 47, 'Natalia Sikora', 'Studio Vertical Wrocław', '55,5', 3],
-      [2, 46, 'Paulina Lewandowska', 'Aerial Dreams Warszawa', '55,1', 2],
-      [3, 43, 'Amelia Król', 'Pole Passion Gdańsk', '54,8', 5],
-      [4, 45, 'Magdalena Kaczmarek', 'Fly High Lublin', '54,3', 5],
+      [1, 47, 'Natalia Sikora', 'Studio Vertical Wrocław', '55,50', 3],
+      [2, 46, 'Paulina Lewandowska', 'Aerial Dreams Warszawa', '55,13', 2],
+      [3, 43, 'Amelia Król', 'Pole Passion Gdańsk', '54,75', 5],
+      [4, 45, 'Magdalena Kaczmarek', 'Fly High Lublin', '54,30', 5],
       [5, 42, 'Agnieszka Mazur', 'PoleFit Kraków', '52,70', 5],
       [6, 41, 'Zuzanna Król', 'Aerial Dreams Warszawa', '52,65', 5],
-      [7, 44, 'Magdalena Adamczyk', 'Vertigo Bydgoszcz', '48,0', 5],
+      [7, 44, 'Magdalena Adamczyk', 'Vertigo Bydgoszcz', '48,00', 5],
       [null, 48, 'Lena Mazur', 'Aerial Dreams Warszawa', '—', 0],
       [null, 49, 'Weronika Walczak', 'Pole Dance Academy Rzeszów', '—', 0],
     ]);

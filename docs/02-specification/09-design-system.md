@@ -295,7 +295,7 @@ Każdy komponent ma: warianty, stany (default / pressed / focus / disabled / loa
 | `toast.athleteAdded` | „Dodano zawodniczkę” | design |
 | `toast.pdfSaved` | „PDF zapisany” (w prototypie „PDF zapisany (demo)”) | design (zmienione) |
 | `toast.categoryNotStarted` | „Ta kategoria jeszcze się nie rozpoczęła” | design |
-| `toast.scoreSaved` | „Zapisano ocenę: {imię i nazwisko}” | design |
+| `toast.scoreSaved` | „Zapisano ocenę nr {numer}: {imię i nazwisko}” | design (EP-17 #11) |
 | `toast.startListUpdated` | „Lista startowa została zaktualizowana” | rozszerzenie |
 | `toast.saveFailed` | „Nie udało się zapisać. Spróbuj ponownie.” | rozszerzenie |
 | `toast.pdfFailed` | „Nie udało się wygenerować PDF. Spróbuj ponownie.” | rozszerzenie |

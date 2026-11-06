@@ -101,7 +101,7 @@ describe('@polechamp/i18n (IMP-069)', () => {
       'Masz 2 niewysłane oceny',
       'Masz 5 niewysłanych ocen',
     ]);
-    expect(i18n.t('judge:offlineQueue', { count: 3 })).toBe('Offline · 3 w kolejce');
+    expect(i18n.t('judge:offlineQueue', { count: 3 })).toBe('Brak sieci · 3 w kolejce');
   });
 
   it('TC-I18N-007: komunikat dla każdego kodu błędu API i pola', () => {

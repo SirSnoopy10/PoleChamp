@@ -121,7 +121,7 @@
 
 ## SCR-JDG-07 – Stan synchronizacji ⟡ POZA DESIGNEM – PROPOZYCJA
 - **FR:** FR-803, FR-805. **US:** US-081, US-083.
-- **Pigułka w nagłówku** (po lewej od chipu sędziego): stany i kolory jak w [06-offline-i-synchronizacja.md §8.1](../01-architecture/06-offline-i-synchronizacja.md#81-tablet--pigułka-w-nagłówku-poza-designem-propozycja-w-stylu-nocturne): „Zsynchronizowano”, „Wysyłanie… ({n})”, „Offline · {n} w kolejce”, „Offline”, „Wymaga uwagi”.
+- **Pigułka w nagłówku** (po lewej od chipu sędziego): stany i kolory jak w [06-offline-i-synchronizacja.md §8.1](../01-architecture/06-offline-i-synchronizacja.md#81-tablet--pigułka-w-nagłówku-poza-designem-propozycja-w-stylu-nocturne): „Zsynchronizowano”, „Wysyłanie… ({n})”, „Brak sieci · {n} w kolejce”, „Offline”, „Wymaga uwagi”.
 - **Popover** (po tapnięciu; karta surface, radius lg, shadow-md, szer. 360 dp, padding 16): tytuł „Synchronizacja” (17 dp/500); wiersze (13 dp): „Ostatnia synchronizacja: {czas względny}”, „Oceny w kolejce: {n}”, „Połączenie: online / offline”; lista odrzuconych ocen („#{nr} {nazwisko} – {powód}”); secondary „Synchronizuj teraz” (`arrows-clockwise`); tekst pomocniczy (12 dp neutral-400): „Oceny są bezpieczne na tym tablecie. Wyślemy je automatycznie po odzyskaniu połączenia.”.
 
 ## SCR-JDG-08 – Blokada PIN ⟡ POZA DESIGNEM – PROPOZYCJA

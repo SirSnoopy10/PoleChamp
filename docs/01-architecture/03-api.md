@@ -50,7 +50,7 @@
 | `INVALID_STATE_TRANSITION` | 409 | Niedozwolone przejście statusu | „Tej operacji nie można wykonać w obecnym statusie.” |
 | `TOURNAMENT_FINISHED` | 409 | Turniej zakończony – tylko odczyt | „Turniej jest zakończony.” |
 | `CATEGORY_NOT_STARTED` | 409 | Ocena w kategorii W przygotowaniu | „Ta kategoria jeszcze się nie rozpoczęła” |
-| `CATEGORY_LOCKED` | 409 | Ocena / edycja w zablokowanej kategorii | „Kategoria zakończona — tylko podgląd” |
+| `CATEGORY_LOCKED` | 409 | Ocena / edycja w zablokowanej kategorii | „Kategoria zakończona – tylko podgląd” |
 | `CRITERIA_LOCKED` | 409 | Zmiana kryteriów/kar po starcie | „Kryteria są zablokowane po rozpoczęciu kategorii.” |
 | `START_REQUIREMENTS_NOT_MET` | 409 | Brak kryteriów / zawodniczek / sędziów przy starcie (`detail` wskazuje brak) | „Dodaj co najmniej jedną zawodniczkę.” |
 | `START_NUMBER_TAKEN` | 409 | Numer startowy zajęty w turnieju | „Numer 47 jest już zajęty.” |

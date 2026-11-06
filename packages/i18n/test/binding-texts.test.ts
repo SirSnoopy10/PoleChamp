@@ -53,7 +53,7 @@ describe('IMP-070: teksty wiążące ze specyfikacji', () => {
   it('teksty panelu sędziego z liczbą mnogą (06-ekrany-sedziego)', () => {
     const judgeSpec = doc('docs/02-specification/06-ekrany-sedziego.md');
     for (const text of [
-      'Offline · {n} w kolejce',
+      'Brak sieci · {n} w kolejce',
       'Oceny w kolejce: {n}',
       'Ta ocena nie została przyjęta: {powód}.',
     ]) {
