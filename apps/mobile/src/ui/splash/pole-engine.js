@@ -1,923 +1,904 @@
-// Silnik animacji splash (IMP-211): port `design/pole-spinner.js` bez DOM – rysuje klatkę 80×70
-// do bufora RGBA (`out`, piksele ABGR little-endian jak ImageData). Algorytm bez zmian względem
-// prototypu poza choreografią (wejście i zejście z odwrócenia w kulce – 6.11.2026); paleta
-// z tokenów Nocturne zamiast zmiennych CSS, losowość wstrzykiwana (testy).
-const Q = 1.25,
-  GW = 80,
+// Silnik animacji splash (IMP-211), wariant „klub” – decyzja PO 10.11.2026. Bez DOM: rysuje klatkę
+// 80×70 do bufora RGBA (`out`, piksele ABGR little-endian jak ImageData; 0 = przezroczysty).
+// Tancerka to bryła: szkielet z klatek kluczowych (splajn Hermite'a, IK 2-kościowe) obracany wokół
+// rury, kule wzdłuż kości o anatomicznych profilach, bufor głębi z normalnymi. Dwa reflektory
+// (różowy z lewej, turkusowy z prawej) kwantowane do 4 poziomów z ditheringiem, kontur 1 px,
+// odbicie w podłodze. Tło i rura z tokenów Nocturne, losowość wstrzykiwana (testy).
+const GW = 80,
   GH = 70,
-  PX = 40,
   FPS = 24,
-  LOOP = 5.5;
-const HEADR = 2.7 * Q,
-  NECK = 1.5 * Q,
-  SHOE = 2.2 * Q;
-const HSEG = 1.5 * Q;
-const POLE = 1,
-  FARARM = 2,
-  FARLEG = 3,
-  HAIR = 4,
-  BODY = 5,
-  NEARLEG = 6,
-  NEARARM = 7;
+  LOOP = 4.3,
+  PX = 40.5, // oś rury (3 piksele: 39–41)
+  FY = 58, // linia podłogi
+  U = 5.7; // pikseli na jednostkę ciała (≈ 20 cm)
 const SKIN = 1,
-  SKINF = 2,
-  COST = 3,
-  COSTF = 4,
-  HAIRM = 5,
-  SHOEM = 6,
-  SHOEF = 7,
-  EYE = 8,
-  POLE0 = 10;
+  COST = 2,
+  HAIR = 3,
+  POLE = 4;
+const RAD = Math.PI / 180;
+const LEN = { torso: 3.0, neck: 0.78, ua: 1.45, fa: 1.35, th: 2.2, sh: 2.15 };
+const SH = 0.78,
+  HP = 0.4;
+const LIMBS = ['A1', 'A2', 'L1', 'L2'];
+const SIDE = { A1: -1, A2: 1, L1: -1, L2: 1 };
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 
-const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
-const mul = (a, s) => [a[0] * s, a[1] * s];
-const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-const sn = (p) => [Math.floor(p[0]) + 0.5, Math.floor(p[1]) + 0.5];
-const dir = (deg) => {
-  const r = (deg * Math.PI) / 180;
-  return [Math.sin(r), -Math.cos(r)];
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const len = (a) => Math.hypot(a[0], a[1], a[2]);
+const norm = (a) => mul(a, 1 / (len(a) || 1));
+const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+/** Funkcja odcinkami liniowa z tabeli `[t, wartość]`. */
+const pl = (tab) => (t) => {
+  if (t <= tab[0][0]) return tab[0][1];
+  for (let i = 1; i < tab.length; i++)
+    if (t <= tab[i][0]) {
+      const a = tab[i - 1],
+        b = tab[i];
+      return a[1] + ((b[1] - a[1]) * (t - a[0])) / (b[0] - a[0]);
+    }
+  return tab[tab.length - 1][1];
 };
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-// t, pelvis, torso angle (0 = up, clockwise), head tilt (− = chin up), facing, body-in-front-of-pole,
-// near hand + elbow hint, far hand + elbow hint, near ankle + knee hint, far ankle + knee hint. x is relative to the pole.
-const K = (t, P, a, hd, f, pf, hN, eN, hF, eF, fN, kN, fF, kF) => ({
-  t,
-  P,
-  a,
-  hd,
-  f,
-  pf,
-  hN,
-  eN,
-  hF,
-  eF,
-  fN,
-  kN,
-  fF,
-  kF,
+// ——— Szkielet ———
+// Układ lokalny (płaszczyzna ciała): x – odległość od rury, y – w górę. Kąt tułowia `tr` > 0 = odchylenie
+// w tył; kończyny względem tułowia: 0 = wzdłuż ciała w dół, + do przodu; `[udo/ramię, łydka/przedramię,
+// odwiedzenie]` albo `{ g: [x, y] }` – chwyt / stopa (IK). `theta` – obrót całości wokół rury.
+const isArm = (l) => l[0] === 'A';
+const bones = (l) => (isArm(l) ? [LEN.ua, LEN.fa] : [LEN.th, LEN.sh]);
+const dirT = (a) => [Math.sin(a * RAD), Math.cos(a * RAD)];
+const dirL = (a) => [-Math.sin(a * RAD), -Math.cos(a * RAD)];
+const angL = (v) => Math.atan2(-v[0], -v[1]) / RAD;
+const wrap = (a) => ((((a + 180) % 360) + 360) % 360) - 180;
+const add2 = (a, b) => [a[0] + b[0], a[1] + b[1]];
+const sub2 = (a, b) => [a[0] - b[0], a[1] - b[1]];
+const mul2 = (a, k) => [a[0] * k, a[1] * k];
+
+function ik(r, g, l1, l2, hint) {
+  const dx = g[0] - r[0],
+    dy = g[1] - r[1],
+    d = Math.hypot(dx, dy) || 1e-6,
+    ux = dx / d,
+    uy = dy / d,
+    dc = clamp(d, Math.abs(l1 - l2) + 1e-3, l1 + l2 - 1e-3),
+    a = Math.acos(clamp((l1 * l1 + dc * dc - l2 * l2) / (2 * l1 * dc), -1, 1)),
+    c = Math.cos(a),
+    s = Math.sin(a);
+  const m1 = [r[0] + l1 * (ux * c - uy * s), r[1] + l1 * (ux * s + uy * c)];
+  const m2 = [r[0] + l1 * (ux * c + uy * s), r[1] + l1 * (-ux * s + uy * c)];
+  const cx = r[0] + (ux * dc) / 2,
+    cy = r[1] + (uy * dc) / 2;
+  const score = (m) => (m[0] - cx) * hint[0] + (m[1] - cy) * hint[1];
+  return [score(m1) >= score(m2) ? m1 : m2, [r[0] + ux * dc, r[1] + uy * dc]];
+}
+
+/** Klatka kluczowa → kąty kończyn i cele IK (do interpolacji). */
+function prep(k, prev) {
+  const s = k.s ?? prev?.s ?? 0,
+    hd = k.hd ?? 0,
+    tr = k.tr ?? 0,
+    P = k.P,
+    N = add2(P, mul2(dirT(tr), LEN.torso)),
+    front = dirT(tr - 90),
+    out = { t: k.t, P, tr, hd, s, limbs: {} };
+  for (const lim of LIMBS) {
+    const spec = k[lim],
+      [l1, l2] = bones(lim),
+      r0 = isArm(lim) ? N : P;
+    let m,
+      e,
+      hint,
+      sp = 0,
+      grip = 0,
+      pz = 0;
+    if (Array.isArray(spec)) {
+      m = add2(r0, mul2(dirL(tr + spec[0]), l1));
+      e = add2(m, mul2(dirL(tr + spec[1]), l2));
+      sp = spec[2] || 0;
+      hint = sub2(m, mul2(add2(r0, e), 0.5));
+    } else {
+      hint = spec.h || (isArm(lim) ? [-front[0], -front[1] - 0.4] : front);
+      [m, e] = ik(r0, spec.g, l1, l2, hint);
+      grip = 1;
+      pz = isArm(lim) && Math.abs(spec.g[0]) < 0.4 ? 1 : 0;
+    }
+    const hl = Math.hypot(hint[0], hint[1]) || 1;
+    out.limbs[lim] = {
+      r1: angL(sub2(m, r0)) - tr,
+      r2: angL(sub2(e, m)) - tr,
+      ex: e[0],
+      ey: e[1],
+      hx: hint[0] / hl,
+      hy: hint[1] / hl,
+      sp,
+      grip,
+      pz,
+    };
+  }
+  return out;
+}
+
+/** Splajn Hermite'a w czasie, zapętlony; `inc` – przyrost wartości na pętlę (obrót). */
+function track(times, vals, inc) {
+  const n = times.length;
+  const T = (i) => {
+    const k = Math.floor(i / n);
+    return times[i - k * n] + k * LOOP;
+  };
+  const V = (i) => {
+    const k = Math.floor(i / n);
+    return vals[i - k * n] + k * inc;
+  };
+  return (t) => {
+    const kk = Math.floor(t / LOOP);
+    t -= kk * LOOP;
+    let i = n - 1;
+    for (let j = 1; j < n; j++)
+      if (times[j] > t) {
+        i = j - 1;
+        break;
+      }
+    const t0 = T(i),
+      h = T(i + 1) - t0,
+      u = (t - t0) / h,
+      u2 = u * u,
+      u3 = u2 * u;
+    const m0 = (0.9 * (V(i + 1) - V(i - 1))) / (T(i + 1) - T(i - 1));
+    const m1 = (0.9 * (V(i + 2) - V(i))) / (T(i + 2) - T(i));
+    return (
+      (2 * u3 - 3 * u2 + 1) * V(i) +
+      (u3 - 2 * u2 + u) * h * m0 +
+      (-2 * u3 + 3 * u2) * V(i + 1) +
+      (u3 - u2) * h * m1 +
+      kk * inc
+    );
+  };
+}
+
+const stand = (x, y, o) => ({
+  P: [x, 4.38],
+  tr: 0,
+  hd: 0,
+  A2: { g: [0, y] },
+  A1: [5, 15],
+  L1: { g: [x - 0.4, 0.12] },
+  L2: { g: [x + 0.4, 0.12] },
+  ...o,
 });
-// Choreografia (pętla 5,5 s): krok i obrót przy rurze → wejście w odwrócenie „w kulce” (kolana przy klatce,
-// biodra przy rurze) → odwrócony szpagat (V) → zejście tą samą drogą w kulce → zejście na podłogę → obejście rury.
-// Biodra nie przechodzą przez rurę, nogi nie odlatują wyprostowane na bok (próba 6.11.2026).
-const KF = [
-  K(
-    0.0,
-    [-5.5, 33.8],
-    -4,
-    -6,
-    1,
-    0,
-    [-1.2, 16.5],
-    [0.6, 0.8],
-    [-7.6, 31],
-    [-1, 0],
-    [-3.5, 47.6],
-    [1, 0],
-    [-6.6, 47.6],
-    [1, 0],
-  ),
-  K(
-    0.5,
-    [-6.5, 33.5],
-    -12,
-    -10,
-    1,
-    0,
-    [-1.2, 18],
-    [0.3, 1],
-    [-16, 19.5],
-    [0, -1],
-    [3, 38],
-    [0, -1],
-    [-7.5, 47.6],
-    [1, 0],
-  ),
-  K(
-    0.9,
-    [1, 34.5],
-    -25,
-    -12,
-    1,
-    1,
-    [0, 17],
-    [1, 0.3],
-    [0, 21.5],
-    [1, 0.6],
-    [5, 45],
-    [1, -0.5],
-    [3.5, 46],
-    [1, -0.3],
-  ),
-  K(
-    1.3,
-    [5.5, 33],
-    14,
-    8,
-    -1,
-    1,
-    [0.8, 17],
-    [0.5, 1],
-    [0.8, 21.5],
-    [0.3, 1],
-    [1.5, 43.5],
-    [-1, -0.4],
-    [3.2, 44.5],
-    [-1, -0.2],
-  ),
-  // Kulka: biodra w górę i do rury, kolana do klatki, tułów odchyla się do tyłu.
-  K(
-    1.6,
-    [3.6, 28.5],
-    24,
-    10,
-    -1,
-    1,
-    [0.8, 17.5],
-    [0.5, 1],
-    [0.8, 22.5],
-    [0.3, 1],
-    [0.6, 32],
-    [-1, -0.6],
-    [2.4, 33],
-    [-1, -0.4],
-  ),
-  K(
-    1.85,
-    [1.8, 24.5],
-    85,
-    12,
-    -1,
-    1,
-    [0.8, 21],
-    [0, -1],
-    [0.8, 26.5],
-    [0, 1],
-    [-0.4, 19.5],
-    [0.3, -1],
-    [1.6, 18.8],
-    [0.3, -1],
-  ),
-  // Wyprost z kulki do odwróconego szpagatu i zatrzymanie.
-  K(
-    2.35,
-    [3.4, 16.7],
-    175,
-    12,
-    -1,
-    0,
-    [0.8, 19.5],
-    [1, 0],
-    [0.8, 34],
-    [-1, 0],
-    [13, 6.5],
-    [0, -1],
-    [-6.5, 5],
-    [0, -1],
-  ),
-  K(
-    2.75,
-    [3.4, 16.4],
-    177,
-    14,
-    -1,
-    0,
-    [0.8, 19.5],
-    [1, 0],
-    [0.8, 34],
-    [-1, 0],
-    [11.5, 3],
-    [0, -1],
-    [-9.5, 8.5],
-    [0, -1],
-  ),
-  // Zejście: nogi razem, kolana zgięte, ta sama droga w kulce.
-  K(
-    3.05,
-    [3.4, 17.2],
-    172,
-    12,
-    -1,
-    0,
-    [0.8, 19.5],
-    [1, 0],
-    [0.8, 33],
-    [-1, 0],
-    [1.5, 8.5],
-    [1, 0],
-    [4, 8.2],
-    [1, 0],
-  ),
-  K(
-    3.4,
-    [1.8, 24],
-    88,
-    8,
-    -1,
-    1,
-    [0.8, 21],
-    [0, -1],
-    [0.8, 27],
-    [0, 1],
-    [-0.3, 19],
-    [0.3, -1],
-    [1.6, 18.5],
-    [0.3, -1],
-  ),
-  K(
-    3.53,
-    [2.8, 26.8],
-    50,
-    0,
-    -1,
-    1,
-    [0.8, 19],
-    [0.5, 1],
-    [0.8, 24.5],
-    [0.3, 1],
-    [2, 34.5],
-    [-1, -0.2],
-    [4, 35],
-    [-1, -0.2],
-  ),
-  K(
-    3.68,
-    [4, 29.5],
-    18,
-    -6,
-    -1,
-    1,
-    [0.8, 17],
-    [1, 0.6],
-    [0.8, 22],
-    [0.3, 1],
-    [2.5, 41],
-    [-1, -0.3],
-    [5, 42],
-    [-1, -0.2],
-  ),
-  K(
-    3.95,
-    [6, 33.8],
-    6,
-    -10,
-    -1,
-    0,
-    [1, 16.5],
-    [1, 0.6],
-    [14.5, 15.5],
-    [0, -1],
-    [3, 47.6],
-    [-1, 0],
-    [7.2, 47.6],
-    [-1, 0],
-  ),
-  K(
-    4.6,
-    [6, 33.6],
-    8,
-    -12,
-    -1,
-    0,
-    [1, 16.5],
-    [1, 0.6],
-    [15, 14.8],
-    [0, -1],
-    [3, 47.6],
-    [-1, 0],
-    [7.2, 47.6],
-    [-1, 0],
-  ),
+// Obrót z hakiem: krok przy rurze, wybicie, okrążenie na jednej ręce z bliższą nogą zgiętą do rury
+// i dalszą wyciągniętą w tył, zejście spiralnie w dół i lądowanie.
+const KEYS = [
+  { t: 0, ...stand(1.5, 8.4, { s: -0.3 }) },
+  {
+    t: 0.5,
+    P: [1.3, 4.05],
+    tr: -5,
+    A2: { g: [0, 8.6] },
+    A1: [20, 40],
+    L1: { g: [1.0, 0.12] },
+    L2: [-40, -80],
+  },
+  {
+    t: 0.9,
+    P: [1.4, 5.0],
+    tr: 15,
+    hd: 10,
+    A2: { g: [0, 9.2] },
+    A1: [-60, -50, 30],
+    L1: [70, -30],
+    L2: [-35, -40],
+  },
+  {
+    t: 1.6,
+    P: [1.5, 4.8],
+    tr: 18,
+    hd: 12,
+    A2: { g: [0, 9.0] },
+    A1: [-70, -60, 35],
+    L1: [75, -35],
+    L2: [-45, -45],
+  },
+  {
+    t: 2.3,
+    P: [1.5, 4.5],
+    tr: 20,
+    hd: 14,
+    A2: { g: [0, 8.7] },
+    A1: [-80, -70, 30],
+    L1: [78, -30],
+    L2: [-50, -55],
+  },
+  {
+    t: 3.0,
+    P: [1.45, 4.2],
+    tr: 14,
+    hd: 8,
+    A2: { g: [0, 8.4] },
+    A1: [-40, -20, 25],
+    L1: [70, -25],
+    L2: [-30, -40],
+  },
+  {
+    t: 3.5,
+    P: [1.6, 3.8],
+    tr: 5,
+    A2: { g: [0, 8.3] },
+    A1: [15, 40, 10],
+    L1: { g: [1.2, 0.12] },
+    L2: { g: [2.1, 0.12] },
+  },
+  { t: 4.0, ...stand(1.5, 8.4) },
 ];
-KF.push(Object.assign({}, KF[0], { t: LOOP }));
+const THETA = [
+  [0, 120],
+  [0.9, 120],
+  [1.6, 250],
+  [2.3, 370],
+  [3.0, 450],
+  [3.5, 480],
+];
 
-// Rig: keys are authored as positions, then converted to joint space — shoulder in polar coords around the grip hand
-// (the body swings on its arm like a pendulum), limbs as angles in the torso frame with the "front" axis scaled by
-// facing (a turn foreshortens limbs instead of mirroring them). Grip hands and planted feet are IK'd to their targets.
-const B = { UA: 5.5, FA: 5.0, TH: 7.5, SH: 7.2, SHO: 8.8, REACH: 10.3 };
-const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
-const smooth = (u) => {
-  u = clamp(u, 0, 1);
-  return u * u * (3 - 2 * u);
-};
-function ik(A, Tg, l1, l2, hint) {
-  const dx = Tg[0] - A[0],
-    dy = Tg[1] - A[1];
-  let d = Math.hypot(dx, dy) || 1e-6;
-  const ux = dx / d,
-    uy = dy / d;
-  d = Math.max(Math.abs(l1 - l2) + 0.05, Math.min(l1 + l2 - 0.02, d));
-  const a = (l1 * l1 - l2 * l2 + d * d) / (2 * d),
-    h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
-  let px = -uy,
-    py = ux;
-  if (px * hint[0] + py * hint[1] < 0) {
-    px = -px;
-    py = -py;
+const MOVE = (() => {
+  const keys = [];
+  for (const k of KEYS) keys.push(prep(k, keys[keys.length - 1]));
+  const times = keys.map((k) => k.t),
+    n = keys.length;
+  const mk = (get, ang) => {
+    const vals = keys.map(get);
+    let inc = 0;
+    if (ang) {
+      for (let i = 1; i < n; i++) vals[i] = vals[i - 1] + wrap(vals[i] - vals[i - 1]);
+      inc = vals[n - 1] + wrap(vals[0] - vals[n - 1]) - vals[0];
+    }
+    return track(times, vals, inc);
+  };
+  const tk = {
+    P0: mk((k) => k.P[0]),
+    P1: mk((k) => k.P[1]),
+    tr: mk((k) => k.tr, true),
+    hd: mk((k) => k.hd, true),
+    s: mk((k) => k.s),
+  };
+  const lt = {};
+  for (const l of LIMBS) {
+    lt[l] = {};
+    for (const c of ['r1', 'r2', 'ex', 'ey', 'hx', 'hy', 'sp', 'pz'])
+      lt[l][c] = mk((k) => k.limbs[l][c], c === 'r1' || c === 'r2');
   }
-  return { m: [A[0] + ux * a + px * h, A[1] + uy * a + py * h], e: [A[0] + ux * d, A[1] + uy * d] };
-}
-// IK with a persistent bend side (relative to the root→target line, which turns continuously). The side only changes
-// when the FK pose clearly bends the other way, and then the joint sweeps across over a few frames instead of popping.
-function ikH(A, Tg, l1, l2, mid, key, mem) {
-  const dx = Tg[0] - A[0],
-    dy = Tg[1] - A[1],
-    L = Math.hypot(dx, dy) || 1e-6,
-    n = [-dy / L, dx / L];
-  const off = (mid[0] - A[0]) * n[0] + (mid[1] - A[1]) * n[1],
-    fk = off > 1.5 ? 1 : off < -1.5 ? -1 : 0;
-  const st = mem[key] || (mem[key] = { side: fk || (off >= 0 ? 1 : -1), tr: 0 });
-  st.tr = fk && fk !== st.side ? st.tr + 0.2 : Math.max(0, st.tr - 0.2);
-  if (st.tr >= 1) {
-    st.side = -st.side;
-    st.tr = 0;
-  }
-  const sa = ik(A, Tg, l1, l2, mul(n, st.side));
-  if (st.tr <= 0) return sa;
-  const sb = ik(A, Tg, l1, l2, mul(n, -st.side));
-  return { m: lerp(sa.m, sb.m, smooth(st.tr)), e: sa.e };
-}
-const loc = (v, d, f) =>
-  (Math.atan2((-v[0] * d[1] + v[1] * d[0]) * f, v[0] * d[0] + v[1] * d[1]) * 180) / Math.PI;
-const C = {
-  A: 0,
-  HD: 1,
-  F: 2,
-  GX: 3,
-  GY: 4,
-  R: 5,
-  TH: 6,
-  NU: 7,
-  FU: 8,
-  FL: 9,
-  FGX: 10,
-  FGY: 11,
-  LNU: 12,
-  LNL: 13,
-  LFU: 14,
-  LFL: 15,
-};
-const ANG = [C.A, C.TH, C.NU, C.FU, C.FL, C.LNU, C.LNL, C.LFU, C.LFL];
-const V = KF.map((k) => {
-  const d = dir(k.a),
-    P = k.P.slice();
-  for (const h of [k.hN, k.hF]) {
-    if (Math.abs(h[0]) > 2) continue;
-    const S = add(P, mul(d, B.SHO)),
-      v = sub(h, S),
-      L = Math.hypot(v[0], v[1]);
-    if (L > B.REACH) {
-      P[0] += (v[0] * (L - B.REACH)) / L;
-      P[1] += (v[1] * (L - B.REACH)) / L;
+  const theta = track(
+    THETA.map((x) => x[0]),
+    THETA.map((x) => x[1]),
+    360,
+  );
+  return { keys, times, tk, lt, theta };
+})();
+
+/** Stawy w układzie świata (x – w prawo, y – w górę, z – do widza; rura w x = z = 0). */
+function skeleton(t) {
+  const { keys, times, tk, lt } = MOVE,
+    n = keys.length,
+    tt = ((t % LOOP) + LOOP) % LOOP;
+  let i = n - 1;
+  for (let j = 1; j < n; j++)
+    if (times[j] > tt) {
+      i = j - 1;
+      break;
+    }
+  const k0 = keys[i],
+    k1 = keys[(i + 1) % n],
+    P = [tk.P0(t), tk.P1(t)],
+    tr = tk.tr(t),
+    hd = tk.hd(t),
+    s = tk.s(t),
+    N = add2(P, mul2(dirT(tr), LEN.torso)),
+    hdir = dirT(tr + hd),
+    fr = dirT(tr + hd - 90);
+  const J = {
+    P: [P[0], P[1], s],
+    N: [N[0], N[1], s],
+    Hc: [N[0] + hdir[0] * LEN.neck, N[1] + hdir[1] * LEN.neck, s],
+    front: [fr[0], fr[1], 0],
+    up: [hdir[0], hdir[1], 0],
+  };
+  for (const l of LIMBS) {
+    const arm = isArm(l),
+      side = SIDE[l],
+      [l1, l2] = bones(l),
+      c = lt[l],
+      r2d = arm ? N : P,
+      rz = s + side * (arm ? SH : HP);
+    let d1,
+      d2,
+      sp = 0;
+    if (k0.limbs[l].grip && k1.limbs[l].grip) {
+      const [m, e] = ik(r2d, [c.ex(t), c.ey(t)], l1, l2, [c.hx(t), c.hy(t)]);
+      d1 = mul2(sub2(m, r2d), 1 / l1);
+      d2 = mul2(sub2(e, m), 1 / l2);
+    } else {
+      d1 = dirL(tr + c.r1(t));
+      d2 = dirL(tr + c.r2(t));
+      sp = c.sp(t) * RAD;
+    }
+    const cs = Math.cos(sp),
+      sn = Math.sin(sp) * side,
+      root = [r2d[0], r2d[1], rz],
+      mid = [root[0] + d1[0] * cs * l1, root[1] + d1[1] * cs * l1, rz + sn * l1],
+      end = [mid[0] + d2[0] * cs * l2, mid[1] + d2[1] * cs * l2, mid[2] + sn * l2],
+      pz = clamp(c.pz(t), 0, 1),
+      q = l[1];
+    if (pz > 0) {
+      // Dłoń na rurze: ręka schodzi do osi rury.
+      end[2] *= 1 - pz;
+      mid[2] = mid[2] * (1 - pz) + rz * 0.6 * pz;
+    }
+    if (arm) {
+      J['S' + q] = root;
+      J['E' + q] = mid;
+      J['W' + q] = end;
+    } else {
+      J['H' + q] = root;
+      J['K' + q] = mid;
+      J['F' + q] = end;
+      // Stopa: na podłodze płasko do przodu, w powietrzu wyprostowana.
+      const plant = clamp(1 - (end[1] - 0.1) / 0.5, 0, 1),
+        fx = Math.sign(fr[0]) || -1,
+        toe = norm([d2[0] * cs * (1 - plant) + fx * plant, d2[1] * cs * (1 - plant), sn * (1 - plant)]);
+      J['T' + q] = add(end, mul(toe, 0.6));
     }
   }
-  const S = add(P, mul(d, B.SHO)),
-    aN = ik(S, k.hN, B.UA, B.FA, k.eN),
-    aF = ik(S, k.hF, B.UA, B.FA, k.eF);
-  const lN = ik(P, k.fN, B.TH, B.SH, k.kN),
-    lF = ik(P, k.fF, B.TH, B.SH, k.kF),
-    rel = sub(S, k.hN);
-  k.wF = Math.abs(k.hF[0]) <= 2 ? 1 : 0;
-  k.pN = lN.e[1] >= 47 ? lN.e : null;
-  k.pF = lF.e[1] >= 47 ? lF.e : null;
-  const row = [];
-  row[C.A] = k.a;
-  row[C.HD] = k.hd;
-  row[C.F] = k.f;
-  row[C.GX] = k.hN[0];
-  row[C.GY] = k.hN[1];
-  row[C.R] = Math.hypot(rel[0], rel[1]);
-  row[C.TH] = (Math.atan2(rel[1], rel[0]) * 180) / Math.PI;
-  row[C.NU] = loc(sub(aN.m, S), d, k.f);
-  row[C.FU] = loc(sub(aF.m, S), d, k.f);
-  row[C.FL] = loc(sub(aF.e, aF.m), d, k.f);
-  row[C.FGX] = aF.e[0];
-  row[C.FGY] = aF.e[1];
-  row[C.LNU] = loc(sub(lN.m, P), d, k.f);
-  row[C.LNL] = loc(sub(lN.e, lN.m), d, k.f);
-  row[C.LFU] = loc(sub(lF.m, P), d, k.f);
-  row[C.LFL] = loc(sub(lF.e, lF.m), d, k.f);
-  return row;
-});
-const T = KF.map((k) => k.t),
-  NK = KF.length;
-for (const c of ANG)
-  for (let i = 1; i < NK; i++)
-    V[i][c] = V[i - 1][c] + (((((V[i][c] - V[i - 1][c]) % 360) + 540) % 360) - 180);
-const slope = (s, c) => (V[s + 1][c] - V[s][c]) / (T[s + 1] - T[s]);
-const M = V.map((row, i) =>
-  row.map((_, c) => {
-    const d0 = slope(i > 0 ? i - 1 : NK - 2, c),
-      d1 = slope(i < NK - 1 ? i : 0, c);
-    return d0 * d1 <= 0 ? 0 : (2 * d0 * d1) / (d0 + d1);
-  }),
-);
-function sample(t) {
-  t = ((t % LOOP) + LOOP) % LOOP;
-  let i = 0;
-  while (i < NK - 2 && t >= T[i + 1]) i++;
-  const h = T[i + 1] - T[i],
-    s = clamp((t - T[i]) / h, 0, 1),
-    s2 = s * s,
-    s3 = s2 * s;
-  const h00 = 2 * s3 - 3 * s2 + 1,
-    h10 = s3 - 2 * s2 + s,
-    h01 = -2 * s3 + 3 * s2,
-    h11 = s3 - s2;
-  return {
-    i,
-    s,
-    v: V[i].map((a, c) => h00 * a + h10 * h * M[i][c] + h01 * V[i + 1][c] + h11 * h * M[i + 1][c]),
-  };
-}
-function plant(i, s, key, off) {
-  const pa = KF[i][key],
-    pb = KF[i + 1][key];
-  if (pa && pb) {
-    const dx = pb[0] - pa[0];
-    if (Math.abs(dx) > 1.2) {
-      const u = smooth((s - off) / 0.6);
-      return { w: 1, p: [pa[0] + dx * u, pa[1] - Math.sin(Math.PI * u) * 2.4] };
-    }
-    return { w: 1, p: lerp(pa, pb, smooth(s)) };
+  const th = MOVE.theta(t) * RAD,
+    sn = Math.sin(th),
+    cs = Math.cos(th),
+    out = {};
+  for (const key in J) {
+    const p = J[key];
+    out[key] =
+      key === 'front' || key === 'up'
+        ? [p[0] * sn, p[1], p[0] * cs]
+        : [p[0] * sn + p[2] * cs, p[1], p[0] * cs - p[2] * sn];
   }
-  if (pa) return { w: 1 - smooth(s * 1.7), p: pa };
-  if (pb) return { w: smooth((s - 0.35) / 0.65), p: pb };
-  return { w: 0, p: null };
-}
-function skel(t, mem) {
-  const sm = sample(t),
-    c = sm.v,
-    lg = sample(t - 0.05).v,
-    i = sm.i,
-    s = sm.s;
-  const f = clamp(c[C.F], -1, 1),
-    d = dir(c[C.A]),
-    pd = [-d[1], d[0]];
-  const L = (ang, len) => {
-    const r = (ang * Math.PI) / 180,
-      u = Math.cos(r) * len,
-      w = Math.sin(r) * len * f;
-    return [d[0] * u + pd[0] * w, d[1] * u + pd[1] * w];
-  };
-  const G = [c[C.GX], c[C.GY]],
-    th = (c[C.TH] * Math.PI) / 180;
-  const S = [G[0] + Math.cos(th) * c[C.R], G[1] + Math.sin(th) * c[C.R]];
-  const P = add(S, mul(d, -B.SHO)),
-    N = add(S, mul(d, 10 - B.SHO));
-  const aN = ikH(S, G, B.UA, B.FA, add(S, L(c[C.NU], B.UA)), 'aN', mem);
-  const wa = KF[i].wF,
-    wb = KF[i + 1].wF,
-    wF = wa && wb ? 1 : wa ? 1 - smooth(s / 0.6) : wb ? smooth((s - 0.2) / 0.8) : 0;
-  const eFk = add(S, L(lg[C.FU], B.UA)),
-    aF = { m: eFk, e: add(eFk, L(lg[C.FL], B.FA)) };
-  let aFo = aF;
-  aFo = ikH(S, wF > 0.001 ? lerp(aF.e, [c[C.FGX], c[C.FGY]], wF) : aF.e, B.UA, B.FA, eFk, 'aF', mem);
-  if (wF <= 0.001) aFo = aF;
-  const leg = (cu, cl, key, off) => {
-    const k = add(P, L(lg[cu], B.TH)),
-      fk = { m: k, e: add(k, L(lg[cl], B.SH)) },
-      pl = plant(i, s, key, off);
-    const r = ikH(P, pl.w > 0.001 ? lerp(fk.e, pl.p, pl.w) : fk.e, B.TH, B.SH, k, key, mem);
-    return pl.w > 0.001 ? r : fk;
-  };
-  const lN = leg(C.LNU, C.LNL, 'pN', 0),
-    lF = leg(C.LFU, C.LFL, 'pF', 0.4);
-  const ha = dir(c[C.A] + c[C.HD] * f),
-    hfr = [-ha[1] * f, ha[0] * f];
-  const g = (p) => [PX + p[0] * Q, p[1] * Q],
-    gs = (p) => sn(g(p)),
-    lim = (o) => ({ m: gs(o.m), e: gs(o.e) });
-  const toe = (l) => {
-    const v = sub(l.e, l.m),
-      n = Math.hypot(v[0], v[1]) || 1;
-    return sn(add(g(l.e), mul(v, SHOE / n)));
-  };
-  const Hc = add(g(N), mul(ha, NECK + HEADR - 0.3 * Q));
-  return {
-    P: gs(P),
-    N: gs(N),
-    S: gs(S),
-    d,
-    fr: [pd[0] * f, pd[1] * f],
-    ha,
-    hfr,
-    Hc: sn(Hc),
-    HcRaw: Hc,
-    f,
-    pf: s < 0.5 ? KF[i].pf : KF[i + 1].pf,
-    aN: lim(aN),
-    aF: lim(aFo),
-    lN: lim(lN),
-    lF: lim(lF),
-    toeN: toe(lN),
-    toeF: toe(lF),
-  };
+  return out;
 }
 
-function hex(str) {
-  let h = str.replace('#', '');
-  if (h.length === 3)
-    h = h
-      .split('')
-      .map((c) => c + c)
-      .join('');
-  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+// ——— Ciało ———
+// Przekroje tułowia: [wysokość nad biodrami, połowa szerokości, połowa głębokości, przesunięcie w przód].
+const TORSO = [
+  [-0.5, 0.16, 0.16, 0],
+  [-0.3, 0.52, 0.37, -0.02],
+  [-0.05, 0.77, 0.49, -0.05],
+  [0.2, 0.8, 0.52, -0.06],
+  [0.55, 0.75, 0.47, -0.03],
+  [0.95, 0.56, 0.37, 0.02],
+  [1.3, 0.5, 0.34, 0.04],
+  [1.7, 0.56, 0.36, 0.04],
+  [2.1, 0.66, 0.4, 0.05],
+  [2.45, 0.72, 0.36, 0.02],
+  [2.75, 0.8, 0.27, -0.02],
+  [2.95, 0.5, 0.22, -0.02],
+  [3.1, 0.24, 0.2, 0],
+];
+const torsoAt = (h) => {
+  for (let i = 1; i < TORSO.length; i++)
+    if (h <= TORSO[i][0]) {
+      const a = TORSO[i - 1],
+        c = TORSO[i],
+        t = clamp((h - a[0]) / (c[0] - a[0]), 0, 1);
+      return [a[1] + (c[1] - a[1]) * t, a[2] + (c[2] - a[2]) * t, a[3] + (c[3] - a[3]) * t];
+    }
+  return TORSO[TORSO.length - 1].slice(1);
+};
+const THIGH = pl([
+    [0, 0.44],
+    [0.3, 0.42],
+    [0.65, 0.33],
+    [1, 0.265],
+  ]),
+  SHIN = pl([
+    [0, 0.265],
+    [0.26, 0.31],
+    [0.62, 0.23],
+    [1, 0.16],
+  ]),
+  FOOT = pl([
+    [0, 0.13],
+    [0.22, 0.155],
+    [0.7, 0.12],
+    [1, 0.07],
+  ]),
+  UPPER = pl([
+    [0, 0.24],
+    [0.35, 0.21],
+    [1, 0.165],
+  ]),
+  FORE = pl([
+    [0, 0.165],
+    [0.25, 0.18],
+    [1, 0.115],
+  ]),
+  HAND = pl([
+    [0, 0.105],
+    [0.45, 0.115],
+    [1, 0.06],
+  ]);
+// Bob: czapka włosów + trzy krótkie pasma (tył i boki) – [przód, góra, bok, segmenty, długość, r0, r1].
+const HAIR_CAP = 0.53;
+const STRANDS = [
+  [-0.36, -0.1, 0, 3, 0.2, 0.36, 0.28],
+  [-0.1, -0.14, 0.34, 3, 0.19, 0.25, 0.19],
+  [-0.1, -0.14, -0.34, 3, 0.19, 0.25, 0.19],
+];
+const STEP = 0.16; // odstęp kul ≈ 1 piksel
+
+/** Pasmo włosów: łańcuch Verleta z kolizjami (głowa, tułów) – krok stały 1/FPS. */
+class Strand {
+  constructor(n, seg) {
+    this.n = n;
+    this.seg = seg;
+    this.x = null;
+  }
+  relax(a, cols) {
+    this.x[0] = a;
+    for (let it = 0; it < 3; it++)
+      for (let i = 1; i < this.n; i++) {
+        const A = this.x[i - 1];
+        let B = this.x[i];
+        for (const c of cols) {
+          const d = sub(B, c[0]),
+            l = len(d);
+          if (l < c[1]) B = add(c[0], mul(d, c[1] / (l || 1e-6)));
+        }
+        const d = sub(B, A),
+          k = this.seg / (len(d) || 1e-6);
+        this.x[i] = [A[0] + d[0] * k, Math.max(0.08, A[1] + d[1] * k), A[2] + d[2] * k];
+      }
+  }
+  step(a, steps, cols) {
+    const n = this.n;
+    if (!this.x) {
+      this.x = [];
+      for (let i = 0; i < n; i++) this.x.push([a[0], a[1] - i * this.seg, a[2]]);
+      for (let q = 0; q < 30; q++) {
+        this.relax(a, cols);
+        for (let i = 1; i < n; i++) this.x[i][1] -= 0.01;
+      }
+      this.relax(a, cols);
+      this.o = this.x.map((p) => p.slice());
+      return this.x;
+    }
+    const h = 1 / FPS,
+      g = -42 * h * h;
+    for (let q = 0; q < steps; q++) {
+      for (let i = 1; i < n; i++) {
+        const x = this.x[i],
+          o = this.o[i];
+        this.o[i] = x;
+        this.x[i] = [
+          x[0] + (x[0] - o[0]) * 0.86,
+          x[1] + (x[1] - o[1]) * 0.86 + g,
+          x[2] + (x[2] - o[2]) * 0.86,
+        ];
+      }
+      this.o[0] = a;
+      this.relax(a, cols);
+    }
+    return this.x;
+  }
 }
+
+// ——— Kolory ———
+const hex = (h) => [
+  parseInt(h.slice(1, 3), 16) / 255,
+  parseInt(h.slice(3, 5), 16) / 255,
+  parseInt(h.slice(5, 7), 16) / 255,
+];
 const pack = (c) =>
-  ((255 << 24) | (Math.round(c[2]) << 16) | (Math.round(c[1]) << 8) | Math.round(c[0])) >>> 0;
-const mixc = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+  ((255 << 24) |
+    (Math.round(clamp(c[2], 0, 1) * 255) << 16) |
+    (Math.round(clamp(c[1], 0, 1) * 255) << 8) |
+    Math.round(clamp(c[0], 0, 1) * 255)) >>>
+  0;
+const PINK = [1, 0.16, 0.62],
+  CYAN = [0.1, 0.84, 1];
+// Reflektory: kierunek światła (x w prawo, y w górę, z do widza) i kierunek kontry na krawędziach.
+const L_PINK = norm([-0.9, 0.25, 0.3]),
+  L_CYAN = norm([0.85, 0.35, 0.12]),
+  H_PINK = norm([L_PINK[0], L_PINK[1], L_PINK[2] + 1]),
+  H_CYAN = norm([L_CYAN[0], L_CYAN[1], L_CYAN[2] + 1]);
 
 export class PoleEngine {
   constructor(palette, random = Math.random) {
-    this.random = random;
-    this.out = new Uint32Array(GW * GH);
-    this.grp = new Uint8Array(GW * GH);
-    this.mat = new Uint8Array(GW * GH);
-    this.rank = new Uint8Array(8);
+    const n = GW * GH;
+    this.out = new Uint32Array(n);
+    this.z = new Float32Array(n);
+    this.nx = new Float32Array(n);
+    this.ny = new Float32Array(n);
+    this.nz = new Float32Array(n);
+    this.cov = new Float32Array(n);
+    this.ao = new Float32Array(n);
+    this.t1 = new Float32Array(n);
+    this.t2 = new Float32Array(n);
+    this.t3 = new Float32Array(n);
+    this.m = new Uint8Array(n);
+    this.ci = new Uint8Array(n); // indeks koloru sylwetki (0 = brak) – kontur i odbicie
+    this.prims = [];
+    this.strands = STRANDS.map((s) => new Strand(s[3], s[4]));
     this.readColors(palette);
     this.buildBg();
-    this.stars = Array.from({ length: 6 }, () => ({
-      per: 2.2 + random() * 1.4,
+    this.lights = Array.from({ length: 7 }, (_, i) => ({
+      x: 5 + Math.floor(random() * 70),
+      y: 9 + Math.floor(random() * 36),
+      per: 1.6 + random() * 1.8,
       ph: random() * 3,
-      c: -1,
-      x: 0,
-      y: 0,
+      pink: i % 2 === 0,
     }));
   }
   readColors(palette) {
-    const A = [0],
-      N = [0],
-      Ar = [0];
-    for (let i = 1; i <= 9; i++) {
-      Ar[i] = hex(palette.accent[i - 1]);
-      A[i] = pack(Ar[i]);
-      N[i] = pack(hex(palette.neutral[i - 1]));
-    }
-    const bg = hex(palette.bg);
-    const MAT = [];
-    MAT[SKIN] = [A[1], A[3], A[5], A[6]];
-    MAT[SKINF] = [A[3], A[5], A[6], A[7]];
-    MAT[COST] = [A[4], A[6], A[7], A[8]];
-    MAT[COSTF] = [A[6], A[7], A[8], A[8]];
-    MAT[HAIRM] = [A[5], A[7], A[8], A[8]];
-    MAT[SHOEM] = [N[1], N[4], N[6], N[7]];
-    MAT[SHOEF] = [N[3], N[5], N[6], N[7]];
-    this.C = {
-      A,
-      N,
-      MAT,
-      POLE: [N[2], N[3], N[5], N[7]],
-      POLEFADE: [
-        [N[8], N[8], N[8], N[8]],
-        [N[7], N[7], N[8], N[8]],
-        [N[5], N[6], N[7], N[8]],
-        [N[3], N[4], N[6], N[7]],
-      ],
-      OUT: pack(bg.map((v) => v * 0.55)),
-      HAZE1: pack(mixc(bg, Ar[9], 0.5)),
-      HAZE2: pack(Ar[9]),
+    const bg = hex(palette.bg),
+      N = palette.neutral.map(hex),
+      A = palette.accent.map(hex);
+    // 4 poziomy każdego reflektora → 16 kolorów na materiał.
+    // Kolor = nieoświetlona baza + odbicie materiału × światło obu reflektorów.
+    const lut = (alb, base) => {
+      const t = [];
+      for (let p = 0; p < 4; p++)
+        for (let c = 0; c < 4; c++)
+          t.push(
+            [0, 1, 2].map((k) => base[k] + alb[k] * ((PINK[k] * p * 1.2) / 3 + (CYAN[k] * c * 1.2) / 3)),
+          );
+      return t;
     };
-  }
-  buildBg() {
-    const A = this.C.A,
-      H1 = this.C.HAZE1,
-      H2 = this.C.HAZE2,
-      bg = new Uint32Array(GW * GH);
-    const PCY = 51 * Q,
-      PRX = 22 * Q,
-      PRY = 3.2 * Q,
-      FLOOR = 50 * Q;
-    for (let y = 0; y < GH; y++) {
-      const hw = (3 + (y / Q + 3) * 0.36) * Q;
-      for (let x = 0; x < GW; x++) {
-        const cx = x + 0.5 - PX,
-          ex = cx / PRX,
-          ey = (y + 0.5 - PCY) / PRY,
-          e = ex * ex + ey * ey;
-        let col = 0;
-        if (e < 1) col = e < 0.18 ? A[7] : e < 0.5 ? A[8] : A[9];
-        else if (y < FLOOR && y > 3 && Math.abs(cx) < hw) col = Math.abs(cx) < hw * 0.42 && y > 12 ? H2 : H1;
-        bg[y * GW + x] = col;
-      }
-    }
-    this.bg = bg;
-  }
-  set(x, y, col) {
-    if (x >= 0 && y >= 0 && x < GW && y < GH) this.out[y * GW + x] = col;
-  }
-  step(ft, steps) {
-    const lt = ft % LOOP,
-      sk = skel(lt, this.bend || (this.bend = {})),
-      out = this.out;
-    this.simHair(sk, steps);
-    out.set(this.bg);
-    const fl = 50 * Q,
-      h = fl - Math.max(sk.toeN[1], sk.toeF[1]);
-    if (h < 20) {
-      const rx = Math.max(2, (5.5 - h * 0.25) * Q),
-        cx = sk.P[0],
-        cy = 50.8 * Q;
-      for (let y = Math.floor(cy - 2); y <= Math.ceil(cy + 2); y++)
-        for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
-          const ex = (x + 0.5 - cx) / rx,
-            ey = (y + 0.5 - cy) / 1.4;
-          if (ex * ex + ey * ey < 1) this.set(x, y, 0);
-        }
-    }
-    this.drawStars(ft);
-    this.raster(sk, ft);
-    this.shade();
-    this.drawBursts(sk, lt);
-  }
-  simHair(sk, steps) {
-    const anchor = add(add(sk.HcRaw, mul(sk.hfr, -2.1 * Q)), mul(sk.ha, 0.9 * Q));
-    if (!this.hair) {
-      this.hair = [];
-      for (let i = 0; i <= 5; i++) {
-        const p = [anchor[0], anchor[1] + i * HSEG];
-        this.hair.push({ p, q: p.slice() });
-      }
-      this.pa = anchor;
-    }
-    const H = this.hair,
-      pa = this.pa,
-      n = steps * 3,
-      R = HEADR + 0.5 * Q,
-      Hc = sk.HcRaw;
-    for (let s = 1; s <= n; s++) {
-      const a = lerp(pa, anchor, s / n);
-      H[0].p = a.slice();
-      H[0].q = a.slice();
-      for (let i = 1; i < H.length; i++) {
-        const p = H[i].p,
-          q = H[i].q,
-          vx = (p[0] - q[0]) * 0.95,
-          vy = (p[1] - q[1]) * 0.95;
-        H[i].q = p.slice();
-        H[i].p = [p[0] + vx, p[1] + vy + 0.045 * Q];
-      }
-      for (let it = 0; it < 4; it++) {
-        for (let i = 1; i < H.length; i++) {
-          const a0 = H[i - 1].p,
-            b0 = H[i].p,
-            dx = b0[0] - a0[0],
-            dy = b0[1] - a0[1],
-            L = Math.hypot(dx, dy) || 1e-6,
-            df = (L - HSEG) / L;
-          if (i === 1) H[i].p = [b0[0] - dx * df, b0[1] - dy * df];
-          else {
-            H[i - 1].p = [a0[0] + dx * df * 0.5, a0[1] + dy * df * 0.5];
-            H[i].p = [b0[0] - dx * df * 0.5, b0[1] - dy * df * 0.5];
-          }
-        }
-        for (let i = 2; i < H.length; i++) {
-          const dx = H[i].p[0] - Hc[0],
-            dy = H[i].p[1] - Hc[1],
-            L = Math.hypot(dx, dy);
-          if (L < R) H[i].p = [Hc[0] + (dx * R) / (L || 1), Hc[1] + (dy * R) / (L || 1)];
-        }
-      }
-    }
-    this.pa = anchor;
-  }
-  cap(a, b, ra, rb, g, m) {
-    ra *= Q;
-    rb *= Q;
-    const x0 = Math.max(0, Math.floor(Math.min(a[0] - ra, b[0] - rb))),
-      x1 = Math.min(GW - 1, Math.ceil(Math.max(a[0] + ra, b[0] + rb)));
-    const y0 = Math.max(0, Math.floor(Math.min(a[1] - ra, b[1] - rb))),
-      y1 = Math.min(GH - 1, Math.ceil(Math.max(a[1] + ra, b[1] + rb)));
-    const dx = b[0] - a[0],
-      dy = b[1] - a[1],
-      L2 = dx * dx + dy * dy;
-    for (let y = y0; y <= y1; y++)
-      for (let x = x0; x <= x1; x++) {
-        const px = x + 0.5 - a[0],
-          py = y + 0.5 - a[1];
-        const u = L2 > 1e-6 ? clamp((px * dx + py * dy) / L2, 0, 1) : 0;
-        const qx = px - dx * u,
-          qy = py - dy * u,
-          r = ra + (rb - ra) * u;
-        if (qx * qx + qy * qy <= r * r) {
-          const i = y * GW + x;
-          this.grp[i] = g;
-          this.mat[i] = m;
-        }
-      }
-  }
-  raster(sk, ft) {
-    this.grp.fill(0);
-    this.mat.fill(0);
-    const order = sk.pf
-      ? [POLE, FARARM, FARLEG, HAIR, BODY, NEARLEG, NEARARM]
-      : [FARARM, FARLEG, HAIR, BODY, POLE, NEARLEG, NEARARM];
-    order.forEach((g, i) => {
-      this.rank[g] = i + 1;
+    const tables = [];
+    tables[SKIN] = lut([0.9, 0.78, 0.72], [0.3, 0.2, 0.36]);
+    tables[COST] = lut([0.36, 0.36, 0.44], [0.16, 0.12, 0.29]);
+    tables[HAIR] = lut([0.32, 0.28, 0.38], [0.1, 0.07, 0.19]);
+    const floor = mix(bg, A[8], 0.8);
+    this.LUT = new Uint32Array(64);
+    this.MIRROR = new Uint32Array(64);
+    for (const mt of [SKIN, COST, HAIR])
+      tables[mt].forEach((c, i) => {
+        this.LUT[mt * 16 + i] = pack(c);
+        this.MIRROR[mt * 16 + i] = pack(mix(floor, c, 0.5));
+      });
+    // Rura: lewa krawędź różowa, środek jasny, prawa turkusowa (indeksy 1–3).
+    [mix(N[3], PINK, 0.75), N[0], mix(N[3], CYAN, 0.75)].forEach((c, i) => {
+      this.LUT[1 + i] = pack(c);
+      this.MIRROR[1 + i] = pack(mix(floor, c, 0.45));
     });
-    const arm = (a, g, far) => {
-      const m = far ? SKINF : SKIN;
-      this.cap(sk.S, a.m, 1.05, 0.9, g, m);
-      this.cap(a.m, a.e, 0.9, 0.8, g, m);
-      this.cap(a.e, a.e, 1.0, 1.0, g, m);
+    this.C = {
+      OUT: pack(mul(bg, 0.5)),
+      HAZE_P: pack(mix(bg, PINK, 0.3)),
+      HAZE_C: pack(mix(bg, CYAN, 0.26)),
+      DOT_P: [pack(mix(bg, PINK, 0.38)), pack(mix(bg, PINK, 0.75))],
+      DOT_C: [pack(mix(bg, CYAN, 0.34)), pack(mix(bg, CYAN, 0.7))],
+      LAMP: [pack(N[6]), pack(N[7])],
+      LAMP_P: pack(mix(PINK, [1, 1, 1], 0.45)),
+      LAMP_C: pack(mix(CYAN, [1, 1, 1], 0.45)),
+      FLOOR: [floor, mix(bg, A[8], 0.45), mix(bg, A[7], 0.7)],
     };
-    const leg = (l, toe, g, far) => {
-      const m = far ? SKINF : SKIN;
-      this.cap(sk.P, l.m, 1.75, 1.2, g, m);
-      this.cap(l.m, l.e, 1.15, 0.85, g, m);
-      this.cap(sk.P, lerp(sk.P, l.m, 0.24), 1.85, 1.6, g, far ? COSTF : COST);
-      this.cap(l.e, toe, 0.95, 0.75, g, far ? SHOEF : SHOEM);
+  }
+  /** Tło: lampy i stożki światła (dithering), scena jako elipsa z poświatą obu reflektorów. */
+  buildBg() {
+    const C = this.C,
+      bg = new Uint32Array(GW * GH),
+      stage = new Uint8Array(GW * GH);
+    const cone = (x, y, lx, tx) => {
+      // Odległość od osi stożka (lampa → punkt na podłodze) i jego szerokość na tej wysokości.
+      const k = (y - 6) / (FY - 6);
+      if (k < 0 || y >= FY) return 0;
+      const half = 1.5 + k * 13,
+        d = Math.abs(x + 0.5 - (lx + (tx - lx) * k)) / half;
+      return d >= 1 ? 0 : (1 - d * d) * (0.62 - 0.34 * k);
     };
-    for (const g of order) {
-      if (g === POLE) this.rasterPole(ft);
-      else if (g === FARARM) arm(sk.aF, g, true);
-      else if (g === NEARARM) arm(sk.aN, g, false);
-      else if (g === FARLEG) leg(sk.lF, sk.toeF, g, true);
-      else if (g === NEARLEG) leg(sk.lN, sk.toeN, g, false);
-      else if (g === HAIR) {
-        const H = this.hair.map((h) => sn(h.p)),
-          n = H.length - 1;
-        this.cap(H[0], H[0], 1.3, 1.3, g, HAIRM);
-        for (let i = 0; i < n; i++)
-          this.cap(H[i], H[i + 1], 1.25 - (0.45 * i) / n, 1.25 - (0.45 * (i + 1)) / n, g, HAIRM);
-      } else if (g === BODY) this.rasterBody(sk);
-    }
-  }
-  rasterBody(sk) {
-    const { P, N, fr, ha, hfr, Hc } = sk;
-    const at = (u, o) => add(lerp(P, N, u), mul(fr, (o || 0) * Q));
-    const W = at(0.4),
-      C = at(0.7, 0.55),
-      U = at(0.9);
-    this.cap(P, W, 2.0, 1.45, BODY, SKIN);
-    this.cap(W, C, 1.45, 2.0, BODY, SKIN);
-    this.cap(C, U, 2.0, 1.45, BODY, SKIN);
-    this.cap(U, N, 1.45, 1.0, BODY, SKIN);
-    this.cap(N, add(N, mul(ha, 1.6 * Q)), 0.85, 0.85, BODY, SKIN);
-    this.cap(at(0, -0.25), at(0.17), 2.15, 1.85, BODY, COST);
-    this.cap(at(0.58, 0.25), C, 1.65, 2.0, BODY, COST);
-    this.cap(C, at(0.82, 0.2), 2.0, 1.7, BODY, COST);
-    const r = HEADR,
-      af = Math.abs(sk.f);
-    for (let y = Math.max(0, Math.floor(Hc[1] - r)); y <= Math.min(GH - 1, Math.ceil(Hc[1] + r)); y++) {
-      for (let x = Math.max(0, Math.floor(Hc[0] - r)); x <= Math.min(GW - 1, Math.ceil(Hc[0] + r)); x++) {
-        const vx = x + 0.5 - Hc[0],
-          vy = y + 0.5 - Hc[1];
-        if (vx * vx + vy * vy > r * r) continue;
-        const along = vx * ha[0] + vy * ha[1],
-          side = vx * hfr[0] + vy * hfr[1],
-          i = y * GW + x;
-        this.grp[i] = BODY;
-        this.mat[i] = (side < 0.4 * Q * af && along > -0.6 * Q) || along > 1.5 * Q ? HAIRM : SKIN;
-      }
-    }
-    if (af > 0.5) {
-      const ex = Math.floor(Hc[0] + hfr[0] * 1.45 * Q + ha[0] * 0.15 * Q),
-        ey = Math.floor(Hc[1] + hfr[1] * 1.45 * Q + ha[1] * 0.15 * Q);
-      if (ex >= 0 && ey >= 0 && ex < GW && ey < GH && this.mat[ey * GW + ex] === SKIN)
-        this.mat[ey * GW + ex] = EYE;
-    }
-  }
-  rasterPole(ft) {
-    const gp = ft % 2.6,
-      gy = gp < 0.8 ? 20 + 38 * (gp / 0.8) : -99;
-    const put = (x, y, m) => {
-      const i = y * GW + x;
-      this.grp[i] = POLE;
-      this.mat[i] = m;
-    };
-    for (let y = 2; y <= 60; y++)
-      for (let k = 0; k < 4; k++)
-        put(38 + k, y, y >= 18 && k > 0 && k < 3 && Math.abs(y - gy) <= 1.5 ? POLE0 + 6 : POLE0 + k);
-    for (let x = 37; x <= 42; x++) put(x, 61, POLE0 + 4);
-    for (let x = 36; x <= 43; x++) put(x, 62, POLE0 + 5);
-  }
-  poleCol(m, y) {
-    const C = this.C;
-    if (m === POLE0 + 4) return C.N[3];
-    if (m === POLE0 + 5) return C.N[6];
-    if (m === POLE0 + 6) return C.N[1];
-    const k = m - POLE0;
-    return y < 18 ? C.POLEFADE[Math.floor((y - 2) / 4)][k] : C.POLE[k];
-  }
-  shade() {
-    const grp = this.grp,
-      mat = this.mat,
-      rank = this.rank,
-      out = this.out,
-      C = this.C;
-    const g4 = (x, y) => (x < 0 || y < 0 || x >= GW || y >= GH ? 0 : grp[y * GW + x]);
     for (let y = 0; y < GH; y++)
       for (let x = 0; x < GW; x++) {
         const i = y * GW + x,
-          g = grp[i];
-        if (!g) continue;
-        let over = false;
-        for (let k = 0; k < 4 && !over; k++) {
-          const h = g4(x + (k === 0 ? 1 : k === 1 ? -1 : 0), y + (k === 2 ? 1 : k === 3 ? -1 : 0));
-          if (h && h !== g && rank[h] > rank[g]) over = true;
-        }
-        const m = mat[i];
-        if (g === POLE) {
-          out[i] = over ? C.N[8] : this.poleCol(m, y);
+          ex = (x + 0.5 - PX) / 31,
+          ey = (y + 0.5 - (FY + 2.5)) / 5.5,
+          e = ex * ex + ey * ey,
+          th = (BAYER[(x & 3) + (y & 3) * 4] + 0.5) / 16;
+        if (e < 1) {
+          stage[i] = 1;
+          // Poświata: różowa z lewej, turkusowa z prawej; jaśniejszy rant sceny.
+          const tint = ex < 0 ? PINK : CYAN,
+            glow = clamp(Math.abs(ex) * 0.5 - 0.08, 0, 1) * (1 - e) * 1.6,
+            base = e > 0.82 ? C.FLOOR[2] : y + 0.5 < FY ? C.FLOOR[1] : C.FLOOR[0];
+          bg[i] = pack(glow > th * 0.5 ? mix(base, tint, 0.22) : base);
           continue;
         }
-        if (m === EYE) {
-          out[i] = C.A[9];
-          continue;
-        }
-        let nx = 0,
-          ny = 0;
-        for (let oy = -1; oy <= 1; oy++)
-          for (let ox = -1; ox <= 1; ox++) {
-            if ((ox || oy) && g4(x + ox, y + oy) !== g) {
-              nx += ox;
-              ny += oy;
-            }
-          }
-        let tone = 1;
-        const nl = Math.hypot(nx, ny);
-        if (nl > 0) {
-          const d = (nx * -0.6 + ny * -0.8) / nl;
-          if (d > 0.45) tone = 0;
-          else if (d < -0.35) tone = 2;
-        }
-        if (over) tone = 3;
-        out[i] = C.MAT[m][tone];
+        const p = cone(x, y, 9.5, PX - 5),
+          c = cone(x, y, GW - 9.5, PX + 5);
+        if (p > th && p >= c) bg[i] = C.HAZE_P;
+        else if (c > th) bg[i] = C.HAZE_C;
       }
+    for (const [lx, col] of [
+      [8, C.LAMP_P],
+      [GW - 11, C.LAMP_C],
+    ]) {
+      for (let x = 0; x < 3; x++) {
+        bg[2 * GW + lx + x] = C.LAMP[1];
+        bg[3 * GW + lx + x] = C.LAMP[0];
+        bg[4 * GW + lx + x] = C.LAMP[0];
+      }
+      bg[5 * GW + lx + 1] = col;
+    }
+    this.bg = bg;
+    this.stage = stage;
+  }
+
+  /** Kule ciała w układzie świata: `[x, y, z, r, materiał]` w `this.prims`. */
+  body(p, steps) {
+    const o = this.prims;
+    o.length = 0;
+    const up = norm(sub(p.N, p.P)),
+      side = norm(sub(p.H2, p.H1));
+    let fr = cross(side, up);
+    if (dot(fr, p.front) < 0) fr = mul(fr, -1);
+    const at = (h, s, f) => [
+      p.P[0] + up[0] * h + side[0] * s + fr[0] * f,
+      p.P[1] + up[1] * h + side[1] * s + fr[1] * f,
+      p.P[2] + up[2] * h + side[2] * s + fr[2] * f,
+    ];
+    const put = (c, r, m) => o.push(c[0], c[1], c[2], r, m);
+    const sweep = (A, B, rf, m, k = 1) => {
+      const n = Math.max(1, Math.ceil(len(sub(B, A)) / (STEP * k)));
+      for (let i = 0; i <= n; i++) put(mix(A, B, i / n), rf(i / n), m);
+    };
+    // Tułów w body: rząd kul w poprzek na każdej wysokości (przekrój „stadion”).
+    const suit = (h) => (h < 2.55 ? COST : SKIN);
+    for (let h = -0.5; h <= 3.1; h += STEP * 0.9) {
+      const [w, d, of] = torsoAt(h),
+        a = Math.max(0, w - d),
+        n = a < 0.03 ? 1 : Math.ceil((2 * a) / (0.6 * d)) + 1;
+      for (let j = 0; j < n; j++) put(at(h, n === 1 ? 0 : -a + (2 * a * j) / (n - 1), of), d, suit(h));
+    }
+    for (const sg of [-1, 1]) {
+      put(at(-0.02, sg * 0.3, -0.2), 0.47, COST);
+      put(at(2.12, sg * 0.3, 0.3), 0.26, COST);
+      put(at(1.98, sg * 0.3, 0.25), 0.24, COST);
+    }
+    for (const k of ['1', '2']) {
+      const K = p['K' + k],
+        F = p['F' + k],
+        fd = norm(sub(p['T' + k], F)),
+        S = sub(p['S' + k], mul(up, 0.2)),
+        E = p['E' + k],
+        W = p['W' + k];
+      sweep(p['H' + k], K, THIGH, SKIN);
+      sweep(K, F, SHIN, SKIN);
+      sweep(sub(F, mul(fd, 0.16)), add(F, mul(fd, 0.84)), FOOT, SKIN, 0.7);
+      sweep(S, E, UPPER, SKIN);
+      sweep(E, W, FORE, SKIN);
+      sweep(W, add(W, mul(norm(sub(W, E)), 0.42)), HAND, SKIN, 0.6);
+    }
+    // Szyja, głowa (czaszka, żuchwa, broda, nos) i włosy.
+    const hf = p.front,
+      hu = p.up,
+      Hc = add(p.Hc, mul(hu, 0.1));
+    const hp = (f, u, s) => [
+      Hc[0] + hf[0] * f + hu[0] * u + side[0] * s,
+      Hc[1] + hf[1] * f + hu[1] * u + side[1] * s,
+      Hc[2] + hf[2] * f + hu[2] * u + side[2] * s,
+    ];
+    sweep(at(2.95, 0, -0.02), hp(-0.03, -0.3, 0), () => 0.2, SKIN);
+    put(hp(0, 0.06, 0), 0.44, SKIN);
+    put(hp(0.13, -0.24, 0), 0.33, SKIN);
+    put(hp(0.3, -0.46, 0), 0.13, SKIN);
+    put(hp(0.46, -0.07, 0), 0.075, SKIN);
+    put(hp(-0.1, 0.13, 0), HAIR_CAP, HAIR);
+    const cols = [
+      [Hc, 0.5],
+      [at(2.5, 0, -0.03), 0.52],
+      [at(2.6, 0.5, -0.03), 0.36],
+      [at(2.6, -0.5, -0.03), 0.36],
+    ];
+    STRANDS.forEach((sd, i) => {
+      const pts = this.strands[i].step(hp(sd[0], sd[1], sd[2]), steps, cols),
+        last = pts.length - 1;
+      for (let j = 0; j < last; j++)
+        sweep(pts[j], pts[j + 1], (t) => sd[5] + ((sd[6] - sd[5]) * (j + t)) / last, HAIR, 0.8);
+    });
+  }
+
+  sphere(cx, cy, cz, r, mat) {
+    const x0 = Math.max(0, Math.floor(cx - r - 1)),
+      x1 = Math.min(GW - 1, Math.ceil(cx + r + 1)),
+      y0 = Math.max(0, Math.floor(cy - r - 1)),
+      y1 = Math.min(GH - 1, Math.ceil(cy + r + 1)),
+      r2 = r * r,
+      ro = r + 0.5,
+      ro2 = ro * ro,
+      ir = 1 / r,
+      { z, cov, nx, ny, nz, m } = this;
+    for (let y = y0; y <= y1; y++) {
+      const dy = y + 0.5 - cy,
+        row = y * GW;
+      for (let x = x0; x <= x1; x++) {
+        const dx = x + 0.5 - cx,
+          d2 = dx * dx + dy * dy;
+        if (d2 >= ro2) continue;
+        const i = row + x,
+          h = r2 > d2 ? Math.sqrt(r2 - d2) : 0,
+          c = ro - Math.sqrt(d2);
+        if (c > cov[i]) cov[i] = c > 1 ? 1 : c;
+        if (cz + h > z[i]) {
+          z[i] = cz + h;
+          nx[i] = dx * ir;
+          ny[i] = dy * ir;
+          nz[i] = h * ir;
+          m[i] = mat;
+        }
+      }
+    }
+  }
+  /** Bryły → bufor głębi, normalne (wygładzone z progiem głębi) i zacienienie zagłębień. */
+  raster() {
+    const { z, cov, m, prims } = this;
+    z.fill(-1e9);
+    cov.fill(0);
+    m.fill(0);
+    for (let x = 39; x <= 41; x++)
+      for (let y = 0; y < FY; y++) {
+        const i = y * GW + x,
+          dx = x + 0.5 - PX;
+        z[i] = Math.sqrt(1.21 - dx * dx);
+        this.nx[i] = dx / 1.1;
+        this.ny[i] = 0;
+        this.nz[i] = z[i] / 1.1;
+        cov[i] = 1;
+        m[i] = POLE;
+      }
+    let zmin = 1e9;
+    for (let i = 0; i < prims.length; i += 5) {
+      const cz = prims[i + 2] * U;
+      if (cz < zmin) zmin = cz;
+      this.sphere(PX + prims[i] * U, FY - prims[i + 1] * U, cz, prims[i + 3] * U, prims[i + 4]);
+    }
+    const thr = 0.22 * U,
+      { nx, ny, nz, t1, t2, t3, ao } = this;
     for (let y = 0; y < GH; y++)
       for (let x = 0; x < GW; x++) {
         const i = y * GW + x;
-        if (grp[i]) continue;
-        if (g4(x + 1, y) >= 2 || g4(x - 1, y) >= 2 || g4(x, y + 1) >= 2 || g4(x, y - 1) >= 2) out[i] = C.OUT;
+        if (!m[i]) continue;
+        let ax = 0,
+          ay = 0,
+          az = 0;
+        for (let yy = Math.max(0, y - 1); yy <= Math.min(GH - 1, y + 1); yy++)
+          for (let xx = Math.max(0, x - 1); xx <= Math.min(GW - 1, x + 1); xx++) {
+            const j = yy * GW + xx;
+            if (m[j] && Math.abs(z[j] - z[i]) < thr) {
+              ax += nx[j];
+              ay += ny[j];
+              az += nz[j];
+            }
+          }
+        const l = Math.hypot(ax, ay, az) || 1;
+        t1[i] = ax / l;
+        t2[i] = ay / l;
+        t3[i] = az / l;
       }
-  }
-  drawStars(ft) {
-    const A = this.C.A,
-      SHP = [
-        [8, 0, 0],
-        [6, 0, 0],
-        [3, 7, 0],
-        [1, 3, 7],
-        [1, 2, 6],
-        [1, 3, 7],
-        [3, 7, 0],
-        [6, 0, 0],
-        [8, 0, 0],
-      ];
-    for (const s of this.stars) {
-      const tt = ft + s.ph,
-        cyc = Math.floor(tt / s.per);
-      if (cyc !== s.c) {
-        s.c = cyc;
-        s.x = 6 + Math.floor(this.random() * 68);
-        if (Math.abs(s.x - PX) < 7) s.x += s.x < PX ? -8 : 8;
-        s.y = 4 + Math.floor(this.random() * 46);
-      }
-      const sh = SHP[Math.floor(((tt % s.per) / s.per) * 16)];
-      if (!sh) continue;
-      this.set(s.x, s.y, A[sh[0]]);
-      for (let r = 1; r <= 2; r++) {
-        const c = sh[r];
-        if (!c) continue;
-        this.set(s.x + r, s.y, A[c]);
-        this.set(s.x - r, s.y, A[c]);
-        this.set(s.x, s.y + r, A[c]);
-        this.set(s.x, s.y - r, A[c]);
-      }
-    }
-  }
-  drawBursts(sk, lt) {
-    const A = this.C.A;
-    for (const [t0, pts] of [
-      [2.35, [sk.toeN, sk.toeF]],
-      [3.85, [sk.aF.e]],
-    ]) {
-      const p = (lt - t0) / 0.6;
-      if (p < 0 || p >= 1) continue;
-      const r = (1.8 + p * 5.5) * Q,
-        col = p < 0.35 ? A[1] : p < 0.7 ? A[3] : A[6];
-      for (const c of pts)
-        for (let k = 0; k < 8; k++) {
-          const a = (k * Math.PI) / 4,
-            cx = Math.cos(a),
-            cy = Math.sin(a);
-          this.set(Math.floor(c[0] + cx * r), Math.floor(c[1] + cy * r), col);
-          if (k % 2 === 0) this.set(Math.floor(c[0] + cx * (r - 1)), Math.floor(c[1] + cy * (r - 1)), col);
+    // Zagłębienie = sąsiedzi (bez rury) bliżej widza: rozmyta głębia − głębia.
+    const R = 2,
+      zf = zmin - 0.2 * U,
+      win = 2 * R + 1,
+      val = (j) => (m[j] && m[j] !== POLE ? z[j] : zf);
+    for (let y = 0; y < GH; y++)
+      for (let x = 0; x < GW; x++) {
+        const i = y * GW + x;
+        if (!m[i] || m[i] === POLE) {
+          ao[i] = 1;
+          continue;
         }
+        let sum = 0;
+        for (let yy = y - R; yy <= y + R; yy++)
+          for (let xx = x - R; xx <= x + R; xx++)
+            sum += yy >= 0 && yy < GH && xx >= 0 && xx < GW ? val(yy * GW + xx) : zf;
+        const d = (sum / (win * win) - z[i]) / (0.55 * U);
+        ao[i] = d <= 0 ? 1 : 1 - Math.min(1, d) * 0.62;
+      }
+  }
+  /** Kolor sylwetki: natężenie każdego reflektora (rozproszone + kontra + połysk) → 4 poziomy z ditheringiem. */
+  shade() {
+    const { out, m, cov, t1, t2, t3, ao, ci, LUT } = this;
+    ci.fill(0);
+    for (let y = 0; y < GH; y++)
+      for (let x = 0; x < GW; x++) {
+        const i = y * GW + x,
+          mt = m[i];
+        if (!mt || cov[i] <= 0.45) continue;
+        const X = t1[i],
+          Y = -t2[i],
+          Z = t3[i];
+        let idx;
+        if (mt === POLE) {
+          // Zanik rury u góry kadru.
+          if (y < 2 || (y < 6 && (x + y) & 1)) continue;
+          idx = X < -0.4 ? 1 : X > 0.4 ? 3 : 2;
+        } else {
+          const rim = Math.pow(1 - Z, 2.2),
+            dark = mt !== SKIN,
+            th = ((BAYER[(x & 3) + (y & 3) * 4] + 0.5) / 16 - 0.5) * 0.45 + 0.5;
+          let ip = (X * L_PINK[0] + Y * L_PINK[1] + Z * L_PINK[2] + 0.1) / 1.1,
+            ic = (X * L_CYAN[0] + Y * L_CYAN[1] + Z * L_CYAN[2] + 0.1) / 1.1;
+          ip = (ip > 0 ? ip * ao[i] : 0) + rim * clamp((-0.95 * X + 0.2 * Y) * 0.75 + 0.45, 0, 1) * 0.9;
+          ic = (ic > 0 ? ic * ao[i] : 0) + rim * clamp((0.95 * X + 0.3 * Y) * 0.75 + 0.45, 0, 1);
+          if (dark) {
+            // Body i włosy: połysk zamiast rozproszonego światła.
+            const sp = X * H_PINK[0] + Y * H_PINK[1] + Z * H_PINK[2],
+              sc = X * H_CYAN[0] + Y * H_CYAN[1] + Z * H_CYAN[2];
+            ip += sp > 0 ? Math.pow(sp, 18) * 0.8 : 0;
+            ic += sc > 0 ? Math.pow(sc, 18) * 0.8 : 0;
+          }
+          idx = mt * 16 + clamp(Math.floor(ip * 3 + th), 0, 3) * 4 + clamp(Math.floor(ic * 3 + th), 0, 3);
+        }
+        ci[i] = idx;
+        out[i] = LUT[idx];
+      }
+  }
+  /** Kontur 1 px wokół sylwetki i odbicie w scenie (co drugi piksel dalej od stóp). */
+  finish() {
+    const { out, ci, stage, MIRROR } = this,
+      OUT = this.C.OUT;
+    for (let y = 1; y < GH - 1; y++)
+      for (let x = 1; x < GW - 1; x++) {
+        const i = y * GW + x;
+        if (ci[i]) continue;
+        const body = (j) => ci[j] > 3;
+        if (body(i - 1) || body(i + 1) || body(i - GW) || body(i + GW)) {
+          out[i] = OUT;
+          continue;
+        }
+        if (!stage[i] || y < FY) continue;
+        const d = y - FY,
+          src = ci[(FY - 1 - d) * GW + x];
+        if (src && (d < 3 || ((x + y) & 1) === 0) && d < 9) out[i] = MIRROR[src];
+      }
+  }
+  drawLights(ft) {
+    const { out, bg, C } = this;
+    for (const s of this.lights) {
+      const k = ((ft + s.ph) % s.per) / s.per,
+        on = k < 0.5 ? (k < 0.12 || k > 0.38 ? 0 : 1) : -1;
+      if (on < 0 || bg[s.y * GW + s.x] !== 0) continue;
+      const col = s.pink ? C.DOT_P : C.DOT_C;
+      out[s.y * GW + s.x] = col[on];
+      if (on)
+        for (const d of [-1, 1, -GW, GW]) if (bg[s.y * GW + s.x + d] === 0) out[s.y * GW + s.x + d] = col[0];
     }
+  }
+  /** Rysuje klatkę czasu `ft` (s); `steps` – liczba kroków fizyki włosów od poprzedniej klatki. */
+  step(ft, steps) {
+    this.out.set(this.bg);
+    this.drawLights(ft);
+    this.body(skeleton(ft), steps);
+    this.raster();
+    this.shade();
+    this.finish();
   }
 }
 
-export const GRID = { width: GW, height: GH, fps: FPS, loop: LOOP };
+export const GRID = { width: GW, height: GH, fps: FPS, loop: LOOP, poleX: PX, floorY: FY };
 
-/** Szkielet w czasie `t` (piksele siatki; rura w x = 40) – testy naturalności ruchu. */
-export const pose = (t) => skel(t, {});
+/** Stawy w pikselach siatki w czasie `t` – testy naturalności ruchu. */
+export function pose(t) {
+  const p = skeleton(t),
+    px = (q) => [PX + q[0] * U, FY - q[1] * U];
+  return {
+    hips: px(p.P),
+    head: px(p.Hc),
+    grip: px(p.W2),
+    feet: [px(p.F1), px(p.F2)],
+    reach: Math.hypot(p.P[0], p.P[2]) * U,
+  };
+}
 
 /** Klatka czasu `t` (s) bez symulacji historii – statyczna klatka przy „Ogranicz ruch”. */
 export function renderStill(palette, t) {
   const engine = new PoleEngine(palette, () => 0.5);
-  // Rozgrzanie fizyki kucyka do czasu t (24 kl./s), żeby włosy leżały naturalnie.
+  // Rozgrzanie fizyki włosów do czasu t, żeby leżały naturalnie.
   const frames = Math.round(t * FPS);
   for (let f = Math.max(0, frames - 24); f <= frames; f++) engine.step(f / FPS, 1);
   return engine.out;

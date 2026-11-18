@@ -12,7 +12,7 @@ export interface PoleSpinnerProps {
   still?: boolean;
 }
 
-/** Animacja tancerki pixel-art (siatka 80×70, 24 kl./s, pętla 5,5 s); „Ogranicz ruch” → klatka. */
+/** Animacja tancerki pixel-art (siatka 80×70, 24 kl./s, pętla 4,3 s); „Ogranicz ruch” → klatka. */
 export function PoleSpinner({ size, still }: PoleSpinnerProps) {
   const reduced = useReducedMotion();
   const animated = !reduced && !still;

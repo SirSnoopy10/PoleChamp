@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
-  FadeIn,
   FadeInUp,
   useAnimatedStyle,
   useSharedValue,
@@ -16,7 +15,6 @@ import type { AppMode } from '../../mode/mode';
 import { Brand } from '../Brand';
 import { useReducedMotion } from '../motion';
 import { Text } from '../Text';
-import { PoleSpinner } from './PoleSpinner';
 
 /** Etapy ładowania (logika etapów – IMP-254 / IMP-302). */
 export const SPLASH_STAGES = {
@@ -108,9 +106,7 @@ export function SplashScreen({ mode, stage, onFinish, onReady }: SplashScreenPro
           <Rect x="0" y="0" width="100%" height="100%" fill="url(#splashGlow)" />
         </Svg>
       </View>
-      <Animated.View entering={reduced ? undefined : FadeIn.duration(900)}>
-        <PoleSpinner size={mode} />
-      </Animated.View>
+      {/* Wersja 1.0: bez animacji tancerki (PoleSpinner zostaje w kodzie i w DevCatalog). */}
       <Animated.View entering={rise(motion.splashRise.delays[0], reduced)} style={styles.brand}>
         <Brand />
         <Text variant="bodyS" color={color.neutral[400]} style={styles.tagline}>

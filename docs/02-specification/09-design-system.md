@@ -251,7 +251,7 @@ Każdy komponent ma: warianty, stany (default / pressed / focus / disabled / loa
 - Wariant `StatusPill` w nagłówku sędziego; stany i teksty: [06-offline-i-synchronizacja.md §8.1](../01-architecture/06-offline-i-synchronizacja.md#81-tablet--pigułka-w-nagłówku-poza-designem-propozycja-w-stylu-nocturne). Tapnięcie otwiera popover SCR-JDG-07.
 
 ### 4.21 `Splash` (`PoleSpinner`)
-- Animacja pixel-art: siatka 80×70, 24 kl./s, pętla 5,5 s, interpolacja splajnami monotonicznymi, IK 2-kościowe, paleta 4-tonowa, „kucyk” verlet (opis w `design/pole-spinner.js`). Implementacja na `@shopify/react-native-skia`. Fallback: sekwencja klatek (sprite) wygenerowana z tego samego skryptu – decyzja Tech Leada (ADR-001).
+- Animacja pixel-art: siatka 80×70, 24 kl./s, pętla 4,3 s – wariant „klub” (decyzja 10.11.2026; zastępuje prototyp `design/pole-spinner.js`): obrót z hakiem wokół rury, sylwetka bryłowa (kule wzdłuż kości, bufor głębi), dwa reflektory – różowy z lewej i turkusowy z prawej – po 4 poziomy światła z ditheringiem, kontur 1 px, odbicie w scenie, włosy (bob) verlet; interpolacja splajnami Hermite’a, IK 2-kościowe. Barwy reflektorów poza paletą Nocturne (stałe w `pole-engine.js`); scena, rura i kontur z tokenów. Implementacja na `@shopify/react-native-skia`. Fallback: sekwencja klatek (sprite) wygenerowana z tego samego skryptu – decyzja Tech Leada (ADR-001).
 - Rozmiar: 340×300 (telefon), 470×410 (tablet).
 
 ### 4.22 `StickyActionBar`

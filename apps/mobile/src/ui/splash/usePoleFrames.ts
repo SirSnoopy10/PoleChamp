@@ -11,11 +11,11 @@ export const POLE_PALETTE: PolePalette = {
   bg: color.bg,
 };
 
-/** Klatka pokazywana przy „Ogranicz ruch” (tancerka w odwróconej pozycji – rozpoznawalna sylwetka). */
-export const STILL_FRAME_T = 2.5;
+/** Klatka pokazywana przy „Ogranicz ruch” (obrót z hakiem z profilu – rozpoznawalna sylwetka). */
+export const STILL_FRAME_T = 1.6;
 
 /**
- * Klatki animacji 24 kl./s (pętla 5,5 s) liczone w JS – bufor 80×70 jest mały, a rysowanie
+ * Klatki animacji 24 kl./s (pętla 4,3 s) liczone w JS – bufor 80×70 jest mały, a rysowanie
  * piksel w piksel robi renderer platformy. `version` zmienia się z każdą klatką.
  */
 export function usePoleFrames(animated: boolean): { pixels: Uint32Array; version: number } {

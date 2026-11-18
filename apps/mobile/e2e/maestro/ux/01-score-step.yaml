@@ -17,6 +17,6 @@ tags: [nightly, judge, ux]
     id: 'untouched-confirm'
     optional: true
 - extendedWaitUntil:
-    visible: 'Wysłano'
+    visible: 'Zsynchronizowano'
     timeout: 15000
 - assertNotVisible: 'Wymaga uwagi'

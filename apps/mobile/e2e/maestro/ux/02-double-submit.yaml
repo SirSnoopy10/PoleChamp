@@ -22,7 +22,7 @@ tags: [nightly, judge, ux]
 - tapOn:
     id: 'score-submit'
     optional: true
-- assertVisible: 'Zapisano ocenę: Lena Mazur'
+- assertVisible: 'Zapisano ocenę nr .*: Lena Mazur'
 - extendedWaitUntil:
     visible:
       id: 'queue-state-synced'

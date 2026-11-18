@@ -12,7 +12,7 @@ tags: [nightly, sync]
 - tapOn:
     id: 'untouched-confirm'
     optional: true
-- assertVisible: 'Offline · 1 w kolejce'
+- assertVisible: 'Brak sieci · 1 w kolejce'
 - setAirplaneMode: disabled
 - extendedWaitUntil:
     visible:

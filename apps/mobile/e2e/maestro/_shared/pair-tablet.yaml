@@ -2,7 +2,8 @@
 appId: app.polechamp
 env:
   TOURNAMENT: t1
-  DEVICE_NAME: 'Tablet stół 1'
+  # ASCII: Maestro na Androidzie nie wpisuje polskich znaków (ADB `input text`).
+  DEVICE_NAME: 'Tablet 1'
 ---
 - runScript:
     file: api.js

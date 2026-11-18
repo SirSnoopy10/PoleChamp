@@ -12,7 +12,7 @@ tags: [p1, nightly, judge]
 - tapOn:
     id: 'untouched-confirm'
     optional: true
-- assertVisible: 'Zapisano ocenę: Lena Mazur'
+- assertVisible: 'Zapisano ocenę nr .*: Lena Mazur'
 - assertVisible:
     id: 'score-form'
 - extendedWaitUntil:
